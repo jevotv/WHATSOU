@@ -19,6 +19,12 @@ export default function ProductGrid({ products, storeSlug }: ProductGridProps) {
           ? Math.round(((product.original_price! - product.current_price) / product.original_price!) * 100)
           : 0;
 
+        // Calculate total stock from variants if they exist
+        const hasVariants = product.variants && product.variants.length > 0;
+        const totalStock = hasVariants
+          ? product.variants!.reduce((sum, v) => sum + v.quantity, 0)
+          : product.quantity;
+
         return (
           <Link
             key={product.id}
@@ -61,8 +67,8 @@ export default function ProductGrid({ products, storeSlug }: ProductGridProps) {
                 )}
               </div>
 
-              {product.quantity > 0 ? (
-                <p className="text-sm text-gray-500">{product.quantity} in stock</p>
+              {totalStock > 0 ? (
+                <p className="text-sm text-gray-500">{totalStock} in stock</p>
               ) : (
                 <p className="text-sm text-red-500 font-medium">Out of stock</p>
               )}

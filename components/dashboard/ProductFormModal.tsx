@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Product, ProductOption } from '@/lib/types/database';
+import { Product, ProductOption, ProductVariant } from '@/lib/types/database';
 import { supabase } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { X, Upload, Plus, Trash2 } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Upload, Plus, Trash2, ChevronDown, Sparkles, DollarSign } from 'lucide-react';
 import Image from 'next/image';
 
 interface ProductFormModalProps {
@@ -17,6 +18,14 @@ interface ProductFormModalProps {
   product?: Product | null;
   onClose: () => void;
   onSaved: () => void;
+}
+
+interface LocalVariant {
+  id?: string;
+  option_values: { [key: string]: string };
+  price: string;
+  quantity: string;
+  sku: string;
 }
 
 export default function ProductFormModal({
@@ -35,9 +44,12 @@ export default function ProductFormModal({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState('');
   const [options, setOptions] = useState<ProductOption[]>([]);
+  const [variants, setVariants] = useState<LocalVariant[]>([]);
   const [loading, setLoading] = useState(false);
+  const [variantsOpen, setVariantsOpen] = useState(true);
   const { toast } = useToast();
 
+  // Load existing product data
   useEffect(() => {
     if (product) {
       setName(product.name);
@@ -49,8 +61,26 @@ export default function ProductFormModal({
       setImageUrl(product.image_url || '');
       setImagePreview(product.image_url || '');
       setOptions(product.options || []);
+      loadVariants(product.id);
     }
   }, [product]);
+
+  const loadVariants = async (productId: string) => {
+    const { data } = await supabase
+      .from('product_variants')
+      .select('*')
+      .eq('product_id', productId);
+
+    if (data) {
+      setVariants(data.map((v: ProductVariant) => ({
+        id: v.id,
+        option_values: v.option_values,
+        price: v.price.toString(),
+        quantity: v.quantity.toString(),
+        sku: v.sku || '',
+      })));
+    }
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -93,6 +123,7 @@ export default function ProductFormModal({
     }
   };
 
+  // Option management
   const addOption = () => {
     if (options.length >= 3) {
       toast({
@@ -107,6 +138,7 @@ export default function ProductFormModal({
 
   const removeOption = (index: number) => {
     setOptions(options.filter((_, i) => i !== index));
+    setVariants([]); // Clear variants when options change
   };
 
   const updateOptionName = (index: number, name: string) => {
@@ -122,6 +154,84 @@ export default function ProductFormModal({
       .map((v) => v.trim())
       .filter((v) => v.length > 0);
     setOptions(newOptions);
+  };
+
+  // Cartesian product algorithm for generating variants
+  const generateVariants = () => {
+    const validOptions = options.filter((opt) => opt.name && opt.values.length > 0);
+
+    if (validOptions.length === 0) {
+      toast({
+        title: 'No options defined',
+        description: 'Please add at least one option with values first',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Cartesian product
+    const cartesian = (...arrays: string[][]): string[][] => {
+      return arrays.reduce<string[][]>(
+        (acc, curr) => acc.flatMap((a) => curr.map((b) => [...a, b])),
+        [[]]
+      );
+    };
+
+    const optionArrays = validOptions.map((opt) => opt.values);
+    const combinations = cartesian(...optionArrays);
+
+    const newVariants: LocalVariant[] = combinations.map((combo) => {
+      const optionValues: { [key: string]: string } = {};
+      validOptions.forEach((opt, i) => {
+        optionValues[opt.name] = combo[i];
+      });
+
+      // Check if variant already exists
+      const existing = variants.find(
+        (v) => JSON.stringify(v.option_values) === JSON.stringify(optionValues)
+      );
+
+      return existing || {
+        option_values: optionValues,
+        price: currentPrice || '0',
+        quantity: '0',
+        sku: '',
+      };
+    });
+
+    setVariants(newVariants);
+    toast({
+      title: 'Variants generated!',
+      description: `${newVariants.length} variants created`,
+    });
+  };
+
+  // Bulk edit functions
+  const applyPriceToAll = () => {
+    if (!currentPrice) return;
+    setVariants(variants.map((v) => ({ ...v, price: currentPrice })));
+    toast({ title: 'Price applied to all variants' });
+  };
+
+  const applyQuantityToAll = (qty: string) => {
+    setVariants(variants.map((v) => ({ ...v, quantity: qty })));
+    toast({ title: 'Quantity applied to all variants' });
+  };
+
+  // Variant management
+  const updateVariant = (index: number, field: keyof LocalVariant, value: string) => {
+    const newVariants = [...variants];
+    (newVariants[index] as any)[field] = value;
+    setVariants(newVariants);
+  };
+
+  const removeVariant = (index: number) => {
+    setVariants(variants.filter((_, i) => i !== index));
+  };
+
+  // Get variant display label
+  const getVariantLabel = (variant: LocalVariant) => {
+    return Object.values(variant.option_values).join(' / ');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -147,6 +257,8 @@ export default function ProductFormModal({
         options: validOptions,
       };
 
+      let productId = product?.id;
+
       if (product) {
         const { error } = await supabase
           .from('products')
@@ -154,23 +266,47 @@ export default function ProductFormModal({
           .eq('id', product.id);
 
         if (error) throw error;
-
-        toast({
-          title: 'Product updated',
-          description: 'Your product has been updated successfully',
-        });
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('products')
-          .insert(productData);
+          .insert(productData)
+          .select()
+          .single();
 
         if (error) throw error;
-
-        toast({
-          title: 'Product created',
-          description: 'Your product has been added to your store',
-        });
+        productId = data.id;
       }
+
+      // Save variants if there are any
+      if (variants.length > 0 && productId) {
+        // Delete existing variants
+        await supabase
+          .from('product_variants')
+          .delete()
+          .eq('product_id', productId);
+
+        // Insert new variants
+        const variantsToInsert = variants.map((v) => ({
+          product_id: productId,
+          option_values: v.option_values,
+          price: parseFloat(v.price) || 0,
+          quantity: parseInt(v.quantity) || 0,
+          sku: v.sku || null,
+        }));
+
+        const { error: variantError } = await supabase
+          .from('product_variants')
+          .insert(variantsToInsert);
+
+        if (variantError) throw variantError;
+      }
+
+      toast({
+        title: product ? 'Product updated' : 'Product created',
+        description: product
+          ? 'Your product has been updated successfully'
+          : 'Your product has been added to your store',
+      });
 
       onSaved();
     } catch (error: any) {
@@ -183,6 +319,8 @@ export default function ProductFormModal({
     }
   };
 
+  const hasVariants = variants.length > 0;
+
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl">
@@ -193,6 +331,7 @@ export default function ProductFormModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Image Upload */}
           <div className="space-y-2">
             <Label>Product Image</Label>
             <div className="flex items-center gap-4">
@@ -221,6 +360,7 @@ export default function ProductFormModal({
             </div>
           </div>
 
+          {/* Basic Info */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2 col-span-2">
               <Label>Product Name *</Label>
@@ -245,7 +385,7 @@ export default function ProductFormModal({
             </div>
 
             <div className="space-y-2">
-              <Label>Current Price *</Label>
+              <Label>{hasVariants ? 'Base Price (Starting from)' : 'Price *'}</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -280,18 +420,19 @@ export default function ProductFormModal({
             </div>
 
             <div className="space-y-2">
-              <Label>Quantity *</Label>
+              <Label>{hasVariants ? 'Default Quantity' : 'Quantity *'}</Label>
               <Input
                 type="number"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 placeholder="10"
-                required
+                required={!hasVariants}
                 className="rounded-2xl"
               />
             </div>
           </div>
 
+          {/* Options Section */}
           <div className="space-y-4 pt-4 border-t">
             <div className="flex items-center justify-between">
               <Label className="text-base">Product Options (Max 3)</Label>
@@ -308,15 +449,15 @@ export default function ProductFormModal({
             </div>
 
             {options.map((option, index) => (
-              <div key={index} className="p-4 border rounded-2xl space-y-3">
+              <div key={index} className="p-4 border rounded-2xl space-y-3 bg-gray-50">
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm">Option {index + 1}</Label>
+                  <Label className="text-sm font-medium">Option {index + 1}</Label>
                   <Button
                     type="button"
                     onClick={() => removeOption(index)}
                     variant="ghost"
                     size="sm"
-                    className="rounded-full"
+                    className="rounded-full h-8 w-8 p-0"
                   >
                     <Trash2 className="w-4 h-4 text-red-500" />
                   </Button>
@@ -325,18 +466,118 @@ export default function ProductFormModal({
                   value={option.name}
                   onChange={(e) => updateOptionName(index, e.target.value)}
                   placeholder="Option name (e.g., Size, Color)"
-                  className="rounded-2xl"
+                  className="rounded-2xl bg-white"
                 />
                 <Input
                   value={option.values.join(', ')}
                   onChange={(e) => updateOptionValues(index, e.target.value)}
                   placeholder="Values separated by commas (e.g., S, M, L, XL)"
-                  className="rounded-2xl"
+                  className="rounded-2xl bg-white"
                 />
               </div>
             ))}
+
+            {options.length > 0 && options.some((o) => o.name && o.values.length > 0) && (
+              <Button
+                type="button"
+                onClick={generateVariants}
+                className="w-full rounded-2xl bg-[#008069] hover:bg-[#017561]"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                Generate Variants
+              </Button>
+            )}
           </div>
 
+          {/* Variants Section */}
+          {variants.length > 0 && (
+            <Collapsible open={variantsOpen} onOpenChange={setVariantsOpen}>
+              <div className="border rounded-2xl overflow-hidden">
+                <CollapsibleTrigger className="w-full p-4 flex items-center justify-between bg-[#008069] text-white hover:bg-[#017561] transition">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">Variants ({variants.length})</span>
+                  </div>
+                  <ChevronDown className={`w-5 h-5 transition-transform ${variantsOpen ? 'rotate-180' : ''}`} />
+                </CollapsibleTrigger>
+
+                <CollapsibleContent>
+                  {/* Bulk Actions */}
+                  <div className="p-3 bg-gray-100 border-b flex gap-2 flex-wrap">
+                    <Button
+                      type="button"
+                      onClick={applyPriceToAll}
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl"
+                    >
+                      <DollarSign className="w-3 h-3 mr-1" />
+                      Apply ${currentPrice || '0'} to all
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => applyQuantityToAll('10')}
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl"
+                    >
+                      Set Qty 10 for all
+                    </Button>
+                  </div>
+
+                  {/* Variant List - WhatsApp Style Cards */}
+                  <div className="max-h-[300px] overflow-y-auto">
+                    {variants.map((variant, index) => (
+                      <div
+                        key={index}
+                        className="p-3 border-b last:border-b-0 hover:bg-gray-50 transition"
+                      >
+                        <div className="flex items-center gap-3">
+                          {/* Variant Label - Chat Bubble Style */}
+                          <div className="flex-1 min-w-0">
+                            <div className="inline-block bg-[#dcf8c6] px-3 py-1.5 rounded-2xl rounded-bl-sm text-sm font-medium">
+                              {getVariantLabel(variant)}
+                            </div>
+                          </div>
+
+                          {/* Price Input */}
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={variant.price}
+                            onChange={(e) => updateVariant(index, 'price', e.target.value)}
+                            placeholder="Price"
+                            className="w-24 h-8 text-sm rounded-xl"
+                          />
+
+                          {/* Quantity Input */}
+                          <Input
+                            type="number"
+                            value={variant.quantity}
+                            onChange={(e) => updateVariant(index, 'quantity', e.target.value)}
+                            placeholder="Qty"
+                            className="w-16 h-8 text-sm rounded-xl"
+                          />
+
+                          {/* Delete Button */}
+                          <Button
+                            type="button"
+                            onClick={() => removeVariant(index)}
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 rounded-full"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </div>
+            </Collapsible>
+          )}
+
+          {/* Submit Buttons */}
           <div className="flex gap-3 pt-4">
             <Button
               type="button"

@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { Product, ProductVariant } from '@/lib/types/database';
 import StorefrontClient from '@/components/storefront/StorefrontClient';
 
 interface StorefrontPageProps {
@@ -24,6 +25,23 @@ async function getStoreData(slug: string) {
     .select('*')
     .eq('store_id', store.id)
     .order('created_at', { ascending: false });
+
+  // Load variants for all products
+  if (products && products.length > 0) {
+    const productIds = products.map((p: Product) => p.id);
+    const { data: variants } = await supabase
+      .from('product_variants')
+      .select('*')
+      .in('product_id', productIds);
+
+    // Attach variants to products
+    const productsWithVariants = products.map((p: Product) => ({
+      ...p,
+      variants: variants?.filter((v: ProductVariant) => v.product_id === p.id) || [],
+    }));
+
+    return { store, products: productsWithVariants };
+  }
 
   return { store, products: products || [] };
 }

@@ -11,19 +11,14 @@ export const metadata: Metadata = {
   title: 'WhatSou - WhatsApp Commerce Platform',
   description: 'Create your WhatsApp store in 60 seconds. Photo -> Price -> Sell',
   openGraph: {
-    images: [
-      {
-        url: 'https://bolt.new/static/og_default.png',
-      },
-    ],
+    title: 'WhatSou - WhatsApp Commerce Platform',
+    description: 'Create your WhatsApp store in 60 seconds. Photo -> Price -> Sell',
+    type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    images: [
-      {
-        url: 'https://bolt.new/static/og_default.png',
-      },
-    ],
+    title: 'WhatSou - WhatsApp Commerce Platform',
+    description: 'Create your WhatsApp store in 60 seconds. Photo -> Price -> Sell',
   },
 };
 

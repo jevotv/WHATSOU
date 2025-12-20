@@ -40,16 +40,16 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
     setLoading(true);
 
     try {
-      const { error } = await supabase.from('orders').insert({
-        store_id: store.id,
-        customer_name: customerName,
-        customer_phone: customerPhone,
-        customer_address: customerAddress,
-        order_items: items,
-        total_price: totalPrice,
-      });
-
-      if (error) throw error;
+      // TODO: Re-enable order recording when ready
+      // const { error } = await supabase.from('orders').insert({
+      //   store_id: store.id,
+      //   customer_name: customerName,
+      //   customer_phone: customerPhone,
+      //   customer_address: customerAddress,
+      //   order_items: items,
+      //   total_price: totalPrice,
+      // });
+      // if (error) throw error;
 
       let message = `🛍️ *New Order from WhatSou!*\n\n`;
       message += `*Customer:* ${customerName}\n`;

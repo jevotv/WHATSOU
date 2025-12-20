@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
-import { Store, Product } from '@/lib/types/database';
+import { Store, Product, ProductVariant } from '@/lib/types/database';
 import { Button } from '@/components/ui/button';
-import { Plus, LogOut, Copy, Package } from 'lucide-react';
+import { Plus, LogOut, Copy, Package, Settings, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import ProductCard from '@/components/dashboard/ProductCard';
 import ProductFormModal from '@/components/dashboard/ProductFormModal';
@@ -17,6 +18,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const { user, signOut } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -53,7 +55,24 @@ export default function DashboardPage() {
         .eq('store_id', storeData.id)
         .order('created_at', { ascending: false });
 
-      setProducts(productsData || []);
+      // Load variants for all products
+      if (productsData && productsData.length > 0) {
+        const productIds = productsData.map((p: Product) => p.id);
+        const { data: variantsData } = await supabase
+          .from('product_variants')
+          .select('*')
+          .in('product_id', productIds);
+
+        // Attach variants to products
+        const productsWithVariants = productsData.map((p: Product) => ({
+          ...p,
+          variants: variantsData?.filter((v: ProductVariant) => v.product_id === p.id) || [],
+        }));
+
+        setProducts(productsWithVariants);
+      } else {
+        setProducts([]);
+      }
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -138,6 +157,13 @@ export default function DashboardPage() {
                 Copy Store Link
               </Button>
               <Button
+                onClick={() => router.push('/dashboard/settings')}
+                variant="ghost"
+                className="text-white hover:bg-[#017561] rounded-2xl"
+              >
+                <Settings className="w-4 h-4" />
+              </Button>
+              <Button
                 onClick={signOut}
                 variant="ghost"
                 className="text-white hover:bg-[#017561] rounded-2xl"
@@ -151,10 +177,25 @@ export default function DashboardPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Your Products</h2>
-          <p className="text-gray-600">
-            {products.length} {products.length === 1 ? 'product' : 'products'} in your catalog
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Your Products</h2>
+              <p className="text-gray-600">
+                {products.length} {products.length === 1 ? 'product' : 'products'} in your catalog
+              </p>
+            </div>
+            {/* Search Bar */}
+            <div className="relative w-full sm:w-72">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-10 rounded-2xl border-gray-200"
+              />
+            </div>
+          </div>
         </div>
 
         {products.length === 0 ? (
@@ -176,14 +217,24 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onEdit={handleEditProduct}
-                onDelete={handleDeleteProduct}
-              />
-            ))}
+            {products
+              .filter((product) => {
+                if (!searchQuery.trim()) return true;
+                const query = searchQuery.toLowerCase();
+                return (
+                  product.name.toLowerCase().includes(query) ||
+                  product.description?.toLowerCase().includes(query) ||
+                  product.category?.toLowerCase().includes(query)
+                );
+              })
+              .map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onEdit={handleEditProduct}
+                  onDelete={handleDeleteProduct}
+                />
+              ))}
           </div>
         )}
       </main>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>WhatSou - Store Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#1fdb64",
+              "background-light": "#f6f8f7",
+              "background-dark": "#112117",
+            },
+            fontFamily: {
+              "display": ["Spline Sans", "sans-serif"]
+            },
+            borderRadius: {
+              "DEFAULT": "0.25rem", 
+              "lg": "0.5rem", 
+              "xl": "0.75rem", 
+              "full": "9999px"
+            },
+          },
+        },
+      }
+    </script>
+<style>
+        /* Custom scrollbar for cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background-color: #475569;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#111714] dark:text-gray-100 overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- Sidebar -->
+<aside class="hidden md:flex w-64 flex-col border-r border-[#f0f4f2] dark:border-zinc-800 bg-white dark:bg-zinc-900 h-full">
+<div class="flex items-center gap-3 px-6 py-5 border-b border-[#f0f4f2] dark:border-zinc-800">
+<div class="size-8 text-primary">
+<svg fill="currentColor" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M6 6H42L36 24L42 42H6L12 24L6 6Z"></path></svg>
+</div>
+<h2 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">WhatSou</h2>
+</div>
+<div class="flex flex-col gap-2 p-4 flex-1">
+<div class="flex flex-col pb-4">
+<p class="text-[#648771] text-xs font-bold uppercase tracking-wider px-3 mb-2">Merchant Portal</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-[#f0f4f2] dark:hover:bg-zinc-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-[#f0f4f2] dark:hover:bg-zinc-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">shopping_cart</span>
+<span class="text-sm font-medium">Orders</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-[#f0f4f2] dark:hover:bg-zinc-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">inventory_2</span>
+<span class="text-sm font-medium">Inventory</span>
+</a>
+</div>
+<div class="mt-auto">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary dark:text-primary font-medium" href="#">
+<span class="material-symbols-outlined text-[20px] fill-1">settings</span>
+<span class="text-sm">Settings</span>
+</a>
+</div>
+</div>
+<div class="p-4 border-t border-[#f0f4f2] dark:border-zinc-800">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-primary/20" data-alt="User profile picture placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuARWbmPO0qz5N8Fqcg1fsoiNPjorshWXgHSlmRCjGE1fCPTR_gNBSv1Qu0eYlPyazSmUyKvbGijh7qGs1oLFOfx1L9jaV9yJpbYgi7AeKMnj1T53NEol3Lg1SdvizOI0TA0UdOUFfDVwkfC6I4PvKsHTSs0UMg5h1rzydVZHVDhuxOZV_3U9uYIngSgz9y0nTzDhwH8qkF6gnVymb2LwW-NtJVzPxYPl8uw9JOBshRHArLG_P8nh9LdZy10kyHyfwAY9TbGvcr5iDM");'></div>
+<div class="flex flex-col">
+<p class="text-sm font-bold text-gray-900 dark:text-white">Alex Morgan</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Merchant Owner</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full overflow-hidden relative">
+<!-- Mobile Header (Visible only on small screens) -->
+<header class="md:hidden flex items-center justify-between border-b border-[#f0f4f2] dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3">
+<div class="flex items-center gap-3">
+<div class="size-6 text-primary">
+<svg fill="currentColor" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M6 6H42L36 24L42 42H6L12 24L6 6Z"></path></svg>
+</div>
+<span class="font-bold text-lg">WhatSou</span>
+</div>
+<button class="p-2 text-gray-600">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</header>
+<!-- Sticky Top Bar inside Main -->
+<div class="flex items-center justify-between px-6 py-4 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md sticky top-0 z-20 border-b border-[#f0f4f2] dark:border-zinc-800">
+<h1 class="text-2xl font-black tracking-[-0.033em] text-[#111714] dark:text-white">Store Settings</h1>
+<button class="bg-primary hover:bg-green-500 text-[#111714] font-bold py-2 px-6 rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">save</span>
+<span>Save Changes</span>
+</button>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-4 md:p-8">
+<div class="max-w-3xl mx-auto flex flex-col gap-6 pb-20">
+<!-- Section: Store Identity -->
+<div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-[#f0f4f2] dark:border-zinc-800 p-6">
+<h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">storefront</span>
+                            Store Identity
+                        </h3>
+<div class="flex flex-col md:flex-row gap-8 items-start">
+<div class="flex flex-col items-center gap-3 w-full md:w-auto">
+<div class="relative group cursor-pointer">
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-32 w-32 border-4 border-[#f0f4f2] dark:border-zinc-800 shadow-inner" data-alt="Current store logo showing a generic shop icon" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA62Yb6mCWWTvbkplrRtzHb1W-Hp0X1TZxhlaVxYO7Z8ecGsqFjb2kpjMm0Oq3ZFM3twrmjG-2nleKZISsm1URY7nXcECeZOM-fsDB2N_fx0hJdppbi5vGL6l7yueOJDiWBHKyV5dumPLh0O3s7vgunMPj0Yz0wDDoiCtfA44e5h9p4GzNXZ7ySI92e1dA5lCMamZD3hCGwJ8Lx4HWuI8raQQ0S7jQKL9TxCvZxKQvytK1t6N0yZpHRvwFIVIqyrGGyDHVokA3vJr0");'>
+</div>
+<div class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-white text-3xl">photo_camera</span>
+</div>
+</div>
+<button class="text-sm font-bold text-primary hover:text-green-600 transition-colors">Change Logo</button>
+</div>
+<div class="flex-1 w-full flex flex-col gap-5">
+<div class="flex flex-col gap-1.5">
+<label class="text-sm font-bold text-gray-700 dark:text-gray-300">Store Name</label>
+<input class="w-full h-11 px-4 rounded-lg bg-[#f0f4f2] dark:bg-zinc-800 border-none focus:ring-2 focus:ring-primary text-gray-900 dark:text-white placeholder-gray-400 font-medium transition-all" placeholder="e.g. The Green Grocer" type="text" value="My Awesome Store"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-sm font-bold text-gray-700 dark:text-gray-300">Description</label>
+<textarea class="w-full p-4 rounded-lg bg-[#f0f4f2] dark:bg-zinc-800 border-none focus:ring-2 focus:ring-primary text-gray-900 dark:text-white placeholder-gray-400 font-medium resize-none transition-all" placeholder="Tell customers about your store..." rows="4">Manage your store identity, update your catalog, and connect with customers 24/7 through WhatsApp.</textarea>
+<p class="text-xs text-gray-500 text-right">124/500 characters</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Section: Contact Information -->
+<div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-[#f0f4f2] dark:border-zinc-800 p-6">
+<h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">call</span>
+                            Contact Information
+                        </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="flex flex-col gap-1.5">
+<label class="text-sm font-bold text-gray-700 dark:text-gray-300">WhatsApp Number</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-gray-400 text-[20px]">chat</span>
+</div>
+<input class="w-full h-11 pl-10 pr-4 rounded-lg bg-[#f0f4f2] dark:bg-zinc-800 border-none focus:ring-2 focus:ring-primary text-gray-900 dark:text-white font-medium transition-all" type="tel" value="+1 (555) 123-4567"/>
+</div>
+<p class="text-xs text-gray-500 mt-1">This number will receive all order notifications.</p>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-sm font-bold text-gray-700 dark:text-gray-300">Support Email</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-gray-400 text-[20px]">mail</span>
+</div>
+<input class="w-full h-11 pl-10 pr-4 rounded-lg bg-[#f0f4f2] dark:bg-zinc-800 border-none focus:ring-2 focus:ring-primary text-gray-900 dark:text-white font-medium transition-all" type="email" value="support@whatsou.com"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Section: Social Media -->
+<div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-[#f0f4f2] dark:border-zinc-800 p-6">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">share</span>
+                                Social Media
+                            </h3>
+<button class="text-xs font-bold bg-[#f0f4f2] dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-md transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">add</span> Add Link
+                            </button>
+</div>
+<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-1.5">
+<label class="text-sm font-bold text-gray-700 dark:text-gray-300">Instagram</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="text-gray-400 font-bold select-none text-xs tracking-wider">INSTA</span>
+</div>
+<input class="w-full h-11 pl-16 pr-4 rounded-lg bg-[#f0f4f2] dark:bg-zinc-800 border-none focus:ring-2 focus:ring-primary text-gray-900 dark:text-white font-medium transition-all" placeholder="https://instagram.com/yourstore" type="url"/>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-sm font-bold text-gray-700 dark:text-gray-300">Facebook</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="text-gray-400 font-bold select-none text-xs tracking-wider">FB</span>
+</div>
+<input class="w-full h-11 pl-12 pr-4 rounded-lg bg-[#f0f4f2] dark:bg-zinc-800 border-none focus:ring-2 focus:ring-primary text-gray-900 dark:text-white font-medium transition-all" placeholder="https://facebook.com/yourstore" type="url"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Section: Security -->
+<div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-[#f0f4f2] dark:border-zinc-800 p-6 mb-8">
+<h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">lock</span>
+                            Security
+                        </h3>
+<div class="space-y-4">
+<div class="flex flex-col gap-1.5">
+<label class="text-sm font-bold text-gray-700 dark:text-gray-300">Current Password</label>
+<input class="w-full h-11 px-4 rounded-lg bg-[#f0f4f2] dark:bg-zinc-800 border-none focus:ring-2 focus:ring-primary text-gray-900 dark:text-white font-medium transition-all" placeholder="••••••••••••" type="password"/>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="flex flex-col gap-1.5">
+<label class="text-sm font-bold text-gray-700 dark:text-gray-300">New Password</label>
+<input class="w-full h-11 px-4 rounded-lg bg-[#f0f4f2] dark:bg-zinc-800 border-none focus:ring-2 focus:ring-primary text-gray-900 dark:text-white font-medium transition-all" placeholder="New password" type="password"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-sm font-bold text-gray-700 dark:text-gray-300">Confirm Password</label>
+<input class="w-full h-11 px-4 rounded-lg bg-[#f0f4f2] dark:bg-zinc-800 border-none focus:ring-2 focus:ring-primary text-gray-900 dark:text-white font-medium transition-all" placeholder="Confirm new password" type="password"/>
+</div>
+</div>
+<div class="pt-2 flex justify-end">
+<button class="text-sm font-bold text-gray-500 hover:text-primary transition-colors">Forgot Password?</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

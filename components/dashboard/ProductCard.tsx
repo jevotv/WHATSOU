@@ -18,6 +18,12 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
     ? Math.round(((product.original_price! - product.current_price) / product.original_price!) * 100)
     : 0;
 
+  // Calculate total stock: use variants if they exist, otherwise use product quantity
+  const hasVariants = product.variants && product.variants.length > 0;
+  const totalStock = hasVariants
+    ? product.variants!.reduce((sum, v) => sum + v.quantity, 0)
+    : product.quantity;
+
   return (
     <Card className="rounded-3xl overflow-hidden hover:shadow-xl transition-shadow group">
       <div className="relative aspect-square bg-gray-100">
@@ -72,7 +78,10 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
           )}
         </div>
         <div className="flex items-center justify-between text-sm text-gray-500">
-          <span>Stock: {product.quantity}</span>
+          <span>
+            Stock: {totalStock}
+            {hasVariants && <span className="text-xs ml-1">({product.variants!.length} variants)</span>}
+          </span>
           {product.category && (
             <span className="bg-gray-100 px-2 py-1 rounded-full text-xs">
               {product.category}
