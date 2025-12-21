@@ -1,0 +1,122 @@
+'use server'
+
+import { cookies } from 'next/headers'
+import bcrypt from 'bcryptjs'
+import { createClient } from '@supabase/supabase-js'
+
+// Initialize a Supabase client with the service role key for admin access
+// This is needed to bypass RLS if strict RLS policies are in place, 
+// though we are mostly using a custom table where we can just use the anon key 
+// IF we set up policies correctly. However, for "bypassing auth" and custom implementation,
+// service role is safest for server-side operations if we want to be sure.
+// BUT, the user prompt implies just using the standard client might be what was expected 
+// or simpler. Let's stick to standard client + custom table first, but we need 
+// the anon key and url. Since this is server side, we can use process.env directly.
+
+// Wait, standard client uses 'public' schema usually. We made the table in public.
+// We need to make sure we can read/write to it. 
+// Ideally we should use the service_role key to manage users securely server-side 
+// without needing strict RLS policies that rely on auth.uid() since we are bypassing that.
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! // Fallback to anon if service key missing, but anon might fail RLS
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+const SESSION_COOKIE_NAME = 'app-session';
+
+export async function signUp(formData: FormData) {
+    const phone = formData.get('phone') as string
+    const password = formData.get('password') as string
+
+    if (!phone || !password) {
+        return { error: 'Phone and password are required' }
+    }
+
+    // Check if user exists
+    const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('phone', phone)
+        .single()
+
+    if (existingUser) {
+        return { error: 'User already exists' }
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10)
+
+    const { data: newUser, error } = await supabase
+        .from('users')
+        .insert({
+            phone,
+            password_hash: passwordHash,
+        })
+        .select()
+        .single()
+
+    if (error) {
+        console.error('Signup error:', error)
+        return { error: 'Failed to create user' }
+    }
+
+    // Set session
+    cookies().set(SESSION_COOKIE_NAME, JSON.stringify({ id: newUser.id, phone: newUser.phone }), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 60 * 60 * 24 * 7, // 1 week
+        path: '/',
+    })
+
+    return { success: true }
+}
+
+export async function signIn(formData: FormData) {
+    const phone = formData.get('phone') as string
+    const password = formData.get('password') as string
+
+    if (!phone || !password) {
+        return { error: 'Phone and password are required' }
+    }
+
+    const { data: user, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('phone', phone)
+        .single()
+
+    if (error || !user) {
+        return { error: 'Invalid credentials' }
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password_hash)
+
+    if (!isMatch) {
+        return { error: 'Invalid credentials' }
+    }
+
+    // Set session
+    cookies().set(SESSION_COOKIE_NAME, JSON.stringify({ id: user.id, phone: user.phone }), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 60 * 60 * 24 * 7, // 1 week
+        path: '/',
+    })
+
+    return { success: true }
+}
+
+export async function signOut() {
+    cookies().delete(SESSION_COOKIE_NAME)
+    return { success: true }
+}
+
+export async function getSession() {
+    const sessionCookie = cookies().get(SESSION_COOKIE_NAME)
+    if (!sessionCookie) return null
+    try {
+        return JSON.parse(sessionCookie.value)
+    } catch (e) {
+        return null
+    }
+}

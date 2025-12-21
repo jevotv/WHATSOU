@@ -1,70 +1,87 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { User } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import { signIn as signInAction, signUp as signUpAction, signOut as signOutAction, getSession } from '@/app/actions/auth';
+
+export interface UserSession {
+  id: string;
+  phone: string;
+}
 
 interface AuthContextType {
-  user: User | null;
+  user: UserSession | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signIn: (phone: string, password: string) => Promise<void>;
+  signUp: (phone: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
-  signIn: async () => {},
-  signUp: async () => {},
-  signOut: async () => {},
+  signIn: async () => { },
+  signUp: async () => { },
+  signOut: async () => { },
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserSession | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
+    const checkSession = async () => {
+      const sessionUser = await getSession();
+      setUser(sessionUser);
       setLoading(false);
     };
 
-    getUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null);
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    checkSession();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) throw error;
+  const signIn = async (phone: string, password: string) => {
+    const formData = new FormData();
+    formData.append('phone', phone);
+    formData.append('password', password);
+
+    // Server action returns object { success: true } or { error: string }
+    const result = await signInAction(formData);
+
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    // Refresh session state
+    const sessionUser = await getSession();
+    setUser(sessionUser);
     router.push('/dashboard');
+    router.refresh();
   };
 
-  const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-    if (error) throw error;
+  const signUp = async (phone: string, password: string) => {
+    const formData = new FormData();
+    formData.append('phone', phone);
+    formData.append('password', password);
+
+    const result = await signUpAction(formData);
+
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    // Refresh session state
+    const sessionUser = await getSession();
+    setUser(sessionUser);
     router.push('/onboarding');
+    router.refresh();
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await signOutAction();
+    setUser(null);
     router.push('/login');
+    router.refresh();
   };
 
   return (

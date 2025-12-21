@@ -6,14 +6,25 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, Globe } from 'lucide-react';
+import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
+  const { t, language, setLanguage, direction } = useLanguage();
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Just set the value as typed, standardization happens on submit or we can do it live?
+    // User asked to "standardize like phone currently", which usually implies live or on blur.
+    // Let's just keep it simple and standardize on submit or use the utility if needed for display.
+    // Actually existing util is robust. Let's just set raw value and standardize on submit.
+    setPhone(e.target.value);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +32,9 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await signIn(email, password);
+      // Standardize before sending
+      const standardizedPhone = standardizePhoneNumber(phone);
+      await signIn(standardizedPhone, password);
     } catch (err: any) {
       setError(err.message || 'Failed to sign in');
     } finally {
@@ -30,15 +43,25 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-teal-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-teal-50 p-4" dir={direction}>
       <Card className="w-full max-w-md rounded-3xl shadow-xl">
-        <CardHeader className="text-center space-y-4">
+        <CardHeader className="text-center space-y-4 relative">
+          <div className="absolute top-4 right-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
+              className="rounded-full w-8 h-8 p-0"
+            >
+              <Globe className="w-4 h-4" />
+            </Button>
+          </div>
           <div className="mx-auto bg-green-500 w-16 h-16 rounded-3xl flex items-center justify-center">
             <ShoppingBag className="w-8 h-8 text-white" />
           </div>
-          <CardTitle className="text-3xl font-bold">Welcome to WhatSou</CardTitle>
+          <CardTitle className="text-3xl font-bold">{t('auth.login_title')}</CardTitle>
           <CardDescription className="text-base">
-            Sign in to manage your WhatsApp store
+            {t('auth.login_subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -50,22 +73,23 @@ export default function LoginPage() {
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Email</label>
+              <label className="text-sm font-medium">{t('auth.email_label')}</label>
               <Input
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="tel"
+                placeholder={t('auth.email_placeholder')} // We might want to change translation key but for now reuse or keep same key with different text if user updates json separate
+                value={phone}
+                onChange={handlePhoneChange}
                 required
-                className="rounded-2xl h-12"
+                className="rounded-2xl h-12" // dir="ltr" might be good for phone numbers
+                dir="ltr"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Password</label>
+              <label className="text-sm font-medium">{t('auth.password_label')}</label>
               <Input
                 type="password"
-                placeholder="••••••••"
+                placeholder={t('auth.password_placeholder')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -78,13 +102,13 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full h-12 rounded-3xl bg-green-600 hover:bg-green-700 text-base font-semibold"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? t('auth.signing_in') : t('auth.sign_in')}
             </Button>
 
             <p className="text-center text-sm text-gray-600">
-              Don't have an account?{' '}
+              {t('auth.no_account')}{' '}
               <Link href="/signup" className="text-green-600 font-semibold hover:underline">
-                Sign up
+                {t('auth.sign_up_link')}
               </Link>
             </p>
           </form>

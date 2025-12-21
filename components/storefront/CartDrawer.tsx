@@ -11,6 +11,8 @@ import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase/client';
+import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
+import { useLanguage } from '@/lib/contexts/LanguageContext';
 
 interface CartDrawerProps {
   open: boolean;
@@ -24,14 +26,16 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
+  const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { t, language } = useLanguage();
 
   const handleCheckout = async () => {
     if (!customerName || !customerPhone || !customerAddress) {
       toast({
-        title: 'Missing information',
-        description: 'Please fill in all fields',
+        title: t('cart.missing_info'),
+        description: t('cart.missing_info_desc'),
         variant: 'destructive',
       });
       return;
@@ -51,24 +55,87 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
       // });
       // if (error) throw error;
 
-      let message = `🛍️ *New Order from WhatSou!*\n\n`;
-      message += `*Customer:* ${customerName}\n`;
-      message += `*Phone:* ${customerPhone}\n`;
-      message += `*Address:* ${customerAddress}\n\n`;
-      message += `*Items:*\n`;
+      // Update product/variant quantities
+      for (const item of items) {
+        if (item.variant_id) {
+          // Update variant quantity
+          const { error: variantError } = await supabase.rpc('decrement_variant_quantity', {
+            p_variant_id: item.variant_id,
+            p_quantity: item.quantity,
+          });
+          if (variantError) {
+            console.error('Error updating variant quantity:', variantError);
+          }
+        } else {
+          // Update product quantity
+          const { error: productError } = await supabase.rpc('decrement_product_quantity', {
+            p_product_id: item.product_id,
+            p_quantity: item.quantity,
+          });
+          if (productError) {
+            console.error('Error updating product quantity:', productError);
+          }
+        }
+      }
+
+      // Emojis and Arabic Text (using strict unicode escapes)
+      // 🎉 = \uD83C\uDF89
+      // 👤 = \uD83D\uDC64
+      // 📱 = \uD83D\uDCF1
+      // 🏠 = \uD83C\uDFE0
+      // 📝 = \uD83D\uDCDD
+      // 🛒 = \uD83D\uDED2
+      // 🏷️ = \uD83C\uDFF7\uFE0F
+      // 🔢 = \uD83D\uDD22
+      // 💵 = \uD83D\uDCB5
+      // 🚚 = \uD83D\uDE9A
+      // ⚡ = \u26A1
+
+      // "أهلاً يا" -> \u0623\u0647\u0644\u0627\u064b \u064a\u0627
+      // "جالك طلب جديد من" -> \u062c\u0627\u0644\u0643 \u0637\u0644\u0628 \u062c\u062f\u064a\u062f \u0645\u0646
+      // "بياناتي الشخصية" (User requested change) -> \u0628\u064a\u0627\u0646\u0627\u062a\u064a \u0627\u0644\u0634\u062e\u0635\u064a\u0629
+      // "الاسم" -> \u0627\u0644\u0627\u0633\u0645
+      // "الموبايل" -> \u0627\u0644\u0645\u0648\u0628\u0627\u064a\u0644
+      // "العنوان" -> \u0627\u0644\u0639\u0646\u0648\u0627\u0646
+      // "ملاحظات" -> \u0645\u0644\u0627\u062d\u0638\u0627\u062a
+      // "تفاصيل الأوردر" -> \u062a\u0641\u0627\u0635\u064a\u0644 \u0627\u0644\u0623\u0648\u0631\u062f\u0631
+      // "العدد" -> \u0627\u0644\u0639\u062f\u062f
+      // "قطع" -> \u0642\u0637\u0639
+      // "السعر" -> \u0627\u0644\u0633\u0639\u0631
+      // "ج.م" -> \u062c.\u0645
+      // "المبلغ الإجمالي" -> \u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0625\u062c\u0645\u0627\u0644\u064a
+      // "أرجو تأكيد الطلب وبدء التجهيز." (User requested change) -> \u0623\u0631\u062c\u0648 \u062a\u0623\u0643\u064a\u062f \u0627\u0644\u0637\u0644\u0628 \u0648\u0628\u062f\u0621 \u0627\u0644\u062a\u062c\u0647\u064a\u0632.
+
+      let message = `${t('whatsapp.greeting', { storeName: store.name })}\n\n`;
+      message += `${t('whatsapp.personal_details')}\n`;
+      message += `${t('whatsapp.name', { name: customerName })}\n`;
+      message += `${t('whatsapp.phone', { phone: standardizePhoneNumber(customerPhone) })}\n`;
+      message += `${t('whatsapp.address', { address: customerAddress })}\n`;
+
+      if (notes.trim()) {
+        message += `${t('whatsapp.notes', { notes })}\n`;
+      }
+
+      message += `\n${t('whatsapp.order_details')}\n`;
+      message += `${t('whatsapp.separator')}\n`;
 
       items.forEach((item) => {
-        message += `\n• ${item.product_name} x ${item.quantity}`;
+        message += `${t('whatsapp.product_prefix')}${item.product_name}\n`;
+        // Handle options if any
         const optionText = Object.entries(item.selected_options)
           .map(([key, value]) => `${key}: ${value}`)
           .join(', ');
         if (optionText) {
-          message += `\n  (${optionText})`;
+          message += `   (${optionText})\n`;
         }
-        message += `\n  $${(item.price * item.quantity).toFixed(2)}`;
+
+        message += `${t('whatsapp.quantity', { quantity: item.quantity })}\n`;
+        message += `${t('whatsapp.price', { price: (item.price * item.quantity).toFixed(2) })}\n`;
+        message += `${t('whatsapp.separator')}\n`;
       });
 
-      message += `\n\n*Total: $${totalPrice.toFixed(2)}*`;
+      message += `\n${t('whatsapp.total', { total: totalPrice.toFixed(2) })}\n\n`;
+      message += `${t('whatsapp.footer')}`;
 
       const whatsappUrl = `https://wa.me/${store.whatsapp_number}?text=${encodeURIComponent(message)}`;
 
@@ -76,11 +143,12 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
       setCustomerName('');
       setCustomerPhone('');
       setCustomerAddress('');
+      setNotes('');
       setShowCheckout(false);
 
       toast({
-        title: 'Order placed!',
-        description: 'Redirecting to WhatsApp...',
+        title: t('cart.order_placed'),
+        description: t('cart.order_placed_desc'),
       });
 
       setTimeout(() => {
@@ -103,7 +171,7 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
       <SheetContent className="w-full sm:max-w-lg flex flex-col">
         <SheetHeader>
           <SheetTitle className="text-2xl font-bold">
-            {showCheckout ? 'Checkout' : 'Your Cart'}
+            {showCheckout ? t('cart.checkout_title') : t('cart.title')}
           </SheetTitle>
         </SheetHeader>
 
@@ -113,7 +181,7 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
               {items.length === 0 ? (
                 <div className="text-center py-12">
                   <ShoppingBag className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                  <p className="text-gray-500">Your cart is empty</p>
+                  <p className="text-gray-500">{t('cart.empty')}</p>
                 </div>
               ) : (
                 items.map((item, index) => (
@@ -145,7 +213,7 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
                         </p>
                       )}
                       <p className="text-sm font-bold text-green-600 mt-1">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        {t('common.currency')} {(item.price * item.quantity).toFixed(2)}
                       </p>
 
                       <div className="flex items-center gap-2 mt-2">
@@ -198,14 +266,14 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
             {items.length > 0 && (
               <div className="border-t pt-4 space-y-4">
                 <div className="flex items-center justify-between text-xl font-bold">
-                  <span>Total</span>
-                  <span>${totalPrice.toFixed(2)}</span>
+                  <span>{t('cart.total')}</span>
+                  <span>{t('common.currency')} {totalPrice.toFixed(2)}</span>
                 </div>
                 <Button
                   onClick={() => setShowCheckout(true)}
                   className="w-full h-14 rounded-3xl bg-green-600 hover:bg-green-700 text-lg font-semibold"
                 >
-                  Proceed to Checkout
+                  {t('cart.proceed')}
                 </Button>
               </div>
             )}
@@ -214,22 +282,22 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
           <>
             <div className="flex-1 overflow-y-auto py-6 space-y-6">
               <div className="space-y-2">
-                <Label>Your Name *</Label>
+                <Label>{t('cart.form.name')}</Label>
                 <Input
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="John Doe"
+                  placeholder={t('cart.form.name_placeholder')}
                   className="rounded-2xl h-12"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Phone Number *</Label>
+                <Label>{t('cart.form.phone')}</Label>
                 <Input
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
-                  placeholder="+1234567890"
+                  placeholder={t('cart.form.phone_placeholder')}
                   type="tel"
                   className="rounded-2xl h-12"
                   required
@@ -237,29 +305,39 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
               </div>
 
               <div className="space-y-2">
-                <Label>Delivery Address *</Label>
+                <Label>{t('cart.form.address')}</Label>
                 <Input
                   value={customerAddress}
                   onChange={(e) => setCustomerAddress(e.target.value)}
-                  placeholder="123 Main St, City, State"
+                  placeholder={t('cart.form.address_placeholder')}
                   className="rounded-2xl h-12"
                   required
                 />
               </div>
 
+              <div className="space-y-2">
+                <Label>{t('cart.form.notes')}</Label>
+                <Input
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder={t('cart.form.notes_placeholder')}
+                  className="rounded-2xl h-12"
+                />
+              </div>
+
               <div className="bg-gray-50 p-4 rounded-2xl space-y-2">
-                <h4 className="font-semibold">Order Summary</h4>
+                <h4 className="font-semibold">{t('cart.form.summary')}</h4>
                 {items.map((item, index) => (
                   <div key={index} className="flex justify-between text-sm">
                     <span>
                       {item.product_name} x {item.quantity}
                     </span>
-                    <span>${(item.price * item.quantity).toFixed(2)}</span>
+                    <span>{t('common.currency')} {(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
                 <div className="flex justify-between font-bold text-lg pt-2 border-t">
-                  <span>Total</span>
-                  <span>${totalPrice.toFixed(2)}</span>
+                  <span>{t('cart.total')}</span>
+                  <span>{t('common.currency')} {totalPrice.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -270,14 +348,14 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
                 disabled={loading}
                 className="w-full h-14 rounded-3xl bg-green-600 hover:bg-green-700 text-lg font-semibold"
               >
-                {loading ? 'Processing...' : 'Confirm Order'}
+                {loading ? t('cart.processing') : t('cart.confirm_order')}
               </Button>
               <Button
                 onClick={() => setShowCheckout(false)}
                 variant="outline"
                 className="w-full h-14 rounded-3xl text-lg font-semibold"
               >
-                Back to Cart
+                {t('cart.back_to_cart')}
               </Button>
             </div>
           </>

@@ -11,6 +11,7 @@ export interface Store {
   instagram_url?: string;
   twitter_url?: string;
   tiktok_url?: string;
+  default_language?: string;
   created_at: string;
   updated_at: string;
 }
@@ -27,6 +28,7 @@ export interface ProductVariant {
   price: number;
   quantity: number;
   sku?: string;
+  unlimited_stock?: boolean;
   created_at?: string;
 }
 
@@ -37,9 +39,11 @@ export interface Product {
   description?: string;
   current_price: number;  // Base price / "Starting from" price
   original_price?: number;
-  image_url?: string;
+  image_url?: string;      // Full size (1200x1200)
+  thumbnail_url?: string;  // Thumbnail (200x200)
   category?: string;
   quantity: number;  // Used for simple products without variants
+  unlimited_stock?: boolean;
   options: ProductOption[];
   variants?: ProductVariant[];  // Loaded when needed
   created_at: string;

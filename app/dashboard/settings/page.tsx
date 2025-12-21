@@ -12,6 +12,8 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeft, Save, Store as StoreIcon, Phone, Share2, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
+import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
+import { useLanguage } from '@/lib/contexts/LanguageContext';
 
 export default function SettingsPage() {
     const [store, setStore] = useState<Store | null>(null);
@@ -22,6 +24,7 @@ export default function SettingsPage() {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [whatsappNumber, setWhatsappNumber] = useState('');
+    const [defaultLanguage, setDefaultLanguage] = useState('en');
     const [email, setEmail] = useState('');
     const [logoUrl, setLogoUrl] = useState('');
     const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -31,17 +34,20 @@ export default function SettingsPage() {
     const [twitterUrl, setTwitterUrl] = useState('');
     const [tiktokUrl, setTiktokUrl] = useState('');
 
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
+    const { t, direction } = useLanguage();
 
     useEffect(() => {
-        if (!user) {
+        if (!authLoading && !user) {
             router.push('/login');
-            return;
         }
-        loadStore();
-    }, [user, router]);
+
+        if (user) {
+            loadStore();
+        }
+    }, [user, router, authLoading]);
 
     const loadStore = async () => {
         if (!user) return;
@@ -58,6 +64,7 @@ export default function SettingsPage() {
                 setName(data.name);
                 setDescription(data.description || '');
                 setWhatsappNumber(data.whatsapp_number);
+                setDefaultLanguage(data.default_language || 'en');
                 setEmail(data.email || '');
                 setLogoUrl(data.logo_url || '');
                 setLogoPreview(data.logo_url || '');
@@ -89,21 +96,22 @@ export default function SettingsPage() {
         if (!logoFile) return logoUrl;
 
         try {
-            const fileExt = logoFile.name.split('.').pop();
-            const fileName = `${store?.id || 'new'}-logo.${fileExt}`;
-            const filePath = `logos/${fileName}`;
+            const formData = new FormData();
+            formData.append('file', logoFile);
+            formData.append('folder', 'logos');
 
-            const { error: uploadError } = await supabase.storage
-                .from('products')
-                .upload(filePath, logoFile, { upsert: true });
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+            });
 
-            if (uploadError) throw uploadError;
+            const data = await response.json();
 
-            const { data } = supabase.storage
-                .from('products')
-                .getPublicUrl(filePath);
+            if (!response.ok) {
+                throw new Error(data.error || 'Upload failed');
+            }
 
-            return data.publicUrl;
+            return data.url;
         } catch (error: any) {
             toast({
                 title: 'Logo upload failed',
@@ -126,7 +134,8 @@ export default function SettingsPage() {
                 .update({
                     name,
                     description: description || null,
-                    whatsapp_number: whatsappNumber,
+                    whatsapp_number: standardizePhoneNumber(whatsappNumber),
+                    default_language: defaultLanguage,
                     email: email || null,
                     logo_url: uploadedLogoUrl,
                     facebook_url: facebookUrl || null,
@@ -139,12 +148,12 @@ export default function SettingsPage() {
             if (error) throw error;
 
             toast({
-                title: 'Settings saved!',
-                description: 'Your store settings have been updated',
+                title: t('settings.saved'),
+                description: t('settings.saved_desc'),
             });
         } catch (error: any) {
             toast({
-                title: 'Error',
+                title: t('common.error'),
                 description: error.message,
                 variant: 'destructive',
             });
@@ -162,7 +171,7 @@ export default function SettingsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#f6f8f7]">
+        <div className="min-h-screen bg-[#f6f8f7]" dir={direction}>
             {/* Header */}
             <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -171,17 +180,17 @@ export default function SettingsPage() {
                             onClick={() => router.push('/dashboard')}
                             className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
                         >
-                            <ArrowLeft className="w-5 h-5" />
-                            <span className="font-medium">Back</span>
+                            <ArrowLeft className={`w-5 h-5 ${direction === 'rtl' ? 'rotate-180' : ''}`} />
+                            <span className="font-medium">{t('common.back')}</span>
                         </button>
-                        <h1 className="text-xl font-bold text-gray-900">Store Settings</h1>
+                        <h1 className="text-xl font-bold text-gray-900">{t('settings.title')}</h1>
                         <Button
                             onClick={handleSave}
                             disabled={saving}
                             className="bg-[#1fdb64] hover:bg-green-500 text-[#111813] font-bold rounded-lg"
                         >
-                            <Save className="w-4 h-4 mr-2" />
-                            {saving ? 'Saving...' : 'Save'}
+                            <Save className={`w-4 h-4 ${direction === 'rtl' ? 'ml-2' : 'mr-2'}`} />
+                            {saving ? t('common.saving') : t('common.save')}
                         </Button>
                     </div>
                 </div>
@@ -194,7 +203,7 @@ export default function SettingsPage() {
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                         <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
                             <StoreIcon className="w-5 h-5 text-[#1fdb64]" />
-                            Store Identity
+                            {t('settings.identity')}
                         </h3>
                         <div className="flex flex-col md:flex-row gap-8 items-start">
                             {/* Logo */}
@@ -226,13 +235,13 @@ export default function SettingsPage() {
                                         />
                                     </label>
                                 </div>
-                                <span className="text-sm font-medium text-[#1fdb64]">Change Logo</span>
+                                <span className="text-sm font-medium text-[#1fdb64]">{t('settings.change_logo')}</span>
                             </div>
 
                             {/* Name & Description */}
                             <div className="flex-1 w-full space-y-4">
                                 <div className="space-y-1.5">
-                                    <Label className="text-sm font-bold text-gray-700">Store Name</Label>
+                                    <Label className="text-sm font-bold text-gray-700">{t('settings.store_name')}</Label>
                                     <Input
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
@@ -241,15 +250,15 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label className="text-sm font-bold text-gray-700">Description</Label>
+                                    <Label className="text-sm font-bold text-gray-700">{t('settings.description')}</Label>
                                     <Textarea
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
-                                        placeholder="Tell customers about your store..."
+                                        placeholder={t('settings.description')}
                                         rows={4}
                                         className="rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#1fdb64] resize-none"
                                     />
-                                    <p className="text-xs text-gray-500 text-right">{description.length}/500 characters</p>
+                                    <p className="text-xs text-gray-500 text-right">{t('settings.character_limit', { current: description.length, max: 500 })}</p>
                                 </div>
                             </div>
                         </div>
@@ -259,21 +268,21 @@ export default function SettingsPage() {
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                         <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
                             <Phone className="w-5 h-5 text-[#1fdb64]" />
-                            Contact Information
+                            {t('settings.contact_info')}
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-1.5">
-                                <Label className="text-sm font-bold text-gray-700">WhatsApp Number</Label>
+                                <Label className="text-sm font-bold text-gray-700">{t('settings.whatsapp')}</Label>
                                 <Input
                                     value={whatsappNumber}
                                     onChange={(e) => setWhatsappNumber(e.target.value)}
                                     placeholder="+1 (555) 123-4567"
                                     className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#1fdb64]"
                                 />
-                                <p className="text-xs text-gray-500">This number receives order notifications.</p>
+                                <p className="text-xs text-gray-500">{t('settings.whatsapp_desc')}</p>
                             </div>
                             <div className="space-y-1.5">
-                                <Label className="text-sm font-bold text-gray-700">Support Email</Label>
+                                <Label className="text-sm font-bold text-gray-700">{t('settings.email')}</Label>
                                 <Input
                                     type="email"
                                     value={email}
@@ -282,6 +291,34 @@ export default function SettingsPage() {
                                     className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#1fdb64]"
                                 />
                             </div>
+                            <div className="space-y-1.5 mt-6">
+                                <Label className="text-sm font-bold text-gray-700">{t('settings.default_language')}</Label>
+                                <div className="flex gap-4">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name="language"
+                                            value="en"
+                                            checked={defaultLanguage === 'en'}
+                                            onChange={(e) => setDefaultLanguage(e.target.value)}
+                                            className="w-4 h-4 text-[#1fdb64] focus:ring-[#1fdb64]"
+                                        />
+                                        <span>{t('settings.english')}</span>
+                                    </label>
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name="language"
+                                            value="ar"
+                                            checked={defaultLanguage === 'ar'}
+                                            onChange={(e) => setDefaultLanguage(e.target.value)}
+                                            className="w-4 h-4 text-[#1fdb64] focus:ring-[#1fdb64]"
+                                        />
+                                        <span>{t('settings.arabic')}</span>
+                                    </label>
+                                </div>
+                                <p className="text-xs text-gray-500">{t('settings.language_help')}</p>
+                            </div>
                         </div>
                     </div>
 
@@ -289,7 +326,7 @@ export default function SettingsPage() {
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                         <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
                             <Share2 className="w-5 h-5 text-[#1fdb64]" />
-                            Social Media
+                            {t('settings.social_media')}
                         </h3>
                         <div className="space-y-4">
                             <div className="space-y-1.5">

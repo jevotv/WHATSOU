@@ -6,15 +6,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, Globe } from 'lucide-react';
+import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
 
 export default function SignupPage() {
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
+  const { t, language, setLanguage, direction } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,14 +29,15 @@ export default function SignupPage() {
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError('Password must be at least 6 characters'); // Should create translation for this if not in dictionary
       return;
     }
 
     setLoading(true);
 
     try {
-      await signUp(email, password);
+      const standardizedPhone = standardizePhoneNumber(phone);
+      await signUp(standardizedPhone, password);
     } catch (err: any) {
       setError(err.message || 'Failed to sign up');
     } finally {
@@ -42,15 +46,25 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-teal-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-teal-50 p-4" dir={direction}>
       <Card className="w-full max-w-md rounded-3xl shadow-xl">
-        <CardHeader className="text-center space-y-4">
+        <CardHeader className="text-center space-y-4 relative">
+          <div className="absolute top-4 right-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
+              className="rounded-full w-8 h-8 p-0"
+            >
+              <Globe className="w-4 h-4" />
+            </Button>
+          </div>
           <div className="mx-auto bg-green-500 w-16 h-16 rounded-3xl flex items-center justify-center">
             <ShoppingBag className="w-8 h-8 text-white" />
           </div>
-          <CardTitle className="text-3xl font-bold">Join WhatSou</CardTitle>
+          <CardTitle className="text-3xl font-bold">{t('auth.register_title')}</CardTitle>
           <CardDescription className="text-base">
-            Create your WhatsApp store in 60 seconds
+            {t('auth.register_subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -62,22 +76,23 @@ export default function SignupPage() {
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Email</label>
+              <label className="text-sm font-medium">{t('auth.email_label')}</label>
               <Input
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="tel"
+                placeholder={t('auth.email_placeholder')}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
                 required
                 className="rounded-2xl h-12"
+                dir="ltr"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Password</label>
+              <label className="text-sm font-medium">{t('auth.password_label')}</label>
               <Input
                 type="password"
-                placeholder="••••••••"
+                placeholder={t('auth.password_placeholder')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -86,10 +101,10 @@ export default function SignupPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Confirm Password</label>
+              <label className="text-sm font-medium">{t('auth.confirm_password_label')}</label>
               <Input
                 type="password"
-                placeholder="••••••••"
+                placeholder={t('auth.password_placeholder')}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
@@ -102,13 +117,13 @@ export default function SignupPage() {
               disabled={loading}
               className="w-full h-12 rounded-3xl bg-green-600 hover:bg-green-700 text-base font-semibold"
             >
-              {loading ? 'Creating account...' : 'Create Account'}
+              {loading ? t('auth.creating_account') : t('auth.create_account')}
             </Button>
 
             <p className="text-center text-sm text-gray-600">
-              Already have an account?{' '}
+              {t('auth.has_account')}{' '}
               <Link href="/login" className="text-green-600 font-semibold hover:underline">
-                Sign in
+                {t('auth.sign_in_link')}
               </Link>
             </p>
           </form>

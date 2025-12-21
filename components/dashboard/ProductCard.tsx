@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Edit, Trash2, Package } from 'lucide-react';
 import Image from 'next/image';
+import { useLanguage } from '@/lib/contexts/LanguageContext';
 
 interface ProductCardProps {
   product: Product;
@@ -13,6 +14,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
+  const { t, direction } = useLanguage();
   const hasDiscount = product.original_price && product.original_price > product.current_price;
   const discountPercent = hasDiscount
     ? Math.round(((product.original_price! - product.current_price) / product.original_price!) * 100)
@@ -24,12 +26,14 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
     ? product.variants!.reduce((sum, v) => sum + v.quantity, 0)
     : product.quantity;
 
+  const isUnlimited = product.unlimited_stock;
+
   return (
-    <Card className="rounded-3xl overflow-hidden hover:shadow-xl transition-shadow group">
+    <Card className="rounded-3xl overflow-hidden hover:shadow-xl transition-shadow group" dir={direction}>
       <div className="relative aspect-square bg-gray-100">
-        {product.image_url ? (
+        {(product.thumbnail_url || product.image_url) ? (
           <Image
-            src={product.image_url}
+            src={product.thumbnail_url || product.image_url!}
             alt={product.name}
             fill
             className="object-cover"
@@ -40,11 +44,11 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
           </div>
         )}
         {hasDiscount && (
-          <div className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+          <div className={`absolute top-3 ${direction === 'rtl' ? 'right-3' : 'left-3'} bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold z-10`}>
             -{discountPercent}%
           </div>
         )}
-        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+        <div className={`absolute top-3 ${direction === 'rtl' ? 'left-3' : 'right-3'} opacity-0 group-hover:opacity-100 transition-opacity flex gap-2 z-10`}>
           <Button
             size="icon"
             onClick={() => onEdit(product)}
@@ -69,18 +73,18 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
         )}
         <div className="flex items-center gap-2">
           <span className="text-xl font-bold text-green-600">
-            ${product.current_price.toFixed(2)}
+            {t('common.currency')} {product.current_price.toFixed(2)}
           </span>
           {hasDiscount && (
             <span className="text-sm text-gray-400 line-through">
-              ${product.original_price!.toFixed(2)}
+              {t('common.currency')} {product.original_price!.toFixed(2)}
             </span>
           )}
         </div>
         <div className="flex items-center justify-between text-sm text-gray-500">
           <span>
-            Stock: {totalStock}
-            {hasVariants && <span className="text-xs ml-1">({product.variants!.length} variants)</span>}
+            {t('products.stock_label')}: {isUnlimited ? '∞' : totalStock}
+            {hasVariants && <span className="text-xs mx-1">({product.variants!.length} {t('products.variants_label')})</span>}
           </span>
           {product.category && (
             <span className="bg-gray-100 px-2 py-1 rounded-full text-xs">
@@ -91,7 +95,7 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
         {product.options && product.options.length > 0 && (
           <div className="pt-2 border-t">
             <p className="text-xs text-gray-500">
-              {product.options.length} option{product.options.length > 1 ? 's' : ''} available
+              {t('products.options_available', { count: product.options.length })}
             </p>
           </div>
         )}

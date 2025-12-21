@@ -10,6 +10,7 @@ import { ArrowLeft, ShoppingCart, Package, Minus, Plus } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import CartDrawer from './CartDrawer';
+import { useLanguage } from '@/lib/contexts/LanguageContext';
 
 interface ProductDetailClientProps {
   store: Store;
@@ -25,6 +26,7 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
   const { addItem, totalItems } = useCart();
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const hasOptions = product.options && product.options.length > 0;
   const hasDiscount = product.original_price && product.original_price > product.current_price;
@@ -80,7 +82,14 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
   };
 
   const getEffectiveStock = () => {
-    if (selectedVariant) return selectedVariant.quantity;
+    if (product.unlimited_stock) return 999999;
+    if (selectedVariant) {
+      // If main product is unlimited, variants are too (based on our logic)
+      // But we should check variant's own flag if we supported mixed.
+      // Current implementation sets variants to unlimited if product is.
+      if (selectedVariant.unlimited_stock) return 999999;
+      return selectedVariant.quantity;
+    }
     if (hasOptions && variants.length > 0) {
       // If has variants but none selected, show total stock
       return variants.reduce((sum, v) => sum + v.quantity, 0);
@@ -106,8 +115,8 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
   const handleAddToCart = () => {
     if (!allOptionsSelected()) {
       toast({
-        title: 'Please select all options',
-        description: 'You must choose a value for each option',
+        title: t('storefront.missing_options'),
+        description: t('storefront.missing_options_desc'),
         variant: 'destructive',
       });
       return;
@@ -115,8 +124,8 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
 
     if (hasOptions && variants.length > 0 && !selectedVariant) {
       toast({
-        title: 'Variant not available',
-        description: 'This combination is not available',
+        title: t('storefront.variant_unavailable'),
+        description: t('storefront.variant_unavailable'),
         variant: 'destructive',
       });
       return;
@@ -125,8 +134,8 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
     // Validate stock
     if (quantity > effectiveStock) {
       toast({
-        title: 'Not enough stock',
-        description: `Only ${effectiveStock} available`,
+        title: t('storefront.not_enough_stock'),
+        description: t('storefront.not_enough_stock_desc', { count: effectiveStock }),
         variant: 'destructive',
       });
       return;
@@ -139,12 +148,12 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
       quantity,
       price: effectivePrice,
       selected_options: selectedOptions,
-      image_url: product.image_url,
+      image_url: product.thumbnail_url || product.image_url,
     });
 
     toast({
-      title: 'Added to cart!',
-      description: `${quantity} ${product.name} added to your cart`,
+      title: t('storefront.added_to_cart'),
+      description: t('storefront.added_to_cart_desc', { quantity, name: product.name }),
     });
 
     setShowCart(true);
@@ -156,7 +165,7 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
 
     return variants.some((v) => {
       if (v.option_values[optionName] !== value) return false;
-      if (v.quantity <= 0) return false;
+      if (!v.unlimited_stock && v.quantity <= 0) return false;
 
       // Check if compatible with other selected options
       for (const [key, selectedValue] of Object.entries(selectedOptions)) {
@@ -178,7 +187,7 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
               className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
             >
               <ArrowLeft className="w-5 h-5" />
-              <span className="font-medium">Back</span>
+              <span className="font-medium">{t('common.back')}</span>
             </button>
             <button
               onClick={() => setShowCart(true)}
@@ -234,27 +243,31 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
 
             <div className="flex items-center gap-4">
               <span className="text-5xl font-bold text-gray-900">
-                ${effectivePrice.toFixed(2)}
+                {t('common.currency')} {effectivePrice.toFixed(2)}
               </span>
               {hasDiscount && (
                 <span className="text-2xl text-gray-400 line-through">
-                  ${product.original_price!.toFixed(2)}
+                  {t('common.currency')} {product.original_price!.toFixed(2)}
                 </span>
               )}
               {hasOptions && !allOptionsSelected() && (
                 <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                  Starting from
+                  {t('storefront.starting_from')}
                 </span>
               )}
             </div>
 
-            {effectiveStock > 0 ? (
+            {product.unlimited_stock || (selectedVariant?.unlimited_stock) ? (
+              <p className="text-lg text-green-600 font-semibold">
+                {t('storefront.in_stock')}
+              </p>
+            ) : effectiveStock > 0 ? (
               <p className="text-lg text-gray-600">
-                {effectiveStock} items in stock
+                {t('storefront.items_in_stock', { count: effectiveStock })}
               </p>
             ) : (
               <p className="text-lg text-red-500 font-semibold">
-                {hasOptions && !allOptionsSelected() ? 'Select options to see availability' : 'Out of stock'}
+                {hasOptions && !allOptionsSelected() ? t('storefront.select_options_availability') : t('storefront.out_of_stock')}
               </p>
             )}
 
@@ -299,10 +312,10 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
                 {selectedVariant && (
                   <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
                     <p className="text-green-800 font-medium">
-                      ✓ {Object.values(selectedVariant.option_values).join(' / ')} - ${selectedVariant.price.toFixed(2)}
+                      {t('storefront.variant_selected', { options: Object.values(selectedVariant.option_values).join(' / '), price: selectedVariant.price.toFixed(2) })}
                     </p>
                     <p className="text-green-600 text-sm">
-                      {selectedVariant.quantity} in stock
+                      {selectedVariant.unlimited_stock ? t('storefront.in_stock') : t('storefront.items_in_stock', { count: selectedVariant.quantity })}
                     </p>
                   </div>
                 )}
@@ -311,7 +324,7 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
                 {allOptionsSelected() && hasOptions && variants.length > 0 && !selectedVariant && (
                   <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
                     <p className="text-red-800 font-medium">
-                      ✗ This combination is not available
+                      ✗ {t('storefront.variant_unavailable')}
                     </p>
                   </div>
                 )}
@@ -320,7 +333,7 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
 
             <div className="space-y-4 pt-6 border-t">
               <label className="block text-lg font-semibold text-gray-900">
-                Quantity
+                {t('storefront.quantity')}
               </label>
               <div className="flex items-center gap-4">
                 <Button
@@ -339,7 +352,7 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
                   variant="outline"
                   size="icon"
                   className="rounded-2xl w-12 h-12"
-                  disabled={quantity >= effectiveStock}
+                  disabled={!product.unlimited_stock && quantity >= effectiveStock}
                 >
                   <Plus className="w-5 h-5" />
                 </Button>
@@ -353,20 +366,20 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
             >
               <ShoppingCart className="w-6 h-6 mr-3" />
               {!allOptionsSelected()
-                ? 'Select Options'
+                ? t('storefront.select_options')
                 : effectiveStock <= 0
-                  ? 'Out of Stock'
-                  : 'Add to Cart'}
+                  ? t('storefront.out_of_stock')
+                  : t('storefront.add_to_cart')}
             </Button>
           </div>
         </div>
-      </main>
+      </main >
 
       <CartDrawer
         open={showCart}
         onClose={() => setShowCart(false)}
         store={store}
       />
-    </div>
+    </div >
   );
 }

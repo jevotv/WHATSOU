@@ -6,11 +6,12 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { Store, Product, ProductVariant } from '@/lib/types/database';
 import { Button } from '@/components/ui/button';
-import { Plus, LogOut, Copy, Package, Settings, Search } from 'lucide-react';
+import { Plus, LogOut, Copy, Package, Settings, Search, Globe } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import ProductCard from '@/components/dashboard/ProductCard';
 import ProductFormModal from '@/components/dashboard/ProductFormModal';
+import { useLanguage } from '@/lib/contexts/LanguageContext';
 
 export default function DashboardPage() {
   const [store, setStore] = useState<Store | null>(null);
@@ -19,18 +20,20 @@ export default function DashboardPage() {
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading: authLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const { t, direction, language, setLanguage } = useLanguage();
 
   useEffect(() => {
-    if (!user) {
+    if (!authLoading && !user) {
       router.push('/login');
-      return;
     }
 
-    loadStoreAndProducts();
-  }, [user, router]);
+    if (user) {
+      loadStoreAndProducts();
+    }
+  }, [user, router, authLoading]);
 
   const loadStoreAndProducts = async () => {
     if (!user) return;
@@ -85,8 +88,8 @@ export default function DashboardPage() {
     const url = `${window.location.origin}/${store.slug}`;
     navigator.clipboard.writeText(url);
     toast({
-      title: 'Link copied!',
-      description: 'Your store link has been copied to clipboard',
+      title: t('dashboard.link_copied'),
+      description: t('dashboard.link_copied_desc'),
     });
   };
 
@@ -102,7 +105,7 @@ export default function DashboardPage() {
   };
 
   const handleDeleteProduct = async (productId: string) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
+    if (!confirm(t('products.delete_confirm'))) return;
 
     try {
       const { error } = await supabase
@@ -113,14 +116,14 @@ export default function DashboardPage() {
       if (error) throw error;
 
       toast({
-        title: 'Product deleted',
-        description: 'Product has been removed from your store',
+        title: t('dashboard.delete_product_title'),
+        description: t('dashboard.delete_product_desc'),
       });
 
       loadStoreAndProducts();
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: t('common.error'),
         description: error.message,
         variant: 'destructive',
       });
@@ -136,7 +139,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f0f2f5]">
+    <div className="min-h-screen bg-[#f0f2f5]" dir={direction}>
       <header className="bg-[#008069] text-white sticky top-0 z-40 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -144,17 +147,25 @@ export default function DashboardPage() {
               <Package className="w-8 h-8" />
               <div>
                 <h1 className="text-xl font-bold">{store?.name}</h1>
-                <p className="text-xs text-green-100">WhatsApp Commerce</p>
+                <p className="text-xs text-green-100">{t('dashboard.whatsapp_commerce')}</p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
+              <Button
+                onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
+                variant="ghost"
+                className="text-white hover:bg-[#017561] rounded-2xl"
+              >
+                <Globe className="w-4 h-4" />
+                <span className="sr-only">Switch Language</span>
+              </Button>
               <Button
                 onClick={handleCopyStoreLink}
                 variant="ghost"
                 className="text-white hover:bg-[#017561] rounded-2xl"
               >
-                <Copy className="w-4 h-4 mr-2" />
-                Copy Store Link
+                <Copy className={`w-4 h-4 ${direction === 'rtl' ? 'ml-2' : 'mr-2'}`} />
+                {t('dashboard.copy_link')}
               </Button>
               <Button
                 onClick={() => router.push('/dashboard/settings')}
@@ -179,20 +190,20 @@ export default function DashboardPage() {
         <div className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Your Products</h2>
+              <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.products')}</h2>
               <p className="text-gray-600">
-                {products.length} {products.length === 1 ? 'product' : 'products'} in your catalog
+                {t('dashboard.products_count', { count: products.length })}
               </p>
             </div>
             {/* Search Bar */}
             <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className={`absolute ${direction === 'rtl' ? 'right-3' : 'left-3'} top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4`} />
               <Input
                 type="text"
-                placeholder="Search products..."
+                placeholder={t('dashboard.search_products')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-10 rounded-2xl border-gray-200"
+                className={`${direction === 'rtl' ? 'pr-10' : 'pl-10'} h-10 rounded-2xl border-gray-200`}
               />
             </div>
           </div>
@@ -202,17 +213,17 @@ export default function DashboardPage() {
           <div className="text-center py-16">
             <Package className="w-16 h-16 mx-auto text-gray-400 mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              No products yet
+              {t('dashboard.no_products')}
             </h3>
             <p className="text-gray-600 mb-6">
-              Add your first product to start selling on WhatsApp
+              {t('dashboard.start_selling')}
             </p>
             <Button
               onClick={() => setShowProductForm(true)}
               className="rounded-3xl bg-[#008069] hover:bg-[#017561] h-12 px-8"
             >
-              <Plus className="w-5 h-5 mr-2" />
-              Add Your First Product
+              <Plus className={`w-5 h-5 ${direction === 'rtl' ? 'ml-2' : 'mr-2'}`} />
+              {t('dashboard.add_first_product')}
             </Button>
           </div>
         ) : (
@@ -242,7 +253,7 @@ export default function DashboardPage() {
       {products.length > 0 && (
         <button
           onClick={() => setShowProductForm(true)}
-          className="fixed bottom-8 right-8 bg-[#008069] text-white rounded-full p-5 shadow-2xl hover:bg-[#017561] transition-all hover:scale-110"
+          className={`fixed bottom-8 ${direction === 'rtl' ? 'left-8' : 'right-8'} bg-[#008069] text-white rounded-full p-5 shadow-2xl hover:bg-[#017561] transition-all hover:scale-110`}
         >
           <Plus className="w-8 h-8" />
         </button>
@@ -251,6 +262,7 @@ export default function DashboardPage() {
       {showProductForm && store && (
         <ProductFormModal
           storeId={store.id}
+          storeSlug={store.slug}
           product={editingProduct}
           onClose={() => {
             setShowProductForm(false);
