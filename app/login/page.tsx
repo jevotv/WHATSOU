@@ -73,10 +73,10 @@ export default function LoginPage() {
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">{t('auth.email_label')}</label>
+              <label className="text-sm font-medium">{t('auth.phone_label')}</label>
               <Input
                 type="tel"
-                placeholder={t('auth.email_placeholder')} // We might want to change translation key but for now reuse or keep same key with different text if user updates json separate
+                placeholder={t('auth.phone_placeholder')} // We might want to change translation key but for now reuse or keep same key with different text if user updates json separate
                 value={phone}
                 onChange={handlePhoneChange}
                 required
