@@ -3,6 +3,7 @@
 import { cookies } from 'next/headers'
 import bcrypt from 'bcryptjs'
 import { createClient } from '@supabase/supabase-js'
+import { sendNewUserAlert } from '@/lib/telegram'
 
 // Initialize a Supabase client with the service role key for admin access
 // This is needed to bypass RLS if strict RLS policies are in place, 
@@ -59,6 +60,9 @@ export async function signUp(formData: FormData) {
         console.error('Signup error:', error)
         return { error: 'Failed to create user' }
     }
+
+    // Send Telegram Notification (Fire and forget)
+    sendNewUserAlert(newUser.phone, newUser.created_at).catch(console.error);
 
     // Set session
     cookies().set(SESSION_COOKIE_NAME, JSON.stringify({ id: newUser.id, phone: newUser.phone }), {

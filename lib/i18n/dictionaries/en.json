@@ -65,7 +65,8 @@
         "store_name_taken": "Store name taken",
         "store_name_taken_desc": "Please choose a different store name",
         "store_created": "Store created!",
-        "welcome_message": "Welcome to WhatSou"
+        "welcome_message": "Welcome to WhatSou",
+        "delivery_options_hint": "Select at least one order fulfillment method"
     },
     "dashboard": {
         "welcome": "Welcome back, {name}!",
@@ -79,11 +80,10 @@
         "add_product": "Add Product",
         "settings": "Settings",
         "logout": "Logout",
-        "nav": {
-            "dashboard": "Dashboard",
-            "products": "Products",
-            "settings": "Settings"
-        },
+        "nav_orders": "Orders",
+        "nav_home": "Home",
+        "nav_customers": "Customers",
+        "no_orders": "No orders yet",
         "no_products": "No products yet",
         "add_first_product": "Add Your First Product",
         "start_selling": "Add your first product to start selling on WhatsApp",
@@ -92,11 +92,32 @@
         "link_copied_desc": "Your store link has been copied to clipboard",
         "products_count": "{count} products in your catalog",
         "search_products": "Search products...",
-        "whatsapp_commerce": "WhatsApp Commerce",
+        "whatsapp_commerce": "WhatsApp Commerce Platform",
+        "no_qr_code": "No QR code available for this store.",
+        "share": "Share",
+        "share_link": "Share Link",
+        "share_qr": "Share QR Code",
         "product_added_desc": "Product has been added to your store",
         "product_updated_desc": "Product has been updated successfully",
-        "delete_product_title": "Product deleted",
-        "delete_product_desc": "Product has been removed from your store"
+        "delete_product_desc": "Product has been removed from your store",
+        "filter_out_of_stock": "Out of Stock",
+        "filter_all": "All Time",
+        "filter_today": "Today",
+        "filter_yesterday": "Yesterday",
+        "filter_last_7_days": "Last 7 Days",
+        "filter_last_30_days": "Last 30 Days",
+        "search_orders": "Search orders...",
+        "search_customers": "Search customers...",
+        "filter_delivery_type": "Delivery Type",
+        "filter_all_types": "All",
+        "filter_delivery": "Delivery",
+        "filter_pickup": "Pickup"
+    },
+    "customers": {
+        "orders": "Orders",
+        "delivery_address": "Delivery Address",
+        "order_items": "Order Items",
+        "no_customers": "No customers found yet."
     },
     "products": {
         "title": "Products",
@@ -149,7 +170,13 @@
         "twitter": "Twitter / X",
         "tiktok": "TikTok",
         "character_limit": "{current}/{max} characters",
-        "language_help": "The default language visitors will see when they first visit your store."
+        "language_help": "The default language visitors will see when they first visit your store.",
+        "delivery_options": "Delivery Options",
+        "allow_delivery": "Home Delivery",
+        "allow_delivery_desc": "Enable delivery to customers - address will be required",
+        "allow_pickup": "Pick up / In-store",
+        "allow_pickup_desc": "Allow customers to pick up from your store",
+        "delivery_required_error": "At least one delivery option must be enabled"
     },
     "storefront": {
         "search_placeholder": "Search products...",
@@ -198,7 +225,10 @@
             "notes": "Notes",
             "notes_placeholder": "Any special instructions...",
             "summary": "Order Summary"
-        }
+        },
+        "delivery_type": "Delivery Method",
+        "home_delivery": "Home Delivery",
+        "pickup": "Pick up"
     },
     "whatsapp": {
         "greeting": "🎉 Hello {storeName}! I have a new order from WhatSou",
@@ -213,6 +243,14 @@
         "quantity": "🔢 Quantity: ({quantity}) pieces",
         "price": "💵 Price: {price} EGP",
         "total": "💵 Total Amount: {total} EGP",
-        "footer": "🚚 Please confirm the order and start preparation. ⚡"
+        "footer": "🚚 Please confirm the order and start preparation. ⚡",
+        "pickup_order": "• 🏪 Pickup from store"
+    },
+    "error": {
+        "page_not_found": "Page Not Found",
+        "page_not_found_desc": "Sorry, the page you're looking for doesn't exist or has been moved.",
+        "back_to_dashboard": "Back to Dashboard",
+        "back_to_store": "Back to Store",
+        "error_code": "Error 404"
     }
 }

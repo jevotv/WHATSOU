@@ -7,7 +7,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, Home, Store as StoreIconLucide } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase/client';
@@ -28,11 +28,14 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
   const [customerAddress, setCustomerAddress] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
+  const [deliveryType, setDeliveryType] = useState<'delivery' | 'pickup'>('delivery');
   const { toast } = useToast();
   const { t, language } = useLanguage();
 
   const handleCheckout = async () => {
-    if (!customerName || !customerPhone || !customerAddress) {
+    // Validation based on delivery type
+    const needsAddress = deliveryType === 'delivery';
+    if (!customerName || !customerPhone || (needsAddress && !customerAddress)) {
       toast({
         title: t('cart.missing_info'),
         description: t('cart.missing_info_desc'),
@@ -44,73 +47,16 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
     setLoading(true);
 
     try {
-      // TODO: Re-enable order recording when ready
-      // const { error } = await supabase.from('orders').insert({
-      //   store_id: store.id,
-      //   customer_name: customerName,
-      //   customer_phone: customerPhone,
-      //   customer_address: customerAddress,
-      //   order_items: items,
-      //   total_price: totalPrice,
-      // });
-      // if (error) throw error;
-
-      // Update product/variant quantities
-      for (const item of items) {
-        if (item.variant_id) {
-          // Update variant quantity
-          const { error: variantError } = await supabase.rpc('decrement_variant_quantity', {
-            p_variant_id: item.variant_id,
-            p_quantity: item.quantity,
-          });
-          if (variantError) {
-            console.error('Error updating variant quantity:', variantError);
-          }
-        } else {
-          // Update product quantity
-          const { error: productError } = await supabase.rpc('decrement_product_quantity', {
-            p_product_id: item.product_id,
-            p_quantity: item.quantity,
-          });
-          if (productError) {
-            console.error('Error updating product quantity:', productError);
-          }
-        }
-      }
-
-      // Emojis and Arabic Text (using strict unicode escapes)
-      // 🎉 = \uD83C\uDF89
-      // 👤 = \uD83D\uDC64
-      // 📱 = \uD83D\uDCF1
-      // 🏠 = \uD83C\uDFE0
-      // 📝 = \uD83D\uDCDD
-      // 🛒 = \uD83D\uDED2
-      // 🏷️ = \uD83C\uDFF7\uFE0F
-      // 🔢 = \uD83D\uDD22
-      // 💵 = \uD83D\uDCB5
-      // 🚚 = \uD83D\uDE9A
-      // ⚡ = \u26A1
-
-      // "أهلاً يا" -> \u0623\u0647\u0644\u0627\u064b \u064a\u0627
-      // "جالك طلب جديد من" -> \u062c\u0627\u0644\u0643 \u0637\u0644\u0628 \u062c\u062f\u064a\u062f \u0645\u0646
-      // "بياناتي الشخصية" (User requested change) -> \u0628\u064a\u0627\u0646\u0627\u062a\u064a \u0627\u0644\u0634\u062e\u0635\u064a\u0629
-      // "الاسم" -> \u0627\u0644\u0627\u0633\u0645
-      // "الموبايل" -> \u0627\u0644\u0645\u0648\u0628\u0627\u064a\u0644
-      // "العنوان" -> \u0627\u0644\u0639\u0646\u0648\u0627\u0646
-      // "ملاحظات" -> \u0645\u0644\u0627\u062d\u0638\u0627\u062a
-      // "تفاصيل الأوردر" -> \u062a\u0641\u0627\u0635\u064a\u0644 \u0627\u0644\u0623\u0648\u0631\u062f\u0631
-      // "العدد" -> \u0627\u0644\u0639\u062f\u062f
-      // "قطع" -> \u0642\u0637\u0639
-      // "السعر" -> \u0627\u0644\u0633\u0639\u0631
-      // "ج.م" -> \u062c.\u0645
-      // "المبلغ الإجمالي" -> \u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0625\u062c\u0645\u0627\u0644\u064a
-      // "أرجو تأكيد الطلب وبدء التجهيز." (User requested change) -> \u0623\u0631\u062c\u0648 \u062a\u0623\u0643\u064a\u062f \u0627\u0644\u0637\u0644\u0628 \u0648\u0628\u062f\u0621 \u0627\u0644\u062a\u062c\u0647\u064a\u0632.
-
+      // Emojis and Arabic Text construction
       let message = `${t('whatsapp.greeting', { storeName: store.name })}\n\n`;
       message += `${t('whatsapp.personal_details')}\n`;
       message += `${t('whatsapp.name', { name: customerName })}\n`;
       message += `${t('whatsapp.phone', { phone: standardizePhoneNumber(customerPhone) })}\n`;
-      message += `${t('whatsapp.address', { address: customerAddress })}\n`;
+      if (deliveryType === 'delivery' && customerAddress) {
+        message += `${t('whatsapp.address', { address: customerAddress })}\n`;
+      } else {
+        message += `${t('whatsapp.pickup_order')}\n`;
+      }
 
       if (notes.trim()) {
         message += `${t('whatsapp.notes', { notes })}\n`;
@@ -139,23 +85,66 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
 
       const whatsappUrl = `https://wa.me/${store.whatsapp_number}?text=${encodeURIComponent(message)}`;
 
+      // 1. Open WhatsApp IMMEDIATELY (Non-blocking)
+      // using setTimeout to ensure the UI updates/render cycle doesn't block it, 
+      // but keeping it extremely short. 
+      // In many browsers, window.open must be direct result of user action.
+      // Since this is async function, we risk blocking. 
+      // However, we start async work *after* opening if possible, but we need to await nothing before opening.
+      window.open(whatsappUrl, '_blank');
+
+      // 2. Clear Cart & Close Drawer UI
+      // We do this immediately so user sees "Success" state
       clearCart();
       setCustomerName('');
       setCustomerPhone('');
       setCustomerAddress('');
       setNotes('');
       setShowCheckout(false);
+      onClose();
 
       toast({
         title: t('cart.order_placed'),
         description: t('cart.order_placed_desc'),
       });
 
-      setTimeout(() => {
-        window.open(whatsappUrl, '_blank');
-        onClose();
-      }, 500);
+      // 3. Background: Log Order to Supabase (Fire and Forget)
+      supabase.from('orders').insert({
+        store_id: store.id,
+        customer_name: customerName,
+        customer_phone: standardizePhoneNumber(customerPhone),
+        customer_address: deliveryType === 'delivery' ? customerAddress : null,
+        delivery_type: deliveryType,
+        order_items: items,
+        total_price: totalPrice,
+      }).then(({ error }) => {
+        if (error) {
+          console.error('Error logging order:', error);
+          // Optional: We could toast here, but user might have left or closed page.
+        }
+      });
+
+      // 4. Background: Update Stock (Fire and Forget)
+      for (const item of items) {
+        if (item.variant_id) {
+          supabase.rpc('decrement_variant_quantity', {
+            p_variant_id: item.variant_id,
+            p_quantity: item.quantity,
+          }).then(({ error }) => {
+            if (error) console.error('Error updating variant quantity:', error);
+          });
+        } else {
+          supabase.rpc('decrement_product_quantity', {
+            p_product_id: item.product_id,
+            p_quantity: item.quantity,
+          }).then(({ error }) => {
+            if (error) console.error('Error updating product quantity:', error);
+          });
+        }
+      }
+
     } catch (error: any) {
+      console.error("Checkout error:", error);
       toast({
         title: 'Error',
         description: error.message,
@@ -281,6 +270,37 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
         ) : (
           <>
             <div className="flex-1 overflow-y-auto py-6 space-y-6">
+              {/* Delivery Type Switch - Only show if both options are enabled */}
+              {store.allow_delivery && store.allow_pickup && (
+                <div className="space-y-2">
+                  <Label>{t('cart.delivery_type')}</Label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setDeliveryType('delivery')}
+                      className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all ${deliveryType === 'delivery'
+                          ? 'border-green-500 bg-green-50 text-green-700'
+                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                        }`}
+                    >
+                      <Home className="w-5 h-5" />
+                      <span className="font-medium">{t('cart.home_delivery')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDeliveryType('pickup')}
+                      className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all ${deliveryType === 'pickup'
+                          ? 'border-green-500 bg-green-50 text-green-700'
+                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                        }`}
+                    >
+                      <StoreIconLucide className="w-5 h-5" />
+                      <span className="font-medium">{t('cart.pickup')}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label>{t('cart.form.name')}</Label>
                 <Input
@@ -304,16 +324,19 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label>{t('cart.form.address')}</Label>
-                <Input
-                  value={customerAddress}
-                  onChange={(e) => setCustomerAddress(e.target.value)}
-                  placeholder={t('cart.form.address_placeholder')}
-                  className="rounded-2xl h-12"
-                  required
-                />
-              </div>
+              {/* Address - Show if: delivery only OR (both options AND delivery selected) */}
+              {(store.allow_delivery && (!store.allow_pickup || deliveryType === 'delivery')) && (
+                <div className="space-y-2">
+                  <Label>{t('cart.form.address')}</Label>
+                  <Input
+                    value={customerAddress}
+                    onChange={(e) => setCustomerAddress(e.target.value)}
+                    placeholder={t('cart.form.address_placeholder')}
+                    className="rounded-2xl h-12"
+                    required
+                  />
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label>{t('cart.form.notes')}</Label>

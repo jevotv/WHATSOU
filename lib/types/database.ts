@@ -12,6 +12,9 @@ export interface Store {
   twitter_url?: string;
   tiktok_url?: string;
   default_language?: string;
+  qr_code?: string;
+  allow_delivery?: boolean;
+  allow_pickup?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -64,7 +67,8 @@ export interface Order {
   store_id: string;
   customer_name: string;
   customer_phone: string;
-  customer_address: string;
+  customer_address?: string;
+  delivery_type: 'delivery' | 'pickup';
   order_items: OrderItem[];
   total_price: number;
   created_at: string;

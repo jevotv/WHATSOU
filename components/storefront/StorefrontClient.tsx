@@ -18,6 +18,14 @@ interface StorefrontClientProps {
   products: Product[];
 }
 
+// Calculate total stock for a product
+const getTotalStock = (product: Product) => {
+  if (product.variants && product.variants.length > 0) {
+    return product.variants.reduce((sum, v) => sum + v.quantity, 0);
+  }
+  return product.quantity;
+};
+
 export default function StorefrontClient({ store, products }: StorefrontClientProps) {
   const { t, language, setLanguage, direction } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<string>(t('storefront.all_categories'));
@@ -28,15 +36,23 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
   const { addItem, totalItems } = useCart();
   const { toast } = useToast();
 
+  // Filter out of stock products
+  const availableProducts = useMemo(() => {
+    return products.filter((product) => {
+      if (product.unlimited_stock) return true;
+      return getTotalStock(product) > 0;
+    });
+  }, [products]);
+
   // Get unique categories from products
   const categories = useMemo(() => {
-    const cats = new Set(products.map((p) => p.category).filter(Boolean));
+    const cats = new Set(availableProducts.map((p) => p.category).filter(Boolean));
     return [t('storefront.all_categories'), ...Array.from(cats)] as string[];
-  }, [products, t]);
+  }, [availableProducts, t]);
 
   // Filter products by category and search
   const filteredProducts = useMemo(() => {
-    let filtered = products;
+    let filtered = availableProducts;
 
     // Filter by category
     if (selectedCategory !== t('storefront.all_categories')) {
@@ -53,15 +69,7 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
     }
 
     return filtered;
-  }, [products, selectedCategory, searchQuery]);
-
-  // Calculate total stock for a product
-  const getTotalStock = (product: Product) => {
-    if (product.variants && product.variants.length > 0) {
-      return product.variants.reduce((sum, v) => sum + v.quantity, 0);
-    }
-    return product.quantity;
-  };
+  }, [availableProducts, selectedCategory, searchQuery]);
 
   // Handle quantity change with stock limit
   const updateQuantity = (productId: string, delta: number, maxStock: number) => {
@@ -371,11 +379,11 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
       <div className="fixed bottom-6 right-6 z-50">
         <button
           onClick={() => setShowCart(true)}
-          className="flex items-center justify-center h-14 w-14 sm:w-auto sm:px-6 gap-3 rounded-full bg-[#19e65e] text-[#111813] shadow-lg hover:bg-[#19e65e]/90 transition-transform hover:scale-105 active:scale-95"
+          className="flex items-center justify-center h-14 w-auto px-4 sm:px-6 gap-3 rounded-full bg-[#19e65e] text-[#111813] shadow-lg hover:bg-[#19e65e]/90 transition-transform hover:scale-105 active:scale-95"
         >
           <ShoppingCart className="w-6 h-6" />
           {totalItems > 0 && (
-            <span className="hidden sm:block font-bold">{t('storefront.items_count', { count: totalItems })}</span>
+            <span className="font-bold">{t('storefront.items_count', { count: totalItems })}</span>
           )}
         </button>
       </div>

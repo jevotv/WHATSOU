@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { createStore } from '@/app/actions/store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShoppingBag, ArrowLeft, Upload, Check, Store as StoreIcon, Phone, Share2, Globe } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, Upload, Check, Store as StoreIcon, Phone, Share2, Globe, Truck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
 import Image from 'next/image';
@@ -27,6 +28,8 @@ export default function OnboardingPage() {
   // Step 1: Basic Info
   const [storeName, setStoreName] = useState('');
   const [description, setDescription] = useState('');
+  const [allowDelivery, setAllowDelivery] = useState(true);
+  const [allowPickup, setAllowPickup] = useState(false);
   const [defaultLanguage, setDefaultLanguage] = useState('en');
 
   // Step 2: Branding & Socials
@@ -152,22 +155,24 @@ export default function OnboardingPage() {
 
       const logoUrl = await uploadLogo();
 
-      const { error } = await supabase.from('stores').insert({
-        user_id: user.id,
-        name: storeName,
-        slug,
-        description: description || null,
-        whatsapp_number: standardizePhoneNumber(user.phone), // Use auth user phone
-        default_language: defaultLanguage,
-        email: email || null,
-        logo_url: logoUrl,
-        facebook_url: facebookUrl || null,
-        instagram_url: instagramUrl || null,
-        twitter_url: twitterUrl || null,
-        tiktok_url: tiktokUrl || null,
-      });
+      const formData = new FormData();
+      formData.append('name', storeName);
+      formData.append('slug', slug);
+      if (description) formData.append('description', description);
+      formData.append('whatsapp_number', standardizePhoneNumber(user.phone));
+      formData.append('default_language', defaultLanguage);
+      if (email) formData.append('email', email);
+      if (logoUrl) formData.append('logo_url', logoUrl);
+      if (facebookUrl) formData.append('facebook_url', facebookUrl);
+      if (instagramUrl) formData.append('instagram_url', instagramUrl);
+      if (twitterUrl) formData.append('twitter_url', twitterUrl);
+      if (tiktokUrl) formData.append('tiktok_url', tiktokUrl);
+      formData.append('allow_delivery', String(allowDelivery));
+      formData.append('allow_pickup', String(allowPickup));
 
-      if (error) throw error;
+      const result = await createStore(null, formData);
+
+      if (result.error) throw new Error(result.error);
 
       toast({
         title: t('onboarding.store_created'),
@@ -190,6 +195,14 @@ export default function OnboardingPage() {
       toast({
         title: t('onboarding.required_field'),
         description: t('onboarding.enter_store_name'),
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (!allowDelivery && !allowPickup) {
+      toast({
+        title: t('onboarding.required_field'),
+        description: t('settings.delivery_required_error'),
         variant: 'destructive',
       });
       return;
@@ -292,6 +305,40 @@ export default function OnboardingPage() {
                   className="rounded-xl resize-none"
                   rows={3}
                 />
+              </div>
+
+              {/* Delivery Options */}
+              <div className="space-y-2">
+                <Label>{t('settings.delivery_options')} <span className="text-red-500">*</span></Label>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <label className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${allowDelivery ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-gray-50/50 hover:border-gray-300'
+                    }`}>
+                    <input
+                      type="checkbox"
+                      checked={allowDelivery}
+                      onChange={(e) => setAllowDelivery(e.target.checked)}
+                      className="w-5 h-5 text-green-600 focus:ring-green-600 rounded"
+                    />
+                    <div className="flex items-center gap-2">
+                      <Truck className="w-5 h-5 text-green-600" />
+                      <span className="font-medium">{t('settings.allow_delivery')}</span>
+                    </div>
+                  </label>
+                  <label className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${allowPickup ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-gray-50/50 hover:border-gray-300'
+                    }`}>
+                    <input
+                      type="checkbox"
+                      checked={allowPickup}
+                      onChange={(e) => setAllowPickup(e.target.checked)}
+                      className="w-5 h-5 text-green-600 focus:ring-green-600 rounded"
+                    />
+                    <div className="flex items-center gap-2">
+                      <StoreIcon className="w-5 h-5 text-green-600" />
+                      <span className="font-medium">{t('settings.allow_pickup')}</span>
+                    </div>
+                  </label>
+                </div>
+                <p className="text-xs text-muted-foreground">{t('onboarding.delivery_options_hint')}</p>
               </div>
 
               <div className="space-y-2">

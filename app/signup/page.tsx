@@ -76,10 +76,10 @@ export default function SignupPage() {
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">{t('auth.email_label')}</label>
+              <label className="text-sm font-medium">{t('auth.phone_label')}</label>
               <Input
                 type="tel"
-                placeholder={t('auth.email_placeholder')}
+                placeholder={t('auth.phone_placeholder')}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 required

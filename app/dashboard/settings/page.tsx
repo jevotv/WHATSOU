@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Save, Store as StoreIcon, Phone, Share2, Upload } from 'lucide-react';
+import { ArrowLeft, Save, Store as StoreIcon, Phone, Share2, Upload, Truck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
@@ -33,6 +33,8 @@ export default function SettingsPage() {
     const [instagramUrl, setInstagramUrl] = useState('');
     const [twitterUrl, setTwitterUrl] = useState('');
     const [tiktokUrl, setTiktokUrl] = useState('');
+    const [allowDelivery, setAllowDelivery] = useState(true);
+    const [allowPickup, setAllowPickup] = useState(false);
 
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
@@ -72,6 +74,8 @@ export default function SettingsPage() {
                 setInstagramUrl(data.instagram_url || '');
                 setTwitterUrl(data.twitter_url || '');
                 setTiktokUrl(data.tiktok_url || '');
+                setAllowDelivery(data.allow_delivery ?? true);
+                setAllowPickup(data.allow_pickup ?? false);
             }
         } catch (error) {
             console.error('Error loading store:', error);
@@ -142,6 +146,8 @@ export default function SettingsPage() {
                     instagram_url: instagramUrl || null,
                     twitter_url: twitterUrl || null,
                     tiktok_url: tiktokUrl || null,
+                    allow_delivery: allowDelivery,
+                    allow_pickup: allowPickup,
                 })
                 .eq('id', store.id);
 
@@ -165,7 +171,7 @@ export default function SettingsPage() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[#f6f8f7]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1fdb64]"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#008069]"></div>
             </div>
         );
     }
@@ -187,7 +193,7 @@ export default function SettingsPage() {
                         <Button
                             onClick={handleSave}
                             disabled={saving}
-                            className="bg-[#1fdb64] hover:bg-green-500 text-[#111813] font-bold rounded-lg"
+                            className="bg-[#008069] hover:bg-green-500 text-[#111813] font-bold rounded-lg"
                         >
                             <Save className={`w-4 h-4 ${direction === 'rtl' ? 'ml-2' : 'mr-2'}`} />
                             {saving ? t('common.saving') : t('common.save')}
@@ -202,14 +208,14 @@ export default function SettingsPage() {
                     {/* Store Identity */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                         <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
-                            <StoreIcon className="w-5 h-5 text-[#1fdb64]" />
+                            <StoreIcon className="w-5 h-5 text-[#008069]" />
                             {t('settings.identity')}
                         </h3>
                         <div className="flex flex-col md:flex-row gap-8 items-start">
                             {/* Logo */}
                             <div className="flex flex-col items-center gap-3">
                                 <div className="relative group cursor-pointer">
-                                    <div className="relative h-32 w-32 rounded-full border-4 border-gray-100 overflow-hidden bg-gradient-to-br from-[#1fdb64] to-green-600">
+                                    <div className="relative h-32 w-32 rounded-full border-4 border-gray-100 overflow-hidden bg-gradient-to-br from-[#008069] to-green-600">
                                         {logoPreview ? (
                                             <Image
                                                 src={logoPreview}
@@ -235,7 +241,7 @@ export default function SettingsPage() {
                                         />
                                     </label>
                                 </div>
-                                <span className="text-sm font-medium text-[#1fdb64]">{t('settings.change_logo')}</span>
+                                <span className="text-sm font-medium text-[#008069]">{t('settings.change_logo')}</span>
                             </div>
 
                             {/* Name & Description */}
@@ -246,7 +252,7 @@ export default function SettingsPage() {
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         placeholder="My Awesome Store"
-                                        className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#1fdb64]"
+                                        className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#008069]"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
@@ -256,7 +262,7 @@ export default function SettingsPage() {
                                         onChange={(e) => setDescription(e.target.value)}
                                         placeholder={t('settings.description')}
                                         rows={4}
-                                        className="rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#1fdb64] resize-none"
+                                        className="rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#008069] resize-none"
                                     />
                                     <p className="text-xs text-gray-500 text-right">{t('settings.character_limit', { current: description.length, max: 500 })}</p>
                                 </div>
@@ -267,7 +273,7 @@ export default function SettingsPage() {
                     {/* Contact Information */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                         <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
-                            <Phone className="w-5 h-5 text-[#1fdb64]" />
+                            <Phone className="w-5 h-5 text-[#008069]" />
                             {t('settings.contact_info')}
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -277,7 +283,7 @@ export default function SettingsPage() {
                                     value={whatsappNumber}
                                     onChange={(e) => setWhatsappNumber(e.target.value)}
                                     placeholder="+1 (555) 123-4567"
-                                    className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#1fdb64]"
+                                    className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#008069]"
                                 />
                                 <p className="text-xs text-gray-500">{t('settings.whatsapp_desc')}</p>
                             </div>
@@ -288,7 +294,7 @@ export default function SettingsPage() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="support@yourstore.com"
-                                    className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#1fdb64]"
+                                    className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#008069]"
                                 />
                             </div>
                             <div className="space-y-1.5 mt-6">
@@ -301,7 +307,7 @@ export default function SettingsPage() {
                                             value="en"
                                             checked={defaultLanguage === 'en'}
                                             onChange={(e) => setDefaultLanguage(e.target.value)}
-                                            className="w-4 h-4 text-[#1fdb64] focus:ring-[#1fdb64]"
+                                            className="w-4 h-4 text-[#008069] focus:ring-[#008069]"
                                         />
                                         <span>{t('settings.english')}</span>
                                     </label>
@@ -312,7 +318,7 @@ export default function SettingsPage() {
                                             value="ar"
                                             checked={defaultLanguage === 'ar'}
                                             onChange={(e) => setDefaultLanguage(e.target.value)}
-                                            className="w-4 h-4 text-[#1fdb64] focus:ring-[#1fdb64]"
+                                            className="w-4 h-4 text-[#008069] focus:ring-[#008069]"
                                         />
                                         <span>{t('settings.arabic')}</span>
                                     </label>
@@ -322,10 +328,61 @@ export default function SettingsPage() {
                         </div>
                     </div>
 
+                    {/* Delivery Options */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
+                            <Truck className="w-5 h-5 text-[#008069]" />
+                            {t('settings.delivery_options')}
+                        </h3>
+                        <div className="space-y-4">
+                            <label className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+                                <input
+                                    type="checkbox"
+                                    checked={allowDelivery}
+                                    onChange={(e) => {
+                                        if (!e.target.checked && !allowPickup) {
+                                            toast({
+                                                title: t('settings.delivery_required_error'),
+                                                variant: 'destructive',
+                                            });
+                                            return;
+                                        }
+                                        setAllowDelivery(e.target.checked);
+                                    }}
+                                    className="w-5 h-5 text-[#008069] focus:ring-[#008069] rounded"
+                                />
+                                <div>
+                                    <span className="font-medium">{t('settings.allow_delivery')}</span>
+                                    <p className="text-xs text-gray-500 mt-0.5">{t('settings.allow_delivery_desc')}</p>
+                                </div>
+                            </label>
+                            <label className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+                                <input
+                                    type="checkbox"
+                                    checked={allowPickup}
+                                    onChange={(e) => {
+                                        if (!e.target.checked && !allowDelivery) {
+                                            toast({
+                                                title: t('settings.delivery_required_error'),
+                                                variant: 'destructive',
+                                            });
+                                            return;
+                                        }
+                                        setAllowPickup(e.target.checked);
+                                    }}
+                                    className="w-5 h-5 text-[#008069] focus:ring-[#008069] rounded"
+                                />
+                                <div>
+                                    <span className="font-medium">{t('settings.allow_pickup')}</span>
+                                    <p className="text-xs text-gray-500 mt-0.5">{t('settings.allow_pickup_desc')}</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
                     {/* Social Media */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                         <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
-                            <Share2 className="w-5 h-5 text-[#1fdb64]" />
+                            <Share2 className="w-5 h-5 text-[#008069]" />
                             {t('settings.social_media')}
                         </h3>
                         <div className="space-y-4">
@@ -335,7 +392,7 @@ export default function SettingsPage() {
                                     value={facebookUrl}
                                     onChange={(e) => setFacebookUrl(e.target.value)}
                                     placeholder="https://facebook.com/yourstore"
-                                    className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#1fdb64]"
+                                    className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#008069]"
                                 />
                             </div>
                             <div className="space-y-1.5">
@@ -344,7 +401,7 @@ export default function SettingsPage() {
                                     value={instagramUrl}
                                     onChange={(e) => setInstagramUrl(e.target.value)}
                                     placeholder="https://instagram.com/yourstore"
-                                    className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#1fdb64]"
+                                    className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#008069]"
                                 />
                             </div>
                             <div className="space-y-1.5">
@@ -353,7 +410,7 @@ export default function SettingsPage() {
                                     value={twitterUrl}
                                     onChange={(e) => setTwitterUrl(e.target.value)}
                                     placeholder="https://twitter.com/yourstore"
-                                    className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#1fdb64]"
+                                    className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#008069]"
                                 />
                             </div>
                             <div className="space-y-1.5">
@@ -362,7 +419,7 @@ export default function SettingsPage() {
                                     value={tiktokUrl}
                                     onChange={(e) => setTiktokUrl(e.target.value)}
                                     placeholder="https://tiktok.com/@yourstore"
-                                    className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#1fdb64]"
+                                    className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#008069]"
                                 />
                             </div>
                         </div>
