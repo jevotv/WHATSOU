@@ -72,6 +72,7 @@ export interface Order {
   order_items: OrderItem[];
   total_price: number;
   created_at: string;
+  notes?: string;
 }
 
 export interface CartItem extends OrderItem {

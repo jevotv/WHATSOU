@@ -145,6 +145,7 @@
         "option_values": "قيم الخيار",
         "option_name_placeholder": "مثال: المقاس، اللون",
         "option_values_placeholder": "مثال: أحمر، أزرق، أخضر (مفصولة بفاصلة)",
+        "option_values_hint": "اكتب القيم وافصل بينها بفاصلة (مثال: أحمر، أزرق، أخضر)",
         "variants_label": "أنواع المنتج",
         "manage_variants": "إدارة الأنواع",
         "options_available": "{count} خيارات متاحة"

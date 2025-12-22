@@ -8,6 +8,7 @@
         "back": "Back",
         "powered_by": "Powered by WhatSou",
         "currency": "EGP",
+        "download": "Download",
         "copyright": "© {year} {storeName}. All rights reserved."
     },
     "auth": {
@@ -144,6 +145,7 @@
         "option_values": "Option Values",
         "option_name_placeholder": "e.g. Size, Color",
         "option_values_placeholder": "e.g. S, M, L (comma separated)",
+        "option_values_hint": "Type values separated by comma (e.g. Red, Blue, Green)",
         "variants_label": "Variants",
         "manage_variants": "Manage Variants",
         "options_available": "{count} options available"

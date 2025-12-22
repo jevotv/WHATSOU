@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Upload, Plus, Trash2, ChevronDown, Sparkles, DollarSign, Infinity as InfinityIcon } from 'lucide-react';
+import { Upload, Plus, Trash2, ChevronDown, Sparkles, DollarSign, Infinity as InfinityIcon, Info } from 'lucide-react';
 import Image from 'next/image';
 import { Switch } from '@/components/ui/switch';
 import { processProductImage, sanitizeName } from '@/lib/utils/imageProcessor';
@@ -577,6 +577,10 @@ export default function ProductFormModal({
                   placeholder={t('products.option_values_placeholder')}
                   className="rounded-2xl bg-white"
                 />
+                <div className="flex items-start gap-2 p-3 bg-blue-50 text-blue-700 rounded-xl text-xs">
+                  <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>{t('products.option_values_hint')}</span>
+                </div>
               </div>
             ))}
 

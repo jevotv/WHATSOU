@@ -246,6 +246,15 @@ export default function OrdersPage() {
                                             <p className="text-gray-600 pl-6">{order.customer_address}</p>
                                         </div>
 
+                                        {order.notes && (
+                                            <div className="text-sm">
+                                                <h4 className="font-medium mb-2 text-gray-700 flex items-center gap-2">
+                                                    📝 {t('common.notes') || 'Notes'}
+                                                </h4>
+                                                <p className="text-gray-600 pl-6">{order.notes}</p>
+                                            </div>
+                                        )}
+
                                         <div className="text-sm">
                                             <h4 className="font-medium mb-2 text-gray-700 flex items-center gap-2">
                                                 <Package className="w-4 h-4" /> {t('customers.order_items')}

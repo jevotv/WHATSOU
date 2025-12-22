@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Package, LogOut, Copy, Settings, Globe, Share, QrCode, Download } from 'lucide-react';
+import { Package, LogOut, Copy, Settings, Globe, Share, QrCode, Download, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -61,23 +61,14 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
         <header className="bg-[#008069] text-white sticky top-0 z-40 shadow-lg">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-1 min-w-0 pr-4">
                         <Package className="w-8 h-8 shrink-0" />
                         <div className="min-w-0">
                             <h1 className="text-xl font-bold truncate">{store?.name}</h1>
                             <p className="text-xs text-green-100 hidden sm:block">{t('dashboard.whatsapp_commerce')}</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-1 sm:gap-2">
-                        <Button
-                            onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-                            variant="ghost"
-                            size="icon"
-                            className="text-white hover:bg-[#017561] rounded-2xl w-9 h-9 sm:w-10 sm:h-10"
-                        >
-                            <Globe className="w-4 h-4" />
-                            <span className="sr-only">Switch Language</span>
-                        </Button>
+                    <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button
@@ -116,6 +107,41 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
                                 >
                                     <QrCode className="w-4 h-4 mr-2" />
                                     {t('dashboard.share_qr')}
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-white hover:bg-[#017561] rounded-2xl w-9 h-9 sm:w-10 sm:h-10"
+                                >
+                                    <MoreVertical className="w-5 h-5" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuItem
+                                    onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
+                                    className="cursor-pointer"
+                                >
+                                    <Globe className="w-4 h-4 mr-2" />
+                                    {language === 'en' ? 'العربية' : 'English'}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => router.push('/dashboard/settings')}
+                                    className="cursor-pointer"
+                                >
+                                    <Settings className="w-4 h-4 mr-2" />
+                                    {t('dashboard.settings')}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={signOut}
+                                    className="cursor-pointer text-red-600 focus:text-red-600"
+                                >
+                                    <LogOut className="w-4 h-4 mr-2" />
+                                    {t('dashboard.logout')}
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -189,25 +215,7 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
                                 </div>
                             </DialogContent>
                         </Dialog>
-                        <Button
-                            onClick={() => router.push('/dashboard/settings')}
-                            variant="ghost"
-                            size="icon"
-                            className="text-white hover:bg-[#017561] rounded-2xl w-9 h-9 sm:w-10 sm:h-10"
-                        >
-                            <Settings className="w-4 h-4" />
-                        </Button>
 
-                        <div className="w-px h-6 bg-green-400/30 mx-1" />
-
-                        <Button
-                            onClick={signOut}
-                            variant="ghost"
-                            size="icon"
-                            className="text-white hover:bg-[#017561] rounded-2xl w-9 h-9 sm:w-10 sm:h-10"
-                        >
-                            <LogOut className="w-4 h-4" />
-                        </Button>
                     </div>
                 </div>
             </div>

@@ -123,7 +123,7 @@ export async function processProductImage(
 
     // Create both versions in parallel
     const [thumbnail, full] = await Promise.all([
-        convertToWebP(file, 200, 200, 0.8),
+        convertToWebP(file, 400, 400, 0.8),
         convertToWebP(file, 1200, 1200, 0.8),
     ]);
 
