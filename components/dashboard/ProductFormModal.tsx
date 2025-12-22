@@ -71,14 +71,15 @@ export default function ProductFormModal({
       setCurrentPrice(product.current_price.toString());
       setOriginalPrice(product.original_price?.toString() || '');
       setCategory(product.category || '');
-      setQuantity(product.quantity.toString());
+      setQuantity((product.quantity ?? 0).toString());
       setUnlimitedStock(product.unlimited_stock || false);
       setImageUrl(product.image_url || '');
       setImagePreview(product.image_url || '');
-      setOptions((product.options || []).map((opt: ProductOption) => ({
-        name: opt.name,
-        values: opt.values,
-        rawValuesInput: opt.values.join(', ')
+      const productOptions = Array.isArray(product.options) ? product.options : [];
+      setOptions(productOptions.map((opt: ProductOption) => ({
+        name: opt.name || '',
+        values: Array.isArray(opt.values) ? opt.values : [],
+        rawValuesInput: Array.isArray(opt.values) ? opt.values.join(', ') : ''
       })));
       setThumbnailUrl(product.thumbnail_url || '');
       loadVariants(product.id);
@@ -94,9 +95,9 @@ export default function ProductFormModal({
     if (data) {
       setVariants(data.map((v: ProductVariant) => ({
         id: v.id,
-        option_values: v.option_values,
-        price: v.price.toString(),
-        quantity: v.quantity.toString(),
+        option_values: v.option_values || {},
+        price: (v.price ?? 0).toString(),
+        quantity: (v.quantity ?? 0).toString(),
         sku: v.sku || '',
       })));
     }
@@ -182,9 +183,9 @@ export default function ProductFormModal({
     const newOptions = [...options];
     // Store raw input for display
     newOptions[index].rawValuesInput = valuesString;
-    // Parse values for variant generation (filter empty only for actual use)
+    // Parse values for variant generation - support both English (,) and Arabic (،) commas
     newOptions[index].values = valuesString
-      .split(',')
+      .split(/[,،]/)
       .map((v) => v.trim())
       .filter((v) => v.length > 0);
     setOptions(newOptions);
@@ -192,52 +193,88 @@ export default function ProductFormModal({
 
   // Cartesian product algorithm for generating variants
   const generateVariants = () => {
-    const validOptions = options.filter((opt) => opt.name && opt.values.length > 0);
+    try {
+      const validOptions = options.filter((opt) => opt.name && opt.values.length > 0);
 
-    if (validOptions.length === 0) {
+      if (validOptions.length === 0) {
+        toast({
+          title: 'No options defined',
+          description: 'Please add at least one option with values first',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Validate that all values are valid strings
+      for (const opt of validOptions) {
+        for (const val of opt.values) {
+          if (typeof val !== 'string' || val.trim() === '') {
+            toast({
+              title: t('common.error'),
+              description: `Invalid value in option "${opt.name}". Please use text values separated by commas.`,
+              variant: 'destructive',
+            });
+            return;
+          }
+        }
+      }
+
+      // Cartesian product
+      const cartesian = (...arrays: string[][]): string[][] => {
+        return arrays.reduce<string[][]>(
+          (acc, curr) => acc.flatMap((a) => curr.map((b) => [...a, b])),
+          [[]]
+        );
+      };
+
+      const optionArrays = validOptions.map((opt) => opt.values.map(v => String(v).trim()));
+      const combinations = cartesian(...optionArrays);
+
+      const newVariants: LocalVariant[] = combinations.map((combo) => {
+        const optionValues: { [key: string]: string } = {};
+        validOptions.forEach((opt, i) => {
+          optionValues[String(opt.name)] = String(combo[i] || '');
+        });
+
+        // Check if variant already exists
+        const existing = variants.find(
+          (v) => JSON.stringify(v.option_values) === JSON.stringify(optionValues)
+        );
+
+        if (existing) {
+          // Ensure all values are strings
+          return {
+            id: existing.id,
+            option_values: Object.fromEntries(
+              Object.entries(existing.option_values || {}).map(([k, v]) => [String(k), String(v)])
+            ),
+            price: String(existing.price ?? 0),
+            quantity: String(existing.quantity ?? 0),
+            sku: String(existing.sku || ''),
+          };
+        }
+
+        return {
+          option_values: optionValues,
+          price: currentPrice || '0',
+          quantity: '0',
+          sku: '',
+        };
+      });
+
+      setVariants(newVariants);
       toast({
-        title: 'No options defined',
-        description: 'Please add at least one option with values first',
+        title: 'Variants generated!',
+        description: `${newVariants.length} variants created`,
+      });
+    } catch (error: any) {
+      console.error('Error generating variants:', error);
+      toast({
+        title: t('common.error'),
+        description: 'Failed to generate variants. Please check your option values.',
         variant: 'destructive',
       });
-      return;
     }
-
-    // Cartesian product
-    const cartesian = (...arrays: string[][]): string[][] => {
-      return arrays.reduce<string[][]>(
-        (acc, curr) => acc.flatMap((a) => curr.map((b) => [...a, b])),
-        [[]]
-      );
-    };
-
-    const optionArrays = validOptions.map((opt) => opt.values);
-    const combinations = cartesian(...optionArrays);
-
-    const newVariants: LocalVariant[] = combinations.map((combo) => {
-      const optionValues: { [key: string]: string } = {};
-      validOptions.forEach((opt, i) => {
-        optionValues[opt.name] = combo[i];
-      });
-
-      // Check if variant already exists
-      const existing = variants.find(
-        (v) => JSON.stringify(v.option_values) === JSON.stringify(optionValues)
-      );
-
-      return existing || {
-        option_values: optionValues,
-        price: currentPrice || '0',
-        quantity: '0',
-        sku: '',
-      };
-    });
-
-    setVariants(newVariants);
-    toast({
-      title: 'Variants generated!',
-      description: `${newVariants.length} variants created`,
-    });
   };
 
   // Bulk edit functions
@@ -265,7 +302,7 @@ export default function ProductFormModal({
 
   // Get variant display label
   const getVariantLabel = (variant: LocalVariant) => {
-    return Object.values(variant.option_values).join(' / ');
+    return Object.values(variant.option_values || {}).map(v => String(v)).join(' / ');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
