@@ -638,7 +638,7 @@ export default function ProductFormModal({
                           <Input
                             type="number"
                             step="0.01"
-                            value={variant.price}
+                            value={String(variant.price ?? '')}
                             onChange={(e) => updateVariant(index, 'price', e.target.value)}
                             placeholder="Price"
                             className="w-24 h-8 text-sm rounded-xl"
@@ -648,7 +648,7 @@ export default function ProductFormModal({
                           {!unlimitedStock ? (
                             <Input
                               type="number"
-                              value={variant.quantity}
+                              value={String(variant.quantity ?? '')}
                               onChange={(e) => updateVariant(index, 'quantity', e.target.value)}
                               placeholder="Qty"
                               className="w-16 h-8 text-sm rounded-xl"
