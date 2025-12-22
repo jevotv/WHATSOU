@@ -76,11 +76,16 @@ export default function ProductFormModal({
       setImageUrl(product.image_url || '');
       setImagePreview(product.image_url || '');
       const productOptions = Array.isArray(product.options) ? product.options : [];
-      setOptions(productOptions.map((opt: ProductOption) => ({
-        name: opt.name || '',
-        values: Array.isArray(opt.values) ? opt.values : [],
-        rawValuesInput: Array.isArray(opt.values) ? opt.values.join(', ') : ''
-      })));
+      setOptions(productOptions.map((opt: ProductOption) => {
+        const stringValues = Array.isArray(opt.values)
+          ? opt.values.map(v => String(v))
+          : [];
+        return {
+          name: String(opt.name || ''),
+          values: stringValues,
+          rawValuesInput: stringValues.join(', ')
+        };
+      }));
       setThumbnailUrl(product.thumbnail_url || '');
       loadVariants(product.id);
     }
@@ -93,13 +98,22 @@ export default function ProductFormModal({
       .eq('product_id', productId);
 
     if (data) {
-      setVariants(data.map((v: ProductVariant) => ({
-        id: v.id,
-        option_values: v.option_values || {},
-        price: (v.price ?? 0).toString(),
-        quantity: (v.quantity ?? 0).toString(),
-        sku: v.sku || '',
-      })));
+      setVariants(data.map((v: ProductVariant) => {
+        // Convert all option_values to strings
+        const stringOptionValues: { [key: string]: string } = {};
+        if (v.option_values) {
+          Object.entries(v.option_values).forEach(([key, value]) => {
+            stringOptionValues[String(key)] = String(value);
+          });
+        }
+        return {
+          id: v.id,
+          option_values: stringOptionValues,
+          price: (v.price ?? 0).toString(),
+          quantity: (v.quantity ?? 0).toString(),
+          sku: v.sku || '',
+        };
+      }));
     }
   };
 

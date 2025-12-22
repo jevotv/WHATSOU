@@ -48,7 +48,14 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
       .eq('product_id', product.id);
 
     if (data) {
-      setVariants(data);
+      // Convert option_values to strings to ensure proper comparison
+      const processedVariants = data.map((v: ProductVariant) => ({
+        ...v,
+        option_values: Object.fromEntries(
+          Object.entries(v.option_values || {}).map(([k, val]) => [String(k), String(val)])
+        )
+      }));
+      setVariants(processedVariants);
     }
   };
 
