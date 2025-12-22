@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
+import { createServerClient } from '@/lib/supabase/server';
 import ProductDetailClient from '@/components/storefront/ProductDetailClient';
 
 interface ProductPageProps {
@@ -10,6 +10,7 @@ interface ProductPageProps {
 }
 
 async function getProductData(slug: string, productId: string) {
+  const supabase = await createServerClient();
   const { data: store } = await supabase
     .from('stores')
     .select('*')

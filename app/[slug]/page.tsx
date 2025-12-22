@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
+import { createServerClient } from '@/lib/supabase/server';
 import { Product, ProductVariant } from '@/lib/types/database';
 import StorefrontClient from '@/components/storefront/StorefrontClient';
 
@@ -10,6 +10,7 @@ interface StorefrontPageProps {
 }
 
 async function getStoreData(slug: string) {
+  const supabase = await createServerClient();
   const { data: store } = await supabase
     .from('stores')
     .select('*')
