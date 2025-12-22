@@ -3,6 +3,9 @@ import { createServerClient } from '@/lib/supabase/server';
 import { Product, ProductVariant } from '@/lib/types/database';
 import StorefrontClient from '@/components/storefront/StorefrontClient';
 
+// Force dynamic rendering to prevent build-time data fetching
+export const dynamic = 'force-dynamic';
+
 interface StorefrontPageProps {
   params: {
     slug: string;

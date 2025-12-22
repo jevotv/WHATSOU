@@ -2,6 +2,9 @@ import { notFound } from 'next/navigation';
 import { createServerClient } from '@/lib/supabase/server';
 import ProductDetailClient from '@/components/storefront/ProductDetailClient';
 
+// Force dynamic rendering to prevent build-time data fetching
+export const dynamic = 'force-dynamic';
+
 interface ProductPageProps {
   params: {
     slug: string;
