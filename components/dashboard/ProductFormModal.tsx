@@ -478,7 +478,7 @@ export default function ProductFormModal({
               <Label>{hasVariants ? t('products.price_label') : t('products.price_label') + ' *'}</Label>
               <Input
                 type="number"
-                step="0.01"
+                step="1"
                 value={currentPrice}
                 onChange={(e) => setCurrentPrice(e.target.value)}
                 placeholder="29.99"
@@ -491,7 +491,7 @@ export default function ProductFormModal({
               <Label>{t('products.original_price_label')}</Label>
               <Input
                 type="number"
-                step="0.01"
+                step="1"
                 value={originalPrice}
                 onChange={(e) => setOriginalPrice(e.target.value)}
                 placeholder="39.99"
