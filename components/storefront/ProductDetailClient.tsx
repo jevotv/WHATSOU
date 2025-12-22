@@ -68,7 +68,7 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
     // Find matching variant
     const match = variants.find((v) => {
       return Object.entries(selectedOptions).every(
-        ([key, value]) => v.option_values[key] === value
+        ([key, value]) => String(v.option_values[key] || '') === String(value)
       );
     });
 
@@ -164,12 +164,12 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
     if (!hasOptions || variants.length === 0) return true;
 
     return variants.some((v) => {
-      if (v.option_values[optionName] !== value) return false;
+      if (String(v.option_values[optionName] || '') !== String(value)) return false;
       if (!v.unlimited_stock && v.quantity <= 0) return false;
 
       // Check if compatible with other selected options
       for (const [key, selectedValue] of Object.entries(selectedOptions)) {
-        if (key !== optionName && v.option_values[key] !== selectedValue) {
+        if (key !== optionName && String(v.option_values[key] || '') !== String(selectedValue)) {
           return false;
         }
       }
@@ -312,7 +312,7 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
                 {selectedVariant && (
                   <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
                     <p className="text-green-800 font-medium">
-                      {t('storefront.variant_selected', { options: Object.values(selectedVariant.option_values).join(' / '), price: selectedVariant.price.toFixed(2) })}
+                      {t('storefront.variant_selected', { options: Object.values(selectedVariant.option_values || {}).map(v => String(v)).join(' / '), price: selectedVariant.price.toFixed(2) })}
                     </p>
                     <p className="text-green-600 text-sm">
                       {selectedVariant.unlimited_stock ? t('storefront.in_stock') : t('storefront.items_in_stock', { count: selectedVariant.quantity })}
