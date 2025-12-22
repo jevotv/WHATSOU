@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Upload, Plus, Trash2, ChevronDown, Sparkles, DollarSign, Infinity } from 'lucide-react';
+import { Upload, Plus, Trash2, ChevronDown, Sparkles, DollarSign, Infinity as InfinityIcon } from 'lucide-react';
 import Image from 'next/image';
 import { Switch } from '@/components/ui/switch';
 import { processProductImage, sanitizeName } from '@/lib/utils/imageProcessor';
@@ -669,7 +669,7 @@ export default function ProductFormModal({
                             />
                           ) : (
                             <div className="w-16 h-8 flex items-center justify-center text-gray-400">
-                              <Infinity className="w-5 h-5" />
+                              <InfinityIcon className="w-5 h-5" />
                             </div>
                           )}
 
