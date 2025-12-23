@@ -188,6 +188,8 @@
         "items_count": "{count} Items",
         "add_to_cart": "Add to Cart",
         "select_options": "Select Options",
+        "admin_viewing_store": "You are viewing your store",
+        "go_to_dashboard": "Go to Dashboard",
         "out_of_stock": "Out of Stock",
         "in_stock": "In Stock",
         "items_in_stock": "{count} items in stock",

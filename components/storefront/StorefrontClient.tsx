@@ -12,6 +12,9 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Globe } from 'lucide-react';
+import { useAuth } from '@/lib/contexts/AuthContext';
+import AdminBar from './AdminBar';
+
 
 interface StorefrontClientProps {
   store: Store;
@@ -35,6 +38,9 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
   const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
   const { addItem, totalItems } = useCart();
   const { toast } = useToast();
+  const { user, loading } = useAuth();
+  const isOwner = user?.id === store.user_id;
+
 
   // Filter out of stock products
   const availableProducts = useMemo(() => {
@@ -131,7 +137,11 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
 
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-[#f6f8f6]">
+      {/* Admin Bar - Only valid if not loading and user is owner */}
+      {!loading && isOwner && <AdminBar />}
+
       {/* Header */}
+
       <header className="bg-white w-full pt-8 pb-4 border-b border-gray-100 relative">
         <div className="absolute top-4 right-4 sm:right-8 z-10">
           <Button
