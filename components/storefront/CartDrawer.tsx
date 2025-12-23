@@ -117,6 +117,7 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
         delivery_type: deliveryType,
         order_items: items,
         total_price: totalPrice,
+        notes: notes,
       }).then(({ error }) => {
         if (error) {
           console.error('Error logging order:', error);
@@ -279,8 +280,8 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
                       type="button"
                       onClick={() => setDeliveryType('delivery')}
                       className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all ${deliveryType === 'delivery'
-                          ? 'border-green-500 bg-green-50 text-green-700'
-                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                        ? 'border-green-500 bg-green-50 text-green-700'
+                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
                         }`}
                     >
                       <Home className="w-5 h-5" />
@@ -290,8 +291,8 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
                       type="button"
                       onClick={() => setDeliveryType('pickup')}
                       className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all ${deliveryType === 'pickup'
-                          ? 'border-green-500 bg-green-50 text-green-700'
-                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                        ? 'border-green-500 bg-green-50 text-green-700'
+                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
                         }`}
                     >
                       <StoreIconLucide className="w-5 h-5" />
