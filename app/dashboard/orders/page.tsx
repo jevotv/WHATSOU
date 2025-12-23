@@ -24,6 +24,7 @@ type Order = {
     created_at: string;
     order_items: any[];
     delivery_type?: 'delivery' | 'pickup';
+    notes?: string;
 };
 
 export default function OrdersPage() {
