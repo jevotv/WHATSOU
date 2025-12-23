@@ -12,6 +12,7 @@ export interface Store {
   twitter_url?: string;
   tiktok_url?: string;
   default_language?: string;
+  location_url?: string;
   qr_code?: string;
   allow_delivery?: boolean;
   allow_pickup?: boolean;

@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Store, Product } from '@/lib/types/database';
 import { useCart } from '@/lib/contexts/CartContext';
-import { ShoppingCart, Minus, Plus, Package, Zap, Search, Loader2 } from 'lucide-react';
+import { ShoppingCart, Minus, Plus, Package, Zap, Search, Loader2, LayoutGrid, List, MapPin } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -11,8 +11,9 @@ import CartDrawer from './CartDrawer';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
-import { Globe } from 'lucide-react';
+import { Globe, Facebook, Instagram, Twitter } from 'lucide-react';
 import { useAuth } from '@/lib/contexts/AuthContext';
+
 import AdminBar from './AdminBar';
 
 
@@ -34,8 +35,31 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
   const [selectedCategory, setSelectedCategory] = useState<string>(t('storefront.all_categories'));
   const [searchQuery, setSearchQuery] = useState('');
   const [showCart, setShowCart] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [quantities, setQuantities] = useState<{ [productId: string]: number }>({});
   const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
+
+  // Set default view mode based on screen size
+  useEffect(() => {
+    const handleResize = () => {
+      // If width < 640px (sm breakpoint), default to list, else grid
+      // Only set if it hasn't been manually toggled? 
+      // User request: "Default way of display". 
+      // We'll set it on mount.
+      if (window.innerWidth < 640) {
+        setViewMode('list');
+      } else {
+        setViewMode('grid');
+      }
+    };
+
+    // Run on mount
+    handleResize();
+
+    // Optional: Add resize listener if we want it to adapt dynamically
+    // window.addEventListener('resize', handleResize);
+    // return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const { addItem, totalItems } = useCart();
   const { toast } = useToast();
   const { user, loading } = useAuth();
@@ -175,7 +199,73 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
                 )}
               </div>
 
+              {/* Social Media Links */}
+              <div className="flex items-center gap-4 mt-2">
+                {store.facebook_url && (
+                  <a
+                    href={store.facebook_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-[#1877F2] transition-colors bg-gray-50 p-2 rounded-full hover:bg-[#1877F2]/10"
+                  >
+                    <Facebook className="w-5 h-5" />
+                  </a>
+                )}
+                {store.instagram_url && (
+                  <a
+                    href={store.instagram_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-[#E4405F] transition-colors bg-gray-50 p-2 rounded-full hover:bg-[#E4405F]/10"
+                  >
+                    <Instagram className="w-5 h-5" />
+                  </a>
+                )}
+                {store.twitter_url && (
+                  <a
+                    href={store.twitter_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-[#1DA1F2] transition-colors bg-gray-50 p-2 rounded-full hover:bg-[#1DA1F2]/10"
+                  >
+                    <Twitter className="w-5 h-5" />
+                  </a>
+                )}
+                {store.tiktok_url && (
+                  <a
+                    href={store.tiktok_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-[#000000] transition-colors bg-gray-50 p-2 rounded-full hover:bg-[#000000]/10"
+                  >
+                    {/* Custom TikTok Icon */}
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="w-5 h-5"
+                    >
+                      <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+                    </svg>
+                  </a>
+                )}
+                {store.location_url && (
+                  <a
+                    href={store.location_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-[#EA4335] transition-colors bg-gray-50 p-2 rounded-full hover:bg-[#EA4335]/10"
+                  >
+                    <MapPin className="w-5 h-5" />
+                  </a>
+                )}
+              </div>
+
               {/* Store Info */}
+
               <div className="text-center space-y-2">
                 <h1 className="text-3xl font-bold text-gray-900">{store.name}</h1>
                 {store.description && (
@@ -192,15 +282,34 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
         <div className="flex justify-center w-full">
           <div className="max-w-[1200px] w-full px-4 sm:px-8 space-y-3">
             {/* Search Bar */}
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <Input
-                type="text"
-                placeholder={t('storefront.search_placeholder')}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 h-11 rounded-full border-gray-200 focus:ring-2 focus:ring-[#19e65e] text-base"
-              />
+            {/* Search Bar & View Toggle */}
+            <div className="flex gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Input
+                  type="text"
+                  placeholder={t('storefront.search_placeholder')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 h-11 rounded-full border-gray-200 focus:ring-2 focus:ring-[#19e65e] text-base"
+                />
+              </div>
+              <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg shrink-0 h-11">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-[#111813]' : 'text-gray-400 hover:text-gray-600'
+                    }`}
+                >
+                  <LayoutGrid className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-[#111813]' : 'text-gray-400 hover:text-gray-600'
+                    }`}
+                >
+                  <List className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {/* Category Filters */}
@@ -231,7 +340,10 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
               <p className="text-gray-500 text-lg">{t('storefront.no_products')}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className={viewMode === 'grid'
+              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+              : "flex flex-col gap-4"
+            }>
               {filteredProducts.map((product) => {
                 const hasDiscount = product.original_price && product.original_price > product.current_price;
                 const totalStock = getTotalStock(product);
@@ -243,14 +355,21 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
                 return (
                   <div
                     key={product.id}
-                    className="group flex flex-col gap-4 bg-white p-4 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300"
+                    className={`group bg-white p-4 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 ${viewMode === 'grid'
+                      ? 'flex flex-col gap-4'
+                      : 'flex flex-row gap-4 sm:gap-6 items-center'
+                      }`}
                   >
                     {/* Product Image */}
                     <Link
                       href={`/${store.slug}/p/${product.id}`}
                       onClick={() => setLoadingProductId(product.id)}
+                      className={viewMode === 'list' ? 'shrink-0' : ''}
                     >
-                      <div className="relative w-full aspect-[4/5] overflow-hidden rounded-xl bg-gray-100">
+                      <div className={`relative overflow-hidden rounded-xl bg-gray-100 ${viewMode === 'grid'
+                        ? 'w-full aspect-[4/5]'
+                        : 'w-24 h-24 sm:w-32 sm:h-32'
+                        }`}>
                         {(product.thumbnail_url || product.image_url) ? (
                           <Image
                             src={product.thumbnail_url || product.image_url!}
@@ -272,14 +391,16 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
                         )}
 
                         {/* Price Badge */}
-                        <div className="absolute bottom-3 left-3 bg-[#19e65e]/90 backdrop-blur-md text-[#111813] px-3 py-1.5 rounded-full flex items-center gap-2 shadow-sm">
-                          <span className="text-sm font-bold">{t('storefront.price')} {product.current_price.toFixed(2)}</span>
-                          {hasDiscount && (
-                            <span className="text-xs line-through opacity-60">
-                              {t('storefront.price')} {product.original_price!.toFixed(2)}
-                            </span>
-                          )}
-                        </div>
+                        {viewMode === 'grid' && (
+                          <div className="absolute bottom-3 left-3 bg-[#19e65e]/90 backdrop-blur-md text-[#111813] px-3 py-1.5 rounded-full flex items-center gap-2 shadow-sm">
+                            <span className="text-sm font-bold">{t('storefront.price')} {product.current_price.toFixed(2)}</span>
+                            {hasDiscount && (
+                              <span className="text-xs line-through opacity-60">
+                                {t('storefront.price')} {product.original_price!.toFixed(2)}
+                              </span>
+                            )}
+                          </div>
+                        )}
 
                         {/* Out of stock overlay */}
                         {!isUnlimited && totalStock <= 0 && (
@@ -290,75 +411,100 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
                       </div>
                     </Link>
 
-                    {/* Product Info */}
-                    <div className="flex flex-col gap-3">
+                    {/* Details Column */}
+                    <div className={`flex flex-col ${viewMode === 'list' ? 'flex-1 items-center justify-center text-center px-2 min-w-0' : 'gap-3'}`}>
                       <div>
                         <Link
                           href={`/${store.slug}/p/${product.id}`}
                           onClick={() => setLoadingProductId(product.id)}
                         >
-                          <h3 className="text-[#111813] text-lg font-medium leading-tight hover:text-[#19e65e] transition-colors">
+                          <h3 className="text-[#111813] text-lg font-medium leading-tight hover:text-[#19e65e] transition-colors truncate w-full">
                             {product.name}
                           </h3>
                         </Link>
                         {product.description && (
-                          <p className="text-gray-500 text-xs mt-1 line-clamp-1">
+                          <p className={`text-gray-500 mt-1 line-clamp-1 ${viewMode === 'list' ? 'text-sm' : 'text-xs'}`}>
                             {product.description}
                           </p>
                         )}
                       </div>
 
-                      {/* Quantity & Add to Cart */}
-                      <div className="flex items-center justify-between gap-3 mt-1">
-                        {!hasOptions && (isUnlimited || totalStock > 0) && (
-                          <>
-                            {/* Quantity Selector */}
-                            <div className="flex items-center bg-gray-100 rounded-full h-10 px-1">
-                              <button
-                                onClick={() => updateQuantity(product.id, -1, effectiveStock)}
-                                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white text-gray-600 transition-colors"
-                              >
-                                <Minus className="w-4 h-4" />
-                              </button>
-                              <span className="w-6 text-center text-sm font-medium">{qty}</span>
-                              <button
-                                onClick={() => updateQuantity(product.id, 1, effectiveStock)}
-                                disabled={qty >= effectiveStock}
-                                className={`w-8 h-8 flex items-center justify-center rounded-full hover:bg-white text-gray-600 transition-colors ${qty >= effectiveStock ? 'opacity-50 cursor-not-allowed' : ''}`}
-                              >
-                                <Plus className="w-4 h-4" />
-                              </button>
-                            </div>
+                      {/* List View: Price in Middle Column */}
+                      {viewMode === 'list' && (
+                        <div className="flex flex-col items-center mt-2">
+                          <span className="font-bold text-2xl text-[#111813]">
+                            {product.current_price.toFixed(2)}
+                            <span className="text-sm font-normal text-gray-500 mr-1">{t('common.currency')}</span>
+                          </span>
+                          {hasDiscount && (
+                            <span className="text-xs line-through text-gray-400">
+                              {product.original_price!.toFixed(2)}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
 
-                            {/* Add to Cart Button */}
+                    {/* Actions Column */}
+                    <div className={`${viewMode === 'list' ? 'flex flex-col items-center justify-center gap-2 shrink-0' : 'flex items-center justify-between gap-3 mt-1'}`}>
+                      {!hasOptions && (isUnlimited || totalStock > 0) && (
+                        <>
+                          {/* Quantity Selector */}
+                          <div className={`flex items-center bg-gray-100 rounded-full px-1 ${viewMode === 'list' ? 'h-8 px-2 w-auto gap-2' : 'h-10'}`}>
                             <button
-                              onClick={() => handleAddToCart(product)}
-                              className="flex-1 h-10 bg-[#111813] text-white rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
+                              onClick={() => updateQuantity(product.id, viewMode === 'list' ? 1 : -1, effectiveStock)}
+                              disabled={viewMode === 'list' && qty >= effectiveStock}
+                              className={`w-8 h-8 flex items-center justify-center rounded-full hover:bg-white text-gray-600 transition-colors ${viewMode === 'list' && qty >= effectiveStock ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                              {t('storefront.add_to_cart')}
+                              {viewMode === 'list' ? <Plus className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
                             </button>
-                          </>
-                        )}
+                            <span className={`text-center text-sm font-medium ${viewMode === 'list' ? '' : 'w-6'}`}>{qty}</span>
+                            <button
+                              onClick={() => updateQuantity(product.id, viewMode === 'list' ? -1 : 1, effectiveStock)}
+                              disabled={viewMode === 'grid' && qty >= effectiveStock}
+                              className={`w-8 h-8 flex items-center justify-center rounded-full hover:bg-white text-gray-600 transition-colors ${viewMode === 'grid' && qty >= effectiveStock ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                              {viewMode === 'list' ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                            </button>
+                          </div>
 
-                        {hasOptions && (isUnlimited || totalStock > 0) && (
-                          <Link
-                            href={`/${store.slug}/p/${product.id}`}
-                            onClick={() => setLoadingProductId(product.id)}
-                            className="flex-1 h-10 bg-[#111813] text-white rounded-full text-sm font-medium hover:opacity-90 transition-opacity flex items-center justify-center"
-                          >
-                            {t('storefront.select_options')}
-                          </Link>
-                        )}
-
-                        {!isUnlimited && totalStock <= 0 && (
+                          {/* Add to Cart Button */}
                           <button
-                            disabled
-                            className="flex-1 h-10 bg-gray-200 text-gray-500 rounded-full text-sm font-medium cursor-not-allowed"
+                            onClick={() => handleAddToCart(product)}
+                            className={`bg-[#111813] text-white rounded-full text-sm font-medium hover:opacity-90 transition-opacity whitespace-nowrap px-4 ${viewMode === 'list'
+                              ? 'h-9 w-auto'
+                              : 'flex-1 h-10'
+                              }`}
                           >
-                            {t('storefront.out_of_stock')}
+                            {t('storefront.add_to_cart')}
                           </button>
-                        )}
-                      </div>
+                        </>
+                      )}
+
+                      {hasOptions && (isUnlimited || totalStock > 0) && (
+                        <Link
+                          href={`/${store.slug}/p/${product.id}`}
+                          onClick={() => setLoadingProductId(product.id)}
+                          className={`bg-[#111813] text-white rounded-full text-sm font-medium hover:opacity-90 transition-opacity flex items-center justify-center whitespace-nowrap px-4 ${viewMode === 'list'
+                            ? 'h-9 w-auto'
+                            : 'flex-1 h-10'
+                            }`}
+                        >
+                          {t('storefront.select_options')}
+                        </Link>
+                      )}
+
+                      {!isUnlimited && totalStock <= 0 && (
+                        <button
+                          disabled
+                          className={`bg-gray-200 text-gray-500 rounded-full text-sm font-medium cursor-not-allowed whitespace-nowrap px-4 ${viewMode === 'list'
+                            ? 'h-9 w-auto'
+                            : 'flex-1 h-10'
+                            }`}
+                        >
+                          {t('storefront.out_of_stock')}
+                        </button>
+                      )}
                     </div>
                   </div>
                 );

@@ -31,6 +31,7 @@ export async function createStore(prevState: any, formData: FormData) {
     const instagram_url = formData.get('instagram_url') as string;
     const twitter_url = formData.get('twitter_url') as string;
     const tiktok_url = formData.get('tiktok_url') as string;
+    const location_url = formData.get('location_url') as string;
     const allow_delivery = formData.get('allow_delivery') === 'true';
     const allow_pickup = formData.get('allow_pickup') === 'true';
 
@@ -62,6 +63,7 @@ export async function createStore(prevState: any, formData: FormData) {
             instagram_url: instagram_url || null,
             twitter_url: twitter_url || null,
             tiktok_url: tiktok_url || null,
+            location_url: location_url || null,
             allow_delivery,
             allow_pickup,
         }).select().single();

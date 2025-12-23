@@ -40,6 +40,7 @@ export default function OnboardingPage() {
   const [instagramUrl, setInstagramUrl] = useState('');
   const [twitterUrl, setTwitterUrl] = useState('');
   const [tiktokUrl, setTiktokUrl] = useState('');
+  const [locationUrl, setLocationUrl] = useState('');
 
   useEffect(() => {
     const checkExistingStore = async () => {
@@ -95,6 +96,52 @@ export default function OnboardingPage() {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: t('common.error'),
+        description: t('onboarding.geolocation_not_supported'),
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    toast({
+      title: t('onboarding.locating'),
+      description: t('onboarding.getting_location'),
+    });
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const link = `https://www.google.com/maps?q=${latitude},${longitude}`;
+        setLocationUrl(link);
+        toast({
+          title: t('onboarding.location_found'),
+          description: t('onboarding.location_set'),
+        });
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+        let errorMessage = t('onboarding.location_error');
+        if (error.code === error.PERMISSION_DENIED) {
+          errorMessage = t('onboarding.location_permission_denied');
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          errorMessage = t('onboarding.location_unavailable');
+        } else if (error.code === error.TIMEOUT) {
+          errorMessage = t('onboarding.location_timeout');
+        }
+
+        toast({
+          title: t('common.error'),
+          description: errorMessage,
+          variant: 'destructive',
+        });
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
   };
 
   const uploadLogo = async (): Promise<string | null> => {
@@ -167,6 +214,7 @@ export default function OnboardingPage() {
       if (instagramUrl) formData.append('instagram_url', instagramUrl);
       if (twitterUrl) formData.append('twitter_url', twitterUrl);
       if (tiktokUrl) formData.append('tiktok_url', tiktokUrl);
+      if (locationUrl) formData.append('location_url', locationUrl);
       formData.append('allow_delivery', String(allowDelivery));
       formData.append('allow_pickup', String(allowPickup));
 
@@ -447,6 +495,26 @@ export default function OnboardingPage() {
                       onChange={(e) => setTiktokUrl(e.target.value)}
                       className="rounded-xl"
                     />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label className="text-xs text-gray-500 uppercase font-semibold">{t('onboarding.location')}</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="https://maps.google.com/..."
+                        value={locationUrl}
+                        onChange={(e) => setLocationUrl(e.target.value)}
+                        className="rounded-xl"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleGetLocation}
+                        className="rounded-xl shrink-0"
+                        title={t('onboarding.get_current_location')}
+                      >
+                        <StoreIcon className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>

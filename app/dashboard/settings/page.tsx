@@ -33,6 +33,7 @@ export default function SettingsPage() {
     const [instagramUrl, setInstagramUrl] = useState('');
     const [twitterUrl, setTwitterUrl] = useState('');
     const [tiktokUrl, setTiktokUrl] = useState('');
+    const [locationUrl, setLocationUrl] = useState('');
     const [allowDelivery, setAllowDelivery] = useState(true);
     const [allowPickup, setAllowPickup] = useState(false);
 
@@ -74,6 +75,7 @@ export default function SettingsPage() {
                 setInstagramUrl(data.instagram_url || '');
                 setTwitterUrl(data.twitter_url || '');
                 setTiktokUrl(data.tiktok_url || '');
+                setLocationUrl(data.location_url || '');
                 setAllowDelivery(data.allow_delivery ?? true);
                 setAllowPickup(data.allow_pickup ?? false);
             }
@@ -146,6 +148,7 @@ export default function SettingsPage() {
                     instagram_url: instagramUrl || null,
                     twitter_url: twitterUrl || null,
                     tiktok_url: tiktokUrl || null,
+                    location_url: locationUrl || null,
                     allow_delivery: allowDelivery,
                     allow_pickup: allowPickup,
                 })
@@ -421,6 +424,70 @@ export default function SettingsPage() {
                                     placeholder="https://tiktok.com/@yourstore"
                                     className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#008069]"
                                 />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label className="text-sm font-bold text-gray-700">{t('onboarding.location')}</Label>
+                                <div className="flex gap-2">
+                                    <Input
+                                        value={locationUrl}
+                                        onChange={(e) => setLocationUrl(e.target.value)}
+                                        placeholder="https://maps.google.com/..."
+                                        className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#008069]"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => {
+                                            if (!navigator.geolocation) {
+                                                toast({
+                                                    title: t('common.error'),
+                                                    description: t('onboarding.geolocation_not_supported'),
+                                                    variant: 'destructive',
+                                                });
+                                                return;
+                                            }
+
+                                            toast({
+                                                title: t('onboarding.locating'),
+                                                description: t('onboarding.getting_location'),
+                                            });
+
+                                            navigator.geolocation.getCurrentPosition(
+                                                (position) => {
+                                                    const { latitude, longitude } = position.coords;
+                                                    const link = `https://www.google.com/maps?q=${latitude},${longitude}`;
+                                                    setLocationUrl(link);
+                                                    toast({
+                                                        title: t('onboarding.location_found'),
+                                                        description: t('onboarding.location_set'),
+                                                    });
+                                                },
+                                                (error) => {
+                                                    console.error('Geolocation error:', error);
+                                                    let errorMessage = t('onboarding.location_error');
+                                                    if (error.code === error.PERMISSION_DENIED) {
+                                                        errorMessage = t('onboarding.location_permission_denied');
+                                                    } else if (error.code === error.POSITION_UNAVAILABLE) {
+                                                        errorMessage = t('onboarding.location_unavailable');
+                                                    } else if (error.code === error.TIMEOUT) {
+                                                        errorMessage = t('onboarding.location_timeout');
+                                                    }
+
+                                                    toast({
+                                                        title: t('common.error'),
+                                                        description: errorMessage,
+                                                        variant: 'destructive',
+                                                    });
+                                                },
+                                                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                                            );
+                                        }}
+                                        className="h-11 rounded-lg border-gray-200 text-gray-600 hover:text-[#008069] shrink-0"
+                                        title={t('onboarding.get_current_location')}
+                                    >
+                                        <StoreIcon className="w-5 h-5" />
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </div>
