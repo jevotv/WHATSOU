@@ -232,7 +232,7 @@ export default function DashboardPage() {
         />
       )}
 
-      {products.length > 0 && (
+      {products.length > 0 && !showProductForm && (
         <button
           onClick={() => setShowProductForm(true)}
           className={`fixed bottom-28 ${direction === 'rtl' ? 'left-8' : 'right-8'} z-[60] bg-[#008069] text-white rounded-full p-5 shadow-2xl hover:bg-[#017561] transition-all hover:scale-110`}
