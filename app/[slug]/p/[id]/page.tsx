@@ -27,20 +27,13 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     };
   }
 
-  // Need to fetch store info for the title suffix (Product | Store)
   const { data: store } = await supabase
     .from('stores')
-    .select('name, slug')
-    .eq('id', product.store_id) // Assuming product has store_id, need to check if we can get it from params or query
-    .single();
+    .select('name')
+    .eq('slug', params.slug)
+    .maybeSingle();
 
-  // Fallback if we can't get store name quickly within metadata gen (though we should)
-  // Actually, we can assume params.slug relates to store, so we can fetch store by slug.
-  // Let's optimize: We already fetch product by ID. 
-  // We should fetch store by slug to ensure consistency and get name.
-
-  const { data: storeBySlug } = await supabase.from('stores').select('name').eq('slug', params.slug).single();
-  const storeName = storeBySlug?.name || 'WhatSou';
+  const storeName = store?.name || 'WhatSou';
 
   const fullUrl = `https://whatsou.com/${params.slug}/p/${params.id}`;
 
