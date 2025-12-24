@@ -22,6 +22,13 @@ const config: Config = {
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
+        // Landing Page Specific Colors
+        'landing-primary': '#1DA851',
+        'landing-primary-hover': '#15803d',
+        'landing-background-light': '#F0FDF4',
+        'landing-background-dark': '#0f172a',
+        'landing-surface-light': '#FFFFFF',
+        'landing-surface-dark': '#1e293b',
         card: {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',

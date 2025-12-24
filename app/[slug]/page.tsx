@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { createServerClient } from '@/lib/supabase/server';
+import type { Metadata } from 'next';
 import { Product, ProductVariant } from '@/lib/types/database';
 import StorefrontClient from '@/components/storefront/StorefrontClient';
 
@@ -11,6 +12,36 @@ interface StorefrontPageProps {
     slug: string;
   };
 }
+
+export async function generateMetadata({ params }: StorefrontPageProps): Promise<Metadata> {
+  const supabase = await createServerClient();
+  const { data: store } = await supabase
+    .from('stores')
+    .select('name, description, logo_url')
+    .eq('slug', params.slug)
+    .maybeSingle();
+
+  if (!store) {
+    return {
+      title: 'Store Not Found',
+    };
+  }
+
+  return {
+    title: store.name,
+    description: store.description,
+    icons: {
+      icon: store.logo_url || '/favicon.ico',
+      apple: store.logo_url || '/apple-icon.png',
+    },
+    openGraph: {
+      title: store.name,
+      description: store.description || undefined,
+      images: store.logo_url ? [{ url: store.logo_url }] : [],
+    },
+  };
+}
+
 
 async function getStoreData(slug: string) {
   const supabase = await createServerClient();
