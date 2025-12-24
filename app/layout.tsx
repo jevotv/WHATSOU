@@ -10,6 +10,12 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'WhatSou - WhatsApp Commerce Platform',
   description: 'Create your WhatsApp store in 60 seconds. Photo -> Price -> Sell',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
   openGraph: {
     title: 'WhatSou - WhatsApp Commerce Platform',
     description: 'Create your WhatsApp store in 60 seconds. Photo -> Price -> Sell',

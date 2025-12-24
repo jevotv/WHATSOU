@@ -294,10 +294,17 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
                           <button
                             key={value}
                             onClick={() =>
-                              setSelectedOptions((prev) => ({
-                                ...prev,
-                                [option.name]: value,
-                              }))
+                              setSelectedOptions((prev) => {
+                                if (prev[option.name] === value) {
+                                  const newState = { ...prev };
+                                  delete newState[option.name];
+                                  return newState;
+                                }
+                                return {
+                                  ...prev,
+                                  [option.name]: value,
+                                };
+                              })
                             }
                             disabled={!isAvailable}
                             className={`px-6 py-3 rounded-3xl border-2 font-medium transition-all ${isSelected

@@ -9,11 +9,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Save, Store as StoreIcon, Phone, Share2, Upload, Truck } from 'lucide-react';
+import { ArrowLeft, Save, Store as StoreIcon, Phone, Share2, Upload, Truck, QrCode } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { regenerateStoreQR } from '@/app/actions/store';
 
 export default function SettingsPage() {
     const [store, setStore] = useState<Store | null>(null);
@@ -125,6 +126,28 @@ export default function SettingsPage() {
                 variant: 'destructive',
             });
             return logoUrl;
+        }
+    };
+
+    const handleRegenerateQR = async () => {
+        if (!store) return;
+        setSaving(true);
+        try {
+            const result = await regenerateStoreQR(store.id);
+            if (result.error) throw new Error(result.error);
+
+            toast({
+                title: direction === 'rtl' ? 'تم تحديث رمز QR' : 'QR Code Regenerated',
+                description: direction === 'rtl' ? 'تم تحديث رمز الاستجابة السريعة بنجاح' : 'Your store QR code has been regenerated successfully.',
+            });
+        } catch (error: any) {
+            toast({
+                title: t('common.error'),
+                description: error.message,
+                variant: 'destructive',
+            });
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -489,6 +512,29 @@ export default function SettingsPage() {
                                     </Button>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Advanced Settings / QR Code */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
+                            <QrCode className="w-5 h-5 text-[#008069]" />
+                            {direction === 'rtl' ? 'رمز الاستجابة السريعة (QR)' : 'QR Code'}
+                        </h3>
+                        <div className="space-y-4">
+                            <p className="text-sm text-gray-600">
+                                {direction === 'rtl'
+                                    ? 'إذا كنت تواجه مشاكل في مسح رمز QR الخاص بمتجرك، يمكنك إعادة إنشائه هنا.'
+                                    : 'If you are experiencing issues with scanning your store QR code, you can regenerate it here.'}
+                            </p>
+                            <Button
+                                onClick={handleRegenerateQR}
+                                disabled={saving}
+                                variant="outline"
+                                className="border-[#008069] text-[#008069] hover:bg-green-50"
+                            >
+                                {direction === 'rtl' ? 'إعادة إنشاء رمز QR' : 'Regenerate QR Code'}
+                            </Button>
                         </div>
                     </div>
                 </div>

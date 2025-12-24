@@ -317,7 +317,13 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
               {categories.map((category) => (
                 <button
                   key={category}
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => {
+                    if (selectedCategory === category && category !== t('storefront.all_categories')) {
+                      setSelectedCategory(t('storefront.all_categories'));
+                    } else {
+                      setSelectedCategory(category);
+                    }
+                  }}
                   className={`flex h-9 shrink-0 items-center justify-center rounded-full px-6 transition-all ${selectedCategory === category
                     ? 'bg-[#111813] text-white shadow-sm'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'

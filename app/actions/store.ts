@@ -87,6 +87,42 @@ export async function createStore(prevState: any, formData: FormData) {
         return { success: true, store: { ...store, qr_code: qrCodeDataUrl } };
     } catch (error: any) {
         console.error('Create store error:', error);
+
         return { error: error.message };
     }
+}
+
+export async function regenerateStoreQR(storeId: string) {
+    const session = await getSession();
+    if (!session || !session.id) {
+        return { error: 'Unauthorized' };
+    }
+
+    const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    // Verify ownership
+    const { data: store, error: fetchError } = await supabase
+        .from('stores')
+        .select('id, user_id')
+        .eq('id', storeId)
+        .single();
+
+    if (fetchError || !store) return { error: 'Store not found' };
+    if (store.user_id !== session.id) return { error: 'Unauthorized' };
+
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://whatsou.com';
+    const dynamicUrl = `${baseUrl}/go/${store.id}`;
+    const qrCodeDataUrl = await QRCode.toDataURL(dynamicUrl);
+
+    const { error: updateError } = await supabase
+        .from('stores')
+        .update({ qr_code: qrCodeDataUrl })
+        .eq('id', storeId);
+
+    if (updateError) return { error: updateError.message };
+
+    return { success: true, qr_code: qrCodeDataUrl };
 }
