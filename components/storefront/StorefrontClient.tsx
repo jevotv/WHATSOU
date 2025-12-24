@@ -186,7 +186,7 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
                 {store.logo_url ? (
                   <Image
                     src={store.logo_url}
-                    alt={store.name}
+                    alt={store.name + ' - Logo'}
                     fill
                     className="object-cover"
                   />
@@ -501,7 +501,7 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
                             {(product.thumbnail_url || product.image_url) ? (
                               <Image
                                 src={product.thumbnail_url || product.image_url!}
-                                alt={product.name}
+                                alt={`${product.name} | ${store.name}`}
                                 fill
                                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                               />

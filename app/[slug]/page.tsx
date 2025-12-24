@@ -27,9 +27,14 @@ export async function generateMetadata({ params }: StorefrontPageProps): Promise
     };
   }
 
+  const fullUrl = `https://whatsou.com/${params.slug}`;
+
   return {
-    title: store.name,
+    title: `${store.name} | Whatsou`,
     description: store.description,
+    alternates: {
+      canonical: fullUrl,
+    },
     icons: {
       icon: store.logo_url || '/favicon.ico',
       apple: store.logo_url || '/apple-icon.png',
@@ -88,5 +93,29 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
     notFound();
   }
 
-  return <StorefrontClient store={data.store} products={data.products} />;
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Store',
+    name: data.store.name,
+    image: data.store.logo_url,
+    description: data.store.description,
+    url: `https://whatsou.com/${params.slug}`,
+    sameAs: [
+      data.store.facebook_url,
+      data.store.instagram_url,
+      data.store.twitter_url,
+      data.store.tiktok_url,
+      data.store.location_url
+    ].filter(Boolean)
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <StorefrontClient store={data.store} products={data.products} />
+    </>
+  );
 }

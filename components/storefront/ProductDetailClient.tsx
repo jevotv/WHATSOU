@@ -219,7 +219,7 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
             {product.image_url ? (
               <Image
                 src={product.image_url}
-                alt={product.name}
+                alt={`${product.name} | ${store.name}`}
                 fill
                 className="object-cover"
                 priority
