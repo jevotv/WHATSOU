@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import { AuthProvider } from '@/lib/contexts/AuthContext';
 import { CartProvider } from '@/lib/contexts/CartContext';
 import { Toaster } from '@/components/ui/toaster';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -37,6 +38,7 @@ export default function RootLayout({
             <LanguageProvider>
               {children}
               <Toaster />
+              <SpeedInsights />
             </LanguageProvider>
           </CartProvider>
         </AuthProvider>
