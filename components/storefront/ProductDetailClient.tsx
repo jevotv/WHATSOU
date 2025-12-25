@@ -6,11 +6,13 @@ import { useCart } from '@/lib/contexts/CartContext';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ShoppingCart, Package, Minus, Plus } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Package, Minus, Plus, Zap, Check } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import CartDrawer from './CartDrawer';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useAuth } from '@/lib/contexts/AuthContext';
+import AdminBar from './AdminBar';
 
 interface ProductDetailClientProps {
   store: Store;
@@ -27,6 +29,8 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
   const router = useRouter();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { user, loading } = useAuth();
+  const isOwner = user?.id === store.user_id;
 
   const hasOptions = product.options && product.options.length > 0;
   const hasDiscount = product.original_price && product.original_price > product.current_price;
@@ -91,14 +95,10 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
   const getEffectiveStock = () => {
     if (product.unlimited_stock) return 999999;
     if (selectedVariant) {
-      // If main product is unlimited, variants are too (based on our logic)
-      // But we should check variant's own flag if we supported mixed.
-      // Current implementation sets variants to unlimited if product is.
       if (selectedVariant.unlimited_stock) return 999999;
       return selectedVariant.quantity;
     }
     if (hasOptions && variants.length > 0) {
-      // If has variants but none selected, show total stock
       return variants.reduce((sum, v) => sum + v.quantity, 0);
     }
     return product.quantity;
@@ -115,7 +115,7 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
   const canAddToCart = () => {
     if (!allOptionsSelected()) return false;
     if (hasOptions && variants.length > 0 && !selectedVariant) return false;
-    if (effectiveStock <= 0) return false;
+    if (!product.unlimited_stock && effectiveStock <= 0) return false;
     return true;
   };
 
@@ -139,7 +139,7 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
     }
 
     // Validate stock
-    if (quantity > effectiveStock) {
+    if (!product.unlimited_stock && quantity > effectiveStock) {
       toast({
         title: t('storefront.not_enough_stock'),
         description: t('storefront.not_enough_stock_desc', { count: effectiveStock }),
@@ -185,209 +185,251 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <header className="sticky top-0 z-50 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div className="min-h-screen bg-[#f6f8f6] pb-24">
+      {/* Admin Bar */}
+      {!loading && isOwner && <AdminBar />}
+
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <button
               onClick={() => router.back()}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
+              className="flex items-center gap-2 text-gray-600 hover:text-[#111813] transition group"
             >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="font-medium">{t('common.back')}</span>
-            </button>
-            <button
-              onClick={() => setShowCart(true)}
-              className="relative"
-            >
-              <div className="bg-green-500 text-white rounded-full p-3 hover:bg-green-600 transition-all hover:scale-105">
-                <ShoppingCart className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-gray-200 transition-colors">
+                <ArrowLeft className="w-5 h-5 text-gray-700" />
               </div>
-              {totalItems > 0 && (
-                <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
-                  {totalItems}
-                </div>
-              )}
+              <span className="font-bold hidden sm:inline">{t('common.back')}</span>
             </button>
+            <h1 className="text-lg font-bold text-[#111813] truncate max-w-[200px] sm:max-w-md">
+              {store.name}
+            </h1>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div className="relative aspect-square bg-gray-50 rounded-3xl overflow-hidden">
+      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+          {/* Left Column: Image */}
+          <div className="relative aspect-square sm:aspect-[4/3] lg:aspect-square bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100">
             {product.image_url ? (
               <Image
                 src={product.image_url}
                 alt={`${product.name} | ${store.name}`}
                 fill
-                className="object-cover"
+                className="object-cover hover:scale-105 transition-transform duration-700"
                 priority
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                <Package className="w-32 h-32 text-gray-400" />
+              <div className="w-full h-full flex items-center justify-center bg-gray-50">
+                <Package className="w-32 h-32 text-gray-300" />
               </div>
             )}
-            {hasDiscount && (
-              <div className="absolute top-6 left-6 bg-red-500 text-white px-4 py-2 rounded-full text-lg font-bold">
-                -{discountPercent}%
-              </div>
-            )}
+
+            {/* Badges Overlay */}
+            <div className="absolute top-6 left-6 flex flex-col gap-2">
+              {hasDiscount && (
+                <div className="bg-[#E4405F] text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-md">
+                  -{discountPercent}%
+                </div>
+              )}
+              {(product.unlimited_stock || effectiveStock > 0) ? (
+                <div className="bg-[#19e65e] text-[#111813] px-4 py-1.5 rounded-full text-sm font-bold shadow-md flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-[#111813] animate-pulse"></div>
+                  {t('storefront.in_stock')}
+                </div>
+              ) : (
+                <div className="bg-gray-900 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-md">
+                  {t('storefront.out_of_stock')}
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="space-y-8">
-            <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                {product.name}
-              </h1>
-              {product.description && (
-                <p className="text-lg text-gray-600 leading-relaxed">
-                  {product.description}
-                </p>
-              )}
-            </div>
+          {/* Right Column: Details */}
+          <div className="flex flex-col gap-8">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 h-full">
+              <div className="space-y-6">
 
-            <div className="flex items-center gap-4">
-              <span className="text-5xl font-bold text-gray-900">
-                {t('common.currency')} {effectivePrice.toFixed(2)}
-              </span>
-              {hasDiscount && (
-                <span className="text-2xl text-gray-400 line-through">
-                  {t('common.currency')} {product.original_price!.toFixed(2)}
-                </span>
-              )}
-              {hasOptions && !allOptionsSelected() && (
-                <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                  {t('storefront.starting_from')}
-                </span>
-              )}
-            </div>
+                {/* Title & Price */}
+                <div>
+                  <h1 className="text-3xl sm:text-4xl font-extrabold text-[#111813] mb-4 leading-tight">
+                    {product.name}
+                  </h1>
 
-            {product.unlimited_stock || (selectedVariant?.unlimited_stock) ? (
-              <p className="text-lg text-green-600 font-semibold">
-                {t('storefront.in_stock')}
-              </p>
-            ) : effectiveStock > 0 ? (
-              <p className="text-lg text-gray-600">
-                {t('storefront.items_in_stock', { count: effectiveStock })}
-              </p>
-            ) : (
-              <p className="text-lg text-red-500 font-semibold">
-                {hasOptions && !allOptionsSelected() ? t('storefront.select_options_availability') : t('storefront.out_of_stock')}
-              </p>
-            )}
+                  {hasOptions && !allOptionsSelected() && (
+                    <p className="text-sm text-gray-500 mb-1 font-medium">
+                      {t('storefront.starting_from')}
+                    </p>
+                  )}
 
-            {hasOptions && (
-              <div className="space-y-6 pt-6 border-t">
-                {product.options!.map((option) => (
-                  <div key={option.name}>
-                    <label className="block text-lg font-semibold text-gray-900 mb-3">
-                      {option.name}
-                    </label>
-                    <div className="flex flex-wrap gap-3">
-                      {option.values.map((value) => {
-                        const isAvailable = isOptionValueAvailable(option.name, value);
-                        const isSelected = selectedOptions[option.name] === value;
+                  <div className="flex items-baseline gap-3 flex-wrap">
+                    <span className="text-4xl font-black text-[#111813]">
+                      {effectivePrice.toFixed(0)} <span className="text-lg font-bold text-gray-500">{t('common.currency')}</span>
+                    </span>
+                    {hasDiscount && (
+                      <span className="text-xl text-gray-400 line-through font-medium">
+                        {product.original_price!.toFixed(0)} <span className="text-sm">{t('common.currency')}</span>
+                      </span>
+                    )}
+                  </div>
 
-                        return (
-                          <button
-                            key={value}
-                            onClick={() =>
-                              setSelectedOptions((prev) => {
-                                if (prev[option.name] === value) {
-                                  const newState = { ...prev };
-                                  delete newState[option.name];
-                                  return newState;
+
+                </div>
+
+                {product.description && (
+                  <div className="prose prose-sm sm:prose-base text-gray-600 leading-relaxed border-t border-gray-100 pt-6">
+                    <p>{product.description}</p>
+                  </div>
+                )}
+
+                {/* Options Selection */}
+                {hasOptions && (
+                  <div className="space-y-6 pt-6 border-t border-gray-100">
+                    {product.options!.map((option) => (
+                      <div key={option.name}>
+                        <label className="block text-sm font-bold text-[#111813] uppercase tracking-wide mb-3">
+                          {option.name}
+                        </label>
+                        <div className="flex flex-wrap gap-2.5">
+                          {option.values.map((value) => {
+                            const isAvailable = isOptionValueAvailable(option.name, value);
+                            const isSelected = selectedOptions[option.name] === value;
+
+                            return (
+                              <button
+                                key={value}
+                                onClick={() =>
+                                  setSelectedOptions((prev) => {
+                                    if (prev[option.name] === value) {
+                                      const newState = { ...prev };
+                                      delete newState[option.name];
+                                      return newState;
+                                    }
+                                    return {
+                                      ...prev,
+                                      [option.name]: value,
+                                    };
+                                  })
                                 }
-                                return {
-                                  ...prev,
-                                  [option.name]: value,
-                                };
-                              })
-                            }
-                            disabled={!isAvailable}
-                            className={`px-6 py-3 rounded-3xl border-2 font-medium transition-all ${isSelected
-                              ? 'border-green-500 bg-green-50 text-green-700'
-                              : isAvailable
-                                ? 'border-gray-200 hover:border-gray-300'
-                                : 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed line-through'
-                              }`}
-                          >
-                            {value}
-                          </button>
-                        );
-                      })}
+                                disabled={!isAvailable}
+                                className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all border-2 ${isSelected
+                                  ? 'border-[#19e65e] bg-[#19e65e]/10 text-[#111813] shadow-sm'
+                                  : isAvailable
+                                    ? 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                                    : 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed decoration-slice'
+                                  }`}
+                              >
+                                {value}
+                                {isSelected && <Check className="w-3.5 h-3.5 inline-block ml-1.5" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Variant Status */}
+                    {selectedVariant ? (
+                      <div className="bg-[#19e65e]/10 border border-[#19e65e]/20 rounded-2xl p-4 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-[#19e65e] flex items-center justify-center shrink-0">
+                          <Check className="w-5 h-5 text-[#111813]" />
+                        </div>
+                        <div>
+                          <p className="text-[#111813] font-bold text-sm">
+                            {t('storefront.variant_selected', { options: Object.values(selectedVariant.option_values || {}).map(v => String(v)).join(' / '), price: selectedVariant.price.toFixed(2) })}
+                          </p>
+                          <p className="text-gray-600 text-xs mt-0.5">
+                            {selectedVariant.unlimited_stock ? t('storefront.in_stock') : t('storefront.items_in_stock', { count: selectedVariant.quantity })}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      allOptionsSelected() && hasOptions && variants.length > 0 && (
+                        <div className="bg-red-50 border border-red-100 rounded-2xl p-4 text-red-600 font-medium text-sm flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                          {t('storefront.variant_unavailable')}
+                        </div>
+                      )
+                    )}
+                  </div>
+                )}
+
+                {/* Quantity & Action */}
+                <div className="space-y-4 pt-6 mt-auto">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-[#111813] uppercase tracking-wide">{t('storefront.quantity')}</span>
+                  </div>
+
+                  <div className="flex gap-3 sm:gap-4">
+                    {/* Usage of consistent Quantity styling from StorefrontClient/Globals could be nice, but matching style manually here */}
+                    <div className="flex items-center bg-gray-100 rounded-full p-1 h-16 border border-gray-200 min-w-[130px] sm:min-w-[160px] shrink-0">
+                      <button
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        className="w-12 sm:w-16 h-full flex items-center justify-center rounded-full bg-white shadow-sm text-[#111813] hover:bg-gray-50 active:scale-95 transition-all"
+                      >
+                        <Minus className="w-5 h-5" />
+                      </button>
+                      <span className="flex-1 text-center text-xl font-bold text-[#111813]">
+                        {quantity}
+                      </span>
+                      <button
+                        onClick={() => setQuantity(Math.min(effectiveStock, quantity + 1))}
+                        disabled={!product.unlimited_stock && quantity >= effectiveStock}
+                        className={`w-12 sm:w-16 h-full flex items-center justify-center rounded-full bg-white shadow-sm text-[#111813] hover:bg-gray-50 active:scale-95 transition-all ${!product.unlimited_stock && quantity >= effectiveStock ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                      >
+                        <Plus className="w-5 h-5" />
+                      </button>
                     </div>
-                  </div>
-                ))}
 
-                {/* Show selected variant info */}
-                {selectedVariant && (
-                  <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
-                    <p className="text-green-800 font-medium">
-                      {t('storefront.variant_selected', { options: Object.values(selectedVariant.option_values || {}).map(v => String(v)).join(' / '), price: selectedVariant.price.toFixed(2) })}
-                    </p>
-                    <p className="text-green-600 text-sm">
-                      {selectedVariant.unlimited_stock ? t('storefront.in_stock') : t('storefront.items_in_stock', { count: selectedVariant.quantity })}
-                    </p>
+                    <Button
+                      onClick={handleAddToCart}
+                      disabled={!canAddToCart()}
+                      className="flex-1 h-16 rounded-full bg-[#111813] hover:bg-black text-white text-lg font-bold shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100 disabled:shadow-none"
+                    >
+                      <ShoppingCart className="w-5 h-5 mr-2.5" />
+                      {!allOptionsSelected()
+                        ? t('storefront.select_options')
+                        : effectiveStock <= 0 && !product.unlimited_stock
+                          ? t('storefront.out_of_stock')
+                          : t('storefront.add_to_cart')}
+                    </Button>
                   </div>
-                )}
+                </div>
 
-                {/* Show if combination doesn't exist */}
-                {allOptionsSelected() && hasOptions && variants.length > 0 && !selectedVariant && (
-                  <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
-                    <p className="text-red-800 font-medium">
-                      ✗ {t('storefront.variant_unavailable')}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="space-y-4 pt-6 border-t">
-              <label className="block text-lg font-semibold text-gray-900">
-                {t('storefront.quantity')}
-              </label>
-              <div className="flex items-center gap-4">
-                <Button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  variant="outline"
-                  size="icon"
-                  className="rounded-2xl w-12 h-12"
-                >
-                  <Minus className="w-5 h-5" />
-                </Button>
-                <span className="text-2xl font-bold w-16 text-center">
-                  {quantity}
-                </span>
-                <Button
-                  onClick={() => setQuantity(Math.min(effectiveStock, quantity + 1))}
-                  variant="outline"
-                  size="icon"
-                  className="rounded-2xl w-12 h-12"
-                  disabled={!product.unlimited_stock && quantity >= effectiveStock}
-                >
-                  <Plus className="w-5 h-5" />
-                </Button>
               </div>
             </div>
-
-            <Button
-              onClick={handleAddToCart}
-              disabled={!canAddToCart()}
-              className="w-full h-16 rounded-3xl bg-green-600 hover:bg-green-700 text-lg font-semibold disabled:opacity-50"
-            >
-              <ShoppingCart className="w-6 h-6 mr-3" />
-              {!allOptionsSelected()
-                ? t('storefront.select_options')
-                : effectiveStock <= 0
-                  ? t('storefront.out_of_stock')
-                  : t('storefront.add_to_cart')}
-            </Button>
           </div>
         </div>
-      </main >
+      </main>
+
+      {/* Powered by WhatSou - Fixed Bottom Left */}
+      <div className="fixed bottom-6 left-6 z-40 hidden md:flex">
+        <a
+          href="https://www.whatsou.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center h-12 px-5 gap-2 rounded-full bg-[#25D366] text-white shadow-lg hover:bg-[#20bd5a] transition-transform hover:scale-105 active:scale-95"
+        >
+          <Zap className="w-4 h-4" />
+          <span className="font-bold text-sm">{t('common.powered_by')}</span>
+        </a>
+      </div>
+
+      {/* Floating Cart Button - Fixed Bottom Right */}
+      <div className="fixed bottom-6 right-6 z-40">
+        <button
+          onClick={() => setShowCart(true)}
+          className="flex items-center justify-center h-14 w-auto px-6 gap-3 rounded-full bg-[#19e65e] text-[#111813] shadow-[0_8px_30px_rgb(25,230,94,0.3)] hover:shadow-[0_8px_40px_rgb(25,230,94,0.4)] hover:bg-[#19e65e]/90 transition-all hover:scale-105 active:scale-95"
+        >
+          <ShoppingCart className="w-6 h-6" />
+          {totalItems > 0 && (
+            <span className="font-exrabold text-lg">{totalItems}</span>
+          )}
+        </button>
+      </div>
 
       <CartDrawer
         open={showCart}
