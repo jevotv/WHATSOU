@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import BottomNav from '@/components/dashboard/BottomNav';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
+import PwaInstallBanner from '@/components/dashboard/PwaInstallBanner';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { supabase } from '@/lib/supabase/client';
@@ -62,6 +63,7 @@ export default function DashboardLayout({
     return (
         <AuthGuard>
             <div className="min-h-screen bg-[#f0f2f5] overflow-x-hidden" dir={direction}>
+                <PwaInstallBanner />
                 <DashboardHeader store={store} />
                 <div className="pb-24">
                     {children}

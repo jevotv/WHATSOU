@@ -182,7 +182,7 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
           <div className="flex flex-col items-center max-w-[960px] w-full px-4">
             <div className="flex flex-col items-center gap-4">
               {/* Store Logo */}
-              <div className="relative h-24 w-24 rounded-full ring-4 ring-[#19e65e]/10 overflow-hidden bg-gradient-to-br from-[#19e65e] to-[#0a8f35]">
+              <div className="relative h-24 w-24 rounded-full ring-4 ring-[#19e65e]/10 overflow-hidden bg-white shadow-sm flex items-center justify-center">
                 {store.logo_url ? (
                   <Image
                     src={store.logo_url}
@@ -191,10 +191,14 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
                     className="object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-white text-4xl font-bold">
-                      {store.name.charAt(0).toUpperCase()}
-                    </span>
+                  <div className="w-full h-full flex items-center justify-center p-4">
+                    <Image
+                      src="/logo.png"
+                      alt={store.name + ' - Logo'}
+                      width={96}
+                      height={96}
+                      className="object-contain"
+                    />
                   </div>
                 )}
               </div>
@@ -630,10 +634,15 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
 
       {/* Powered by WhatSou - Fixed Bottom Left */}
       <div className="fixed bottom-6 left-6 z-50">
-        <button className="flex items-center justify-center h-12 px-6 gap-2 rounded-full bg-[#25D366] text-white shadow-lg hover:bg-[#20bd5a] transition-transform hover:scale-105 active:scale-95">
+        <a
+          href="https://www.whatsou.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center h-12 px-6 gap-2 rounded-full bg-[#25D366] text-white shadow-lg hover:bg-[#20bd5a] transition-transform hover:scale-105 active:scale-95"
+        >
           <Zap className="w-5 h-5" />
           <span className="font-bold text-sm">{t('common.powered_by')}</span>
-        </button>
+        </a>
       </div>
 
       {/* Cart Button - Fixed Bottom Right */}
