@@ -124,7 +124,7 @@ export default function MockDashboardHeader({ store }: MockDashboardHeaderProps)
                                     {language === 'en' ? 'العربية' : 'English'}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                    onClick={() => handleMockAction('Settings')}
+                                    onClick={() => router.push('/demo/settings')}
                                     className="cursor-pointer"
                                 >
                                     <Settings className="w-4 h-4 mr-2" />

@@ -44,7 +44,7 @@ export function MockDashboardProvider({
     initialProducts: Product[];
     initialOrders: any[];
 }) {
-    const [store] = useState<Store | null>(initialStore);
+    const [store, setStore] = useState<Store | null>(initialStore);
     const [products, setProducts] = useState<Product[]>([]);
     const [orders, setOrders] = useState<MockOrder[]>([]);
     const [loading, setLoading] = useState(true);
