@@ -124,7 +124,8 @@
         "filter_delivery_type": "Delivery Type",
         "filter_all_types": "All",
         "filter_delivery": "Delivery",
-        "filter_pickup": "Pickup"
+        "filter_pickup": "Pickup",
+        "chat_support": "Chat with Support"
     },
     "customers": {
         "orders": "Orders",
@@ -268,5 +269,19 @@
         "back_to_dashboard": "Back to Dashboard",
         "back_to_store": "Back to Store",
         "error_code": "Error 404"
+    },
+    "pwa": {
+        "install_title": "Install WhatSou App",
+        "install_subtitle": "For a better experience",
+        "install_button": "Install",
+        "guide_button": "Guide",
+        "ios_guide_title": "Install on iPhone",
+        "step_1_label": "Step 1",
+        "step_1_text": "Tap the Share button in the menu bar.",
+        "step_2_label": "Step 2",
+        "step_2_text": "Scroll down and tap Add to Home Screen.",
+        "step_3_label": "Step 3",
+        "step_3_text": "Tap Add in the top right corner.",
+        "got_it": "Got it"
     }
 }

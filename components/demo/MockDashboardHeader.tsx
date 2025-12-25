@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Package, LogOut, Copy, Settings, Globe, Share, QrCode, Download, MoreVertical, MessageCircle } from 'lucide-react';
+import { LogOut, Copy, Settings, Globe, Share, QrCode, Download, MoreVertical, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -18,30 +18,26 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import QRCode from 'qrcode';
-import { useAuth } from '@/lib/contexts/AuthContext';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { Store } from '@/lib/types/database';
 
-interface DashboardHeaderProps {
+interface MockDashboardHeaderProps {
     store: Store | null;
 }
 
-export default function DashboardHeader({ store }: DashboardHeaderProps) {
+export default function MockDashboardHeader({ store }: MockDashboardHeaderProps) {
     const [showQrModal, setShowQrModal] = useState(false);
     const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
-    const { signOut } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
-    const { t, direction, language, setLanguage } = useLanguage();
+    const { t, language, setLanguage } = useLanguage();
 
     useEffect(() => {
         if (store) {
             if (store.qr_code) {
                 setQrCodeUrl(store.qr_code);
             } else {
-                // Generate client-side if missing
-                // Use dynamic redirect URL: /go/[store_id]
                 const url = `${window.location.origin}/go/${store.id}`;
                 QRCode.toDataURL(url).then(setQrCodeUrl).catch(console.error);
             }
@@ -55,6 +51,13 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
         toast({
             title: t('dashboard.link_copied'),
             description: t('dashboard.link_copied_desc'),
+        });
+    };
+
+    const handleMockAction = (action: string) => {
+        toast({
+            title: "Demo Mode",
+            description: `${action} is simulated or disabled in demo.`
         });
     };
 
@@ -86,17 +89,7 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
                                     {t('dashboard.copy_link')}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                    onClick={() => {
-                                        if (store && navigator.share) {
-                                            navigator.share({
-                                                title: store.name,
-                                                text: store.description || '',
-                                                url: `${window.location.origin}/${store.slug}`,
-                                            }).catch(console.error);
-                                        } else {
-                                            handleCopyStoreLink();
-                                        }
-                                    }}
+                                    onClick={() => handleMockAction('Sharing')}
                                     className="cursor-pointer"
                                 >
                                     <Share className="w-4 h-4 mr-2" />
@@ -131,7 +124,7 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
                                     {language === 'en' ? 'العربية' : 'English'}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                    onClick={() => router.push('/dashboard/settings')}
+                                    onClick={() => handleMockAction('Settings')}
                                     className="cursor-pointer"
                                 >
                                     <Settings className="w-4 h-4 mr-2" />
@@ -145,11 +138,11 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
                                     {t('dashboard.chat_support')}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                    onClick={signOut}
+                                    onClick={() => router.push('/')}
                                     className="cursor-pointer text-red-600 focus:text-red-600"
                                 >
                                     <LogOut className="w-4 h-4 mr-2" />
-                                    {t('dashboard.logout')}
+                                    Quit Demo
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -168,31 +161,7 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
                                             <div className="flex gap-2 w-full">
                                                 <Button
                                                     className="flex-1 bg-[#008069] hover:bg-[#017561]"
-                                                    onClick={async () => {
-                                                        try {
-                                                            const response = await fetch(qrCodeUrl);
-                                                            const blob = await response.blob();
-                                                            const file = new File([blob], `${store?.slug}-qr.png`, { type: 'image/png' });
-
-                                                            if (navigator.share) {
-                                                                await navigator.share({
-                                                                    files: [file],
-                                                                    title: store?.name || 'Store QR Code',
-                                                                    text: store?.name,
-                                                                });
-                                                            } else {
-                                                                // Fallback
-                                                                const link = document.createElement('a');
-                                                                link.href = qrCodeUrl;
-                                                                link.download = `${store?.slug}-qr.png`;
-                                                                document.body.appendChild(link);
-                                                                link.click();
-                                                                document.body.removeChild(link);
-                                                            }
-                                                        } catch (error) {
-                                                            console.error('Error sharing:', error);
-                                                        }
-                                                    }}
+                                                    onClick={() => handleMockAction('Share QR')}
                                                 >
                                                     <Share className="w-4 h-4 mr-2" />
                                                     {t('dashboard.share')}
@@ -200,14 +169,7 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
                                                 <Button
                                                     variant="outline"
                                                     className="flex-1"
-                                                    onClick={() => {
-                                                        const link = document.createElement('a');
-                                                        link.href = qrCodeUrl;
-                                                        link.download = `${store?.slug}-qr.png`;
-                                                        document.body.appendChild(link);
-                                                        link.click();
-                                                        document.body.removeChild(link);
-                                                    }}
+                                                    onClick={() => handleMockAction('Download QR')}
                                                 >
                                                     <Download className="w-4 h-4 mr-2" />
                                                     {t('common.download')}

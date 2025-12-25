@@ -59,11 +59,11 @@ export default function Home() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mt-4">
-                <a href="#" className="bg-green-50 hover:bg-green-100 text-landing-primary border border-landing-primary/20 dark:bg-green-900/10 dark:text-green-300 dark:hover:bg-green-900/20 text-base px-6 py-3 rounded-full font-bold transition-all flex items-center justify-center gap-2">
+                <Link href="/demo" className="bg-green-50 hover:bg-green-100 text-landing-primary border border-landing-primary/20 dark:bg-green-900/10 dark:text-green-300 dark:hover:bg-green-900/20 text-base px-6 py-3 rounded-full font-bold transition-all flex items-center justify-center gap-2">
                   <span>جرب لوحة التحكم</span>
                   <span className="material-icons-outlined text-sm">dashboard</span>
-                </a>
-                <a href="#" className="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700 text-base px-6 py-3 rounded-full font-bold transition-all flex items-center justify-center gap-2">
+                </Link>
+                <a href="https://whatsou.com/john" target="_blank" className="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700 text-base px-6 py-3 rounded-full font-bold transition-all flex items-center justify-center gap-2">
                   <span>جرب متجر الزوار</span>
                   <span className="material-icons-outlined text-sm">storefront</span>
                 </a>
@@ -79,29 +79,16 @@ export default function Home() {
             </div>
             {/* Hero Image / Mockup */}
             <div className="relative mx-auto lg:mr-auto lg:ml-0 w-full max-w-sm lg:max-w-md">
-              <div className="relative rounded-[2.5rem] border-8 border-gray-900 dark:border-gray-700 bg-gray-900 shadow-2xl overflow-hidden z-10">
-                <div className="bg-white dark:bg-gray-800 h-[600px] w-full overflow-hidden flex flex-col">
-                  <div className="bg-landing-primary p-4 flex justify-between items-center text-white">
-                    <span className="font-bold">متجر الأناقة</span>
-                    <span className="material-icons-outlined">shopping_cart</span>
-                  </div>
-                  <div className="p-4 grid grid-cols-2 gap-3 overflow-y-auto">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div key={i} className="bg-gray-50 dark:bg-gray-700 rounded-xl p-2 pb-4">
-                        <div className="h-24 bg-gray-200 dark:bg-gray-600 rounded-lg mb-2"></div>
-                        <div className="h-4 w-3/4 bg-gray-200 dark:bg-gray-600 rounded mb-1"></div>
-                        <div className="h-4 w-1/2 bg-landing-primary/20 rounded"></div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-auto p-4 border-t border-gray-100 dark:border-gray-700">
-                    <div className="w-full bg-landing-primary h-12 rounded-xl flex items-center justify-center text-white font-bold">
-                      إتمام الطلب عبر واتساب
-                    </div>
-                  </div>
-                </div>
+              <div className="relative z-10">
+                <Image
+                  src="/hero-mockup.png"
+                  alt="WhatSou App Mockup"
+                  width={400}
+                  height={800}
+                  priority
+                  className="w-full h-auto drop-shadow-2xl"
+                />
               </div>
-              <div className="absolute -z-10 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[120%] h-[110%] bg-gradient-to-tr from-green-100 to-white dark:from-green-900/20 dark:to-gray-800 rounded-full blur-2xl opacity-70"></div>
             </div>
           </div>
         </div>

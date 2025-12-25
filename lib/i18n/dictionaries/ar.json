@@ -124,7 +124,8 @@
         "filter_delivery_type": "نوع الاستلام",
         "filter_all_types": "الكل",
         "filter_delivery": "توصيل",
-        "filter_pickup": "استلام من الفرع"
+        "filter_pickup": "استلام من الفرع",
+        "chat_support": "تحدث مع الدعم"
     },
     "customers": {
         "orders": "طلبات",
@@ -268,5 +269,19 @@
         "back_to_dashboard": "العودة للوحة التحكم",
         "back_to_store": "العودة للمتجر",
         "error_code": "خطأ 404"
+    },
+    "pwa": {
+        "install_title": "تثبيت تطبيق WhatSou",
+        "install_subtitle": "للحصول على تجربة أفضل",
+        "install_button": "تثبيت",
+        "guide_button": "شرح",
+        "ios_guide_title": "التثبيت على الآيفون",
+        "step_1_label": "الخطوة ١",
+        "step_1_text": "اضغط على زر المشاركة في شريط القائمة.",
+        "step_2_label": "الخطوة ٢",
+        "step_2_text": "انزل لأسفل واضغط إضافة إلى الشاشة الرئيسية.",
+        "step_3_label": "الخطوة ٣",
+        "step_3_text": "اضغط إضافة في أعلى الشاشة.",
+        "got_it": "فهمت"
     }
 }

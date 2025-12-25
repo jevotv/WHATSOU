@@ -81,8 +81,10 @@ export default function PwaInstallBanner() {
                         <img src="/logo.png" alt="App Icon" className="w-8 h-8 object-contain" />
                     </div>
                     <div className="text-sm font-medium leading-tight">
-                        <div>Install WhatSou App</div>
-                        <div className="text-xs opacity-90">For a better experience</div>
+                        <div className="text-sm font-medium leading-tight">
+                            <div>{t('pwa.install_title')}</div>
+                            <div className="text-xs opacity-90">{t('pwa.install_subtitle')}</div>
+                        </div>
                     </div>
                 </div>
 
@@ -93,7 +95,7 @@ export default function PwaInstallBanner() {
                         className="h-8 rounded-full bg-white text-[#008069] hover:bg-gray-100 font-bold"
                         onClick={handleInstallClick}
                     >
-                        {platform === 'ios' ? 'Guide' : 'Install'}
+                        {platform === 'ios' ? t('pwa.guide_button') : t('pwa.install_button')}
                     </Button>
                     <button
                         onClick={handleDismiss}
@@ -108,7 +110,7 @@ export default function PwaInstallBanner() {
             <Dialog open={showIosInstructions} onOpenChange={setShowIosInstructions}>
                 <DialogContent className="max-w-xs sm:max-w-sm rounded-2xl" dir={direction}>
                     <DialogHeader>
-                        <DialogTitle className="text-center">Install on iPhone</DialogTitle>
+                        <DialogTitle className="text-center">{t('pwa.ios_guide_title')}</DialogTitle>
                     </DialogHeader>
 
                     <div className="flex flex-col gap-6 py-4">
@@ -118,8 +120,8 @@ export default function PwaInstallBanner() {
                                 <Share className="w-6 h-6 text-blue-500" />
                             </div>
                             <div>
-                                <div className="font-bold text-sm">Step 1</div>
-                                <p className="text-sm text-gray-500">Tap the <span className="font-bold">Share</span> button in the menu bar.</p>
+                                <div className="font-bold text-sm">{t('pwa.step_1_label')}</div>
+                                <p className="text-sm text-gray-500">{t('pwa.step_1_text')}</p>
                             </div>
                         </div>
 
@@ -129,8 +131,8 @@ export default function PwaInstallBanner() {
                                 <PlusSquare className="w-6 h-6 text-gray-600" />
                             </div>
                             <div>
-                                <div className="font-bold text-sm">Step 2</div>
-                                <p className="text-sm text-gray-500">Scroll down and tap <span className="font-bold">Add to Home Screen</span>.</p>
+                                <div className="font-bold text-sm">{t('pwa.step_2_label')}</div>
+                                <p className="text-sm text-gray-500">{t('pwa.step_2_text')}</p>
                             </div>
                         </div>
 
@@ -140,8 +142,8 @@ export default function PwaInstallBanner() {
                                 <span className="font-bold text-blue-600">Add</span>
                             </div>
                             <div>
-                                <div className="font-bold text-sm">Step 3</div>
-                                <p className="text-sm text-gray-500">Tap <span className="font-bold">Add</span> in the top right corner.</p>
+                                <div className="font-bold text-sm">{t('pwa.step_3_label')}</div>
+                                <p className="text-sm text-gray-500">{t('pwa.step_3_text')}</p>
                             </div>
                         </div>
                     </div>
@@ -150,7 +152,7 @@ export default function PwaInstallBanner() {
                         className="w-full rounded-xl"
                         onClick={() => setShowIosInstructions(false)}
                     >
-                        Got it
+                        {t('pwa.got_it')}
                     </Button>
                 </DialogContent>
             </Dialog>
