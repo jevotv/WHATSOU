@@ -105,16 +105,16 @@ export default function MockSettingsPage() {
 
             updateStore({
                 name,
-                description: description || null,
+                description: description || undefined,
                 whatsapp_number: standardizePhoneNumber(whatsappNumber),
                 default_language: defaultLanguage,
-                email: email || null,
+                email: email || undefined,
                 logo_url: logoUrl,
-                facebook_url: facebookUrl || null,
-                instagram_url: instagramUrl || null,
-                twitter_url: twitterUrl || null,
-                tiktok_url: tiktokUrl || null,
-                location_url: locationUrl || null,
+                facebook_url: facebookUrl || undefined,
+                instagram_url: instagramUrl || undefined,
+                twitter_url: twitterUrl || undefined,
+                tiktok_url: tiktokUrl || undefined,
+                location_url: locationUrl || undefined,
                 allow_delivery: allowDelivery,
                 allow_pickup: allowPickup,
             });
