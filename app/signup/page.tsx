@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { ShoppingBag, Globe } from 'lucide-react';
+import Image from 'next/image';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
 
@@ -59,8 +60,8 @@ export default function SignupPage() {
               <Globe className="w-4 h-4" />
             </Button>
           </div>
-          <div className="mx-auto bg-green-500 w-16 h-16 rounded-3xl flex items-center justify-center">
-            <ShoppingBag className="w-8 h-8 text-white" />
+          <div className="mx-auto bg-green-500 w-16 h-16 rounded-3xl flex items-center justify-center overflow-hidden">
+            <Image src="/logo.png" alt="WhatSou Logo" width={48} height={48} className="w-12 h-12 object-contain brightness-0 invert" />
           </div>
           <CardTitle className="text-3xl font-bold">{t('auth.register_title')}</CardTitle>
           <CardDescription className="text-base">

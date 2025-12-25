@@ -289,7 +289,7 @@ export default function OnboardingPage() {
         </div>
         <CardHeader className="text-center space-y-4 pt-8">
           <div className="mx-auto bg-green-100 w-16 h-16 rounded-3xl flex items-center justify-center mb-2">
-            {step === 1 ? <StoreIcon className="w-8 h-8 text-green-600" /> : <Share2 className="w-8 h-8 text-green-600" />}
+            {step === 1 ? <Image src="/logo.png" alt="WhatSou Logo" width={48} height={48} className="w-10 h-10 object-contain" /> : <Share2 className="w-8 h-8 text-green-600" />}
           </div>
           <CardTitle className="text-3xl font-bold">
             {step === 1 ? t('onboarding.step1_title') : t('onboarding.step2_title')}

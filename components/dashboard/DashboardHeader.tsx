@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Package, LogOut, Copy, Settings, Globe, Share, QrCode, Download, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -62,7 +63,7 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     <div className="flex items-center gap-3 flex-1 min-w-0 pr-4">
-                        <Package className="w-8 h-8 shrink-0" />
+                        <Image src="/logo.png" alt="Logo" width={32} height={32} className="w-8 h-8 shrink-0 object-contain brightness-0 invert" />
                         <div className="min-w-0">
                             <h1 className="text-xl font-bold truncate">{store?.name}</h1>
                             <p className="text-xs text-green-100 hidden sm:block">{t('dashboard.whatsapp_commerce')}</p>

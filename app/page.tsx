@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Cairo } from 'next/font/google';
+import Image from 'next/image';
 
 const cairo = Cairo({ subsets: ['arabic'], weight: ['300', '400', '600', '700', '800'] });
 
@@ -12,7 +13,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex-shrink-0 flex items-center gap-2 cursor-pointer">
-              <span className="material-icons-outlined text-landing-primary text-3xl">shopping_bag</span>
+              <Image src="/logo.png" alt="WhatSou Logo" width={32} height={32} className="w-8 h-8 object-contain" />
               <span className="font-bold text-2xl tracking-tight text-gray-900 dark:text-white">WhatSou</span>
             </div>
             <div className="hidden md:flex items-center space-x-reverse space-x-8">
@@ -391,8 +392,8 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-gray-50 dark:bg-gray-900 py-12 border-t border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex items-center justify-center gap-2 mb-6 opacity-80">
-            <span className="material-icons-outlined text-landing-primary text-2xl">shopping_bag</span>
+          <div className="flex flex-col items-center justify-center gap-4 mb-6 opacity-80">
+            <Image src="/logo.png" alt="WhatSou Logo" width={64} height={64} className="w-16 h-16 object-contain" />
             <span className="font-bold text-xl text-gray-900 dark:text-white">WhatSou</span>
           </div>
           <p className="text-gray-500 dark:text-gray-400 text-sm">
