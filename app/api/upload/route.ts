@@ -35,11 +35,27 @@ export async function POST(request: NextRequest) {
         // Check if this is a product image upload (with thumbnail + full)
         const thumbnail = formData.get('thumbnail') as File | null;
         const full = formData.get('full') as File | null;
-        const storeSlug = formData.get('storeSlug') as string | null;
-        const productPath = formData.get('productPath') as string | null;
 
         // New product image upload with both sizes
-        if (thumbnail && full && storeSlug && productPath) {
+        if (thumbnail || full) {
+            // Strict validation for product uploads
+            if (!thumbnail || !full) {
+                return NextResponse.json(
+                    { error: 'Both thumbnail and full image are required for product uploads.' },
+                    { status: 400 }
+                );
+            }
+
+            const storeSlug = formData.get('storeSlug') as string | null;
+            const productPath = formData.get('productPath') as string | null;
+
+            if (!storeSlug || !productPath) {
+                return NextResponse.json(
+                    { error: 'Missing storeSlug or productPath for product upload.' },
+                    { status: 400 }
+                );
+            }
+
             const basePath = `${storeSlug}/${productPath}`;
 
             const [thumbnailUrl, fullUrl] = await Promise.all([

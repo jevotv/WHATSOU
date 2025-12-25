@@ -9,12 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShoppingBag, ArrowLeft, Upload, Check, Store as StoreIcon, Phone, Share2, Globe, Truck } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, Upload, Check, Store as StoreIcon, Phone, Share2, Globe, Truck, Pencil, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
 import Image from 'next/image';
 import { Label } from '@/components/ui/label';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { slugify } from '@/lib/utils/slug';
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(1);
@@ -27,6 +28,8 @@ export default function OnboardingPage() {
 
   // Step 1: Basic Info
   const [storeName, setStoreName] = useState('');
+  const [customSlug, setCustomSlug] = useState('');
+  const [isEditingSlug, setIsEditingSlug] = useState(false);
   const [description, setDescription] = useState('');
   const [allowDelivery, setAllowDelivery] = useState(true);
   const [allowPickup, setAllowPickup] = useState(false);
@@ -79,11 +82,12 @@ export default function OnboardingPage() {
     }
   };
 
+
+
+  // ... (inside component)
+
   const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
+    return slugify(name);
   };
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -181,7 +185,7 @@ export default function OnboardingPage() {
 
     try {
       // Validate unique slug first
-      const slug = generateSlug(storeName);
+      const slug = customSlug || generateSlug(storeName);
       const { data: existingStore } = await supabase
         .from('stores')
         .select('id')
@@ -310,9 +314,45 @@ export default function OnboardingPage() {
                     onChange={(e) => setStoreName(e.target.value)}
                     className="rounded-xl h-12"
                   />
-                  <p className="text-xs text-muted-foreground" dir="ltr">
-                    {t('onboarding.store_url').replace('{slug}', generateSlug(storeName) || 'store-name')}
-                  </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <p className="text-xs text-muted-foreground" dir="ltr">
+                      {t('onboarding.store_url').replace('{slug}', '')}
+                    </p>
+
+                    {isEditingSlug ? (
+                      <div className="flex items-center gap-2 flex-1 max-w-[200px]">
+                        <Input
+                          value={customSlug}
+                          onChange={(e) => setCustomSlug(slugify(e.target.value))}
+                          className="h-7 text-xs px-2 rounded-md"
+                          autoFocus
+                          placeholder="my-store"
+                        />
+                        <button
+                          onClick={() => setIsEditingSlug(false)}
+                          className="p-1 hover:bg-gray-100 rounded-full text-green-600"
+                        >
+                          <Check className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 group">
+                        <span className="font-medium text-xs text-green-700 bg-green-50 px-2 py-0.5 rounded dir-ltr">
+                          {customSlug || generateSlug(storeName) || 'store-name'}
+                        </span>
+                        <button
+                          onClick={() => {
+                            if (!customSlug) setCustomSlug(generateSlug(storeName));
+                            setIsEditingSlug(true);
+                          }}
+                          className="p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-100 rounded-full text-gray-500"
+                          title="Edit URL"
+                        >
+                          <Pencil className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-2">

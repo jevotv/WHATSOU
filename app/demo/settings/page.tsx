@@ -16,6 +16,7 @@ import QRCode from 'qrcode';
 
 export default function MockSettingsPage() {
     const { store, updateStore } = useMockDashboard();
+
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 

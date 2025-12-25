@@ -138,6 +138,10 @@ export default function ProductFormModal({
         productName: name || 'product',
       });
 
+      if (!storeSlug) {
+        throw new Error("Missing store information. Please refresh the page.");
+      }
+
       const formData = new FormData();
       formData.append('thumbnail', thumbnail);
       formData.append('full', full);
