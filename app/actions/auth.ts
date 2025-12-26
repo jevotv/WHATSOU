@@ -68,6 +68,7 @@ export async function signUp(formData: FormData) {
     cookies().set(SESSION_COOKIE_NAME, JSON.stringify({ id: newUser.id, phone: newUser.phone }), {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
         maxAge: 60 * 60 * 24 * 7, // 1 week
         path: '/',
     })
@@ -103,6 +104,7 @@ export async function signIn(formData: FormData) {
     cookies().set(SESSION_COOKIE_NAME, JSON.stringify({ id: user.id, phone: user.phone }), {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
         maxAge: 60 * 60 * 24 * 7, // 1 week
         path: '/',
     })
