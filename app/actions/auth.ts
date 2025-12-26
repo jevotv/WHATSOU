@@ -122,15 +122,22 @@ export async function getSession() {
         const session = JSON.parse(sessionCookie.value)
 
         // Validate user still exists
-        const { data: user } = await supabase
+        const { data: user, error } = await supabase
             .from('users')
             .select('id')
             .eq('id', session.id)
             .single()
 
-        if (!user) {
+        // Only delete cookie if we are SURE the user doesn't exist (no data and no error OR specific not found error)
+        if (!user && (!error || error.code === 'PGRST116')) {
             cookies().delete(SESSION_COOKIE_NAME)
             return null
+        }
+
+        // Maintain session on other errors
+        if (error && error.code !== 'PGRST116') {
+            // Log but don't logout
+            console.error('Session validation transient error:', error)
         }
 
         return session
