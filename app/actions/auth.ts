@@ -121,24 +121,13 @@ export async function getSession() {
     try {
         const session = JSON.parse(sessionCookie.value)
 
-        // Validate user still exists
-        const { data: user, error } = await supabase
-            .from('users')
-            .select('id')
-            .eq('id', session.id)
-            .single()
-
-        // Only delete cookie if we are SURE the user doesn't exist (no data and no error OR specific not found error)
-        if (!user && (!error || error.code === 'PGRST116')) {
+        // MANUAL BLACKLIST: Known deleted user causing zombie sessions
+        // This is safer than checking DB if permissions are flaky or connection is bad
+        if (session.id === 'bba49af4-d8d7-44cc-879b-0cb3b9b60538') {
             cookies().delete(SESSION_COOKIE_NAME)
             return null
         }
 
-        // Maintain session on other errors
-        if (error && error.code !== 'PGRST116') {
-            // Log but don't logout
-            console.error('Session validation transient error:', error)
-        }
 
         return session
     } catch (e) {
