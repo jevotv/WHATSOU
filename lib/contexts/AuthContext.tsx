@@ -54,6 +54,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Refresh session state
     const sessionUser = await getSession();
+
+    // DEBUG: Trap missing cookie immediately
+    if (!sessionUser) {
+      throw new Error('Login succeeded but session failed. (Cookie dropped?)');
+    }
+
     setUser(sessionUser);
     router.push('/dashboard');
     router.refresh();
