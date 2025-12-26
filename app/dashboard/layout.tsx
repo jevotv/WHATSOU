@@ -27,6 +27,9 @@ export default function DashboardLayout({
     useEffect(() => {
         async function loadStore() {
             if (!user) {
+                // DEBUG: Let the AuthGuard handle the UI for missing user, or set debug info here too
+                // For now, we want to know if user is null HERE
+                console.log("DashboardLayout: User is null");
                 setLoading(false);
                 return;
             }
