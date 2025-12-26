@@ -53,21 +53,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     // FALLBACK: Set cookie manually if server header was dropped
-    if (result.token) {
-      document.cookie = `app-session=${result.token}; path=/; max-age=604800; samesite=lax`;
+    if ((result as any).token) {
+      const cookieValue = encodeURIComponent((result as any).token);
+      document.cookie = `app-session=${cookieValue}; path=/; max-age=604800; samesite=lax; secure`;
+
+      // DEBUG: Verify cookie was set
+      if (document.cookie.indexOf('app-session') === -1) {
+        throw new Error('Browser blocked cookie setting. Please enable cookies.');
+      }
     }
 
-    // Refresh session state
-    const sessionUser = await getSession();
-
-    // DEBUG: Trap missing cookie immediately
-    if (!sessionUser) {
-      throw new Error('Login succeeded but session failed. (Cookie dropped?)');
-    }
-
-    setUser(sessionUser);
-    router.push('/dashboard');
-    router.refresh();
+    // Force hard reload to ensure headers are sent
+    window.location.href = '/dashboard';
   };
 
   const signUp = async (phone: string, password: string) => {
@@ -82,15 +79,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     // FALLBACK: Set cookie manually if server header was dropped
-    if (result.token) {
-      document.cookie = `app-session=${result.token}; path=/; max-age=604800; samesite=lax`;
+    if ((result as any).token) {
+      const cookieValue = encodeURIComponent((result as any).token);
+      document.cookie = `app-session=${cookieValue}; path=/; max-age=604800; samesite=lax; secure`;
+
+      if (document.cookie.indexOf('app-session') === -1) {
+        throw new Error('Browser blocked cookie setting. Please enable cookies.');
+      }
     }
 
-    // Refresh session state
-    const sessionUser = await getSession();
-    setUser(sessionUser);
-    router.push('/onboarding');
-    router.refresh();
+    window.location.href = '/onboarding';
   };
 
   const signOut = async () => {
