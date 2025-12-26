@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import { getCustomers } from '@/app/actions/dashboard';
 import { Loader2, Phone, ShoppingBag, MessageCircle, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/lib/contexts/AuthContext';
@@ -28,34 +28,19 @@ export default function CustomersPage() {
             if (!user) return;
 
             try {
-                // 1. Get Store ID
-                const { data: storeData, error: storeError } = await supabase
-                    .from('stores')
-                    .select('id')
-                    .eq('user_id', user.id)
-                    .single();
+                const result = await getCustomers();
 
-                if (storeError || !storeData) {
-                    console.error('Error fetching store:', storeError);
-                    setLoading(false);
+                if (result.error) {
+                    console.error('Error fetching customers:', result.error);
                     return;
                 }
 
-                const { data: orders, error } = await supabase
-                    .from('orders')
-                    .select('customer_name, customer_phone, created_at')
-                    .eq('store_id', storeData.id)
-                    .order('created_at', { ascending: false });
-
-                if (error) {
-                    console.error('Error fetching orders for customers:', error);
-                    return;
-                }
+                const orders = result.data;
 
                 // Aggregate unique customers by phone number
                 const customerMap = new Map<string, Customer>();
 
-                orders?.forEach((order) => {
+                orders?.forEach((order: any) => {
                     const phone = standardizePhoneNumber(order.customer_phone);
                     // Use phone as key
                     if (!customerMap.has(phone)) {

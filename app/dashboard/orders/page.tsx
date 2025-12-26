@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import { getOrders } from '@/app/actions/dashboard';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { Loader2, Package, Calendar, Phone, MapPin, Search, Filter, ChevronDown, ChevronUp, Home, Store as StoreIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -44,37 +44,20 @@ export default function OrdersPage() {
             if (!user) return;
 
             try {
-                // 1. Get Store with delivery options
-                const { data: storeData, error: storeError } = await supabase
-                    .from('stores')
-                    .select('id, allow_delivery, allow_pickup')
-                    .eq('user_id', user.id)
-                    .single();
+                const result = await getOrders();
 
-                if (storeError || !storeData) {
-                    console.error('Error fetching store:', storeError);
+                if (result.error) {
+                    console.error('Error fetching orders:', result.error);
                     setLoading(false);
                     return;
                 }
 
                 // Show filter only if both options are enabled
-                setShowDeliveryFilter(storeData.allow_delivery === true && storeData.allow_pickup === true);
-
-                console.log('Fetching orders for store:', storeData.id);
-
-                // 2. Get Orders for this store
-                const { data, error } = await supabase
-                    .from('orders')
-                    .select('*')
-                    .eq('store_id', storeData.id)
-                    .order('created_at', { ascending: false });
-
-                if (error) {
-                    console.error('Error fetching orders:', error);
-                } else {
-                    console.log('Orders fetched:', data);
-                    setOrders(data || []);
+                if (result.storeSettings) {
+                    setShowDeliveryFilter(result.storeSettings.allow_delivery === true && result.storeSettings.allow_pickup === true);
                 }
+
+                setOrders(result.orders || []);
             } catch (err) {
                 console.error('Unexpected error:', err);
             } finally {
