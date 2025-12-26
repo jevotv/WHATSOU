@@ -24,7 +24,7 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-const SESSION_COOKIE_NAME = 'whatsou_token';
+const SESSION_COOKIE_NAME = 'app-session';
 
 export async function signUp(formData: FormData) {
     const phone = formData.get('phone') as string
