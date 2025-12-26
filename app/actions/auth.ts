@@ -67,7 +67,8 @@ export async function signUp(formData: FormData) {
     // Set session
     cookies().set(SESSION_COOKIE_NAME, JSON.stringify({ id: newUser.id, phone: newUser.phone }), {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: false, // DEBUG: Disable secure flag to test if HTTPS/Proxy is the issue
+        sameSite: 'lax',
         maxAge: 60 * 60 * 24 * 7, // 1 week
         path: '/',
     })
@@ -113,7 +114,8 @@ export async function signIn(formData: FormData) {
     // Set session
     cookies().set(SESSION_COOKIE_NAME, JSON.stringify({ id: user.id, phone: user.phone }), {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: false, // DEBUG: Disable secure flag to test if HTTPS/Proxy is the issue
+        sameSite: 'lax',
         maxAge: 60 * 60 * 24 * 7, // 1 week
         path: '/',
     })
