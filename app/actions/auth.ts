@@ -84,20 +84,31 @@ export async function signIn(formData: FormData) {
         return { error: 'Phone and password are required' }
     }
 
+    // DEBUG: Check for service key
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        // We only show this in non-production usually, but we are debugging Prod
+        // return { error: 'Config: Missing Service Role Key' } 
+        // actually let's just log it or return it if user matches specific phone?
+    }
+
     const { data: user, error } = await supabase
         .from('users')
         .select('*')
         .eq('phone', phone)
         .single()
 
-    if (error || !user) {
-        return { error: 'Invalid credentials' }
+    if (error) {
+        return { error: `DB Error: ${error.message} (${error.code})` }
+    }
+
+    if (!user) {
+        return { error: 'User not found' }
     }
 
     const isMatch = await bcrypt.compare(password, user.password_hash)
 
     if (!isMatch) {
-        return { error: 'Invalid credentials' }
+        return { error: 'Password incorrect' }
     }
 
     // Set session
