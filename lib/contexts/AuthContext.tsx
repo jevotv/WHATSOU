@@ -81,6 +81,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error(result.error);
     }
 
+    // FALLBACK: Set cookie manually if server header was dropped
+    if (result.token) {
+      document.cookie = `app-session=${result.token}; path=/; max-age=604800; samesite=lax`;
+    }
+
     // Refresh session state
     const sessionUser = await getSession();
     setUser(sessionUser);
