@@ -76,7 +76,7 @@ export async function signUp(formData: FormData) {
         path: '/',
     })
 
-    return { success: true }
+    return { success: true, token: encodedValue }
 }
 
 export async function signIn(formData: FormData) {
@@ -126,7 +126,7 @@ export async function signIn(formData: FormData) {
         path: '/',
     })
 
-    return { success: true }
+    return { success: true, token: encodedValue }
 }
 
 export async function signOut() {
