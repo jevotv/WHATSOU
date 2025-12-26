@@ -13,7 +13,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Upload, Plus, Trash2, ChevronDown, Sparkles, DollarSign, Infinity as InfinityIcon, Info } from 'lucide-react';
 import Image from 'next/image';
 import { Switch } from '@/components/ui/switch';
-import { processProductImage, sanitizeName } from '@/lib/utils/imageProcessor';
+import { processProductImage } from '@/lib/utils/imageProcessor';
+import { slugify } from '@/lib/utils/slug';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 
 interface ProductFormModalProps {
