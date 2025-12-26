@@ -26,6 +26,8 @@ export default function DashboardPage() {
   const { toast } = useToast();
   const { t, direction } = useLanguage();
 
+
+
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
@@ -162,6 +164,8 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+
+
 
         {products.length === 0 ? (
           <div className="text-center py-16">

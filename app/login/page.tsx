@@ -20,10 +20,6 @@ export default function LoginPage() {
   const { t, language, setLanguage, direction } = useLanguage();
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Just set the value as typed, standardization happens on submit or we can do it live?
-    // User asked to "standardize like phone currently", which usually implies live or on blur.
-    // Let's just keep it simple and standardize on submit or use the utility if needed for display.
-    // Actually existing util is robust. Let's just set raw value and standardize on submit.
     setPhone(e.target.value);
   };
 
@@ -77,11 +73,11 @@ export default function LoginPage() {
               <label className="text-sm font-medium">{t('auth.phone_label')}</label>
               <Input
                 type="tel"
-                placeholder={t('auth.phone_placeholder')} // We might want to change translation key but for now reuse or keep same key with different text if user updates json separate
+                placeholder={t('auth.phone_placeholder')}
                 value={phone}
                 onChange={handlePhoneChange}
                 required
-                className="rounded-2xl h-12" // dir="ltr" might be good for phone numbers
+                className="rounded-2xl h-12"
                 dir="ltr"
               />
             </div>

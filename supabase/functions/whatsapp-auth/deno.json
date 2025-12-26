@@ -1,0 +1,7 @@
+{
+    "functions": {
+        "whatsapp-auth": {
+            "verify_jwt": false
+        }
+    }
+}

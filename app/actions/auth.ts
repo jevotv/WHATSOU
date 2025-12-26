@@ -6,25 +6,46 @@ import { createClient } from '@supabase/supabase-js'
 import { sendNewUserAlert } from '@/lib/telegram'
 
 // Initialize a Supabase client with the service role key for admin access
-// This is needed to bypass RLS if strict RLS policies are in place, 
 // though we are mostly using a custom table where we can just use the anon key 
 // IF we set up policies correctly. However, for "bypassing auth" and custom implementation,
 // service role is safest for server-side operations if we want to be sure.
-// BUT, the user prompt implies just using the standard client might be what was expected 
-// or simpler. Let's stick to standard client + custom table first, but we need 
-// the anon key and url. Since this is server side, we can use process.env directly.
-
-// Wait, standard client uses 'public' schema usually. We made the table in public.
-// We need to make sure we can read/write to it. 
-// Ideally we should use the service_role key to manage users securely server-side 
-// without needing strict RLS policies that rely on auth.uid() since we are bypassing that.
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! // Fallback to anon if service key missing, but anon might fail RLS
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 const SESSION_COOKIE_NAME = 'app-session';
+
+function getSupabaseAdmin() {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    // DEBUG LOGGING
+    console.log('--- DEBUG AUTH ---');
+    console.log('URL:', supabaseUrl);
+    console.log('Service Role Key Present:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+    console.log('Anon Key Present:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+    console.log('Selected Key (first 10 chars):', supabaseServiceKey?.substring(0, 10));
+    console.log('------------------');
+
+    if (!supabaseUrl) console.error('Missing NEXT_PUBLIC_SUPABASE_URL');
+    if (!supabaseServiceKey) console.error('Missing SUPABASE_SERVICE_ROLE_KEY and NEXT_PUBLIC_SUPABASE_ANON_KEY');
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+        throw new Error('Supabase configuration missing (URL or Key)');
+    }
+
+    if (!supabaseServiceKey.startsWith('ey')) {
+        console.error('CRITICAL: SUPABASE_SERVICE_ROLE_KEY is not a valid JWT (does not start with "ey").');
+        console.error('Current value starts with:', supabaseServiceKey.substring(0, 5));
+        throw new Error('Invalid SUPABASE_SERVICE_ROLE_KEY format. It must be a JWT starting with "ey..." (like your Anon key). You likely copied the wrong key/id from the dashboard.');
+    }
+
+    return createClient(supabaseUrl, supabaseServiceKey, {
+        auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+        }
+    })
+}
+
+
 
 export async function signUp(formData: FormData) {
     const phone = formData.get('phone') as string
@@ -35,6 +56,7 @@ export async function signUp(formData: FormData) {
     }
 
     // Check if user exists
+    const supabase = getSupabaseAdmin()
     const { data: existingUser } = await supabase
         .from('users')
         .select('id')
@@ -46,6 +68,7 @@ export async function signUp(formData: FormData) {
     }
 
     const passwordHash = await bcrypt.hash(password, 10)
+
 
     const { data: newUser, error } = await supabase
         .from('users')
@@ -94,6 +117,7 @@ export async function signIn(formData: FormData) {
         // actually let's just log it or return it if user matches specific phone?
     }
 
+    const supabase = getSupabaseAdmin()
     const { data: user, error } = await supabase
         .from('users')
         .select('*')
@@ -170,6 +194,7 @@ export async function changePassword(formData: FormData) {
     }
 
     // Get user to verify current password
+    const supabase = getSupabaseAdmin()
     const { data: user, error: userError } = await supabase
         .from('users')
         .select('password_hash')

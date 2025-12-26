@@ -12,15 +12,17 @@ import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
 
 export default function SignupPage() {
+  const [step, setStep] = useState<'form' | 'otp'>('form');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
   const { t, language, setLanguage, direction } = useLanguage();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -30,7 +32,7 @@ export default function SignupPage() {
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters'); // Should create translation for this if not in dictionary
+      setError('Password must be at least 6 characters');
       return;
     }
 
@@ -38,9 +40,59 @@ export default function SignupPage() {
 
     try {
       const standardizedPhone = standardizePhoneNumber(phone);
-      await signUp(standardizedPhone, password);
+
+      // 1. Send OTP
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/whatsapp-auth`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({ action: 'send', phone: standardizedPhone }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to send OTP');
+
+      setStep('otp');
     } catch (err: any) {
-      setError(err.message || 'Failed to sign up');
+      setError(err.message || 'Failed to send verification code');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyAndSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const standardizedPhone = standardizePhoneNumber(phone);
+
+      // 1. Verify OTP (Verify Only Mode)
+      const verifyResponse = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/whatsapp-auth`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          action: 'verify',
+          phone: standardizedPhone,
+          code,
+          verify_only: true // Important: Do not create auth user
+        }),
+      });
+
+      const verifyData = await verifyResponse.json();
+      if (!verifyResponse.ok) throw new Error(verifyData.error || 'Invalid code');
+
+      // 2. Create User (Server Action)
+      await signUp(standardizedPhone, password);
+
+    } catch (err: any) {
+      setError(err.message || 'Failed to verify');
     } finally {
       setLoading(false);
     }
@@ -65,61 +117,89 @@ export default function SignupPage() {
           </div>
           <CardTitle className="text-3xl font-bold">{t('auth.register_title')}</CardTitle>
           <CardDescription className="text-base">
-            {t('auth.register_subtitle')}
+            {step === 'form' ? t('auth.register_subtitle') : `Enter code sent to ${phone}`}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={step === 'form' ? handleSendOtp : handleVerifyAndSignup} className="space-y-4">
             {error && (
               <div className="bg-red-50 text-red-600 px-4 py-3 rounded-2xl text-sm">
                 {error}
               </div>
             )}
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t('auth.phone_label')}</label>
-              <Input
-                type="tel"
-                placeholder={t('auth.phone_placeholder')}
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-                className="rounded-2xl h-12"
-                dir="ltr"
-              />
-            </div>
+            {step === 'form' ? (
+              <>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('auth.phone_label')}</label>
+                  <Input
+                    type="tel"
+                    placeholder={t('auth.phone_placeholder')}
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                    className="rounded-2xl h-12"
+                    dir="ltr"
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t('auth.password_label')}</label>
-              <Input
-                type="password"
-                placeholder={t('auth.password_placeholder')}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="rounded-2xl h-12"
-              />
-            </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('auth.password_label')}</label>
+                  <Input
+                    type="password"
+                    placeholder={t('auth.password_placeholder')}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="rounded-2xl h-12"
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t('auth.confirm_password_label')}</label>
-              <Input
-                type="password"
-                placeholder={t('auth.password_placeholder')}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                className="rounded-2xl h-12"
-              />
-            </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('auth.confirm_password_label')}</label>
+                  <Input
+                    type="password"
+                    placeholder={t('auth.password_placeholder')}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="rounded-2xl h-12"
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Verification Code</label>
+                <Input
+                  type="text"
+                  placeholder="123456"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  required
+                  className="rounded-2xl h-12 text-center text-lg tracking-widest"
+                  dir="ltr"
+                  maxLength={6}
+                />
+              </div>
+            )}
 
             <Button
               type="submit"
               disabled={loading}
               className="w-full h-12 rounded-3xl bg-green-600 hover:bg-green-700 text-base font-semibold"
             >
-              {loading ? t('auth.creating_account') : t('auth.create_account')}
+              {loading ? (step === 'form' ? 'Sending Code...' : 'Creating Account...') : (step === 'form' ? t('auth.create_account') : 'Verify & Signup')}
             </Button>
+
+            {step === 'otp' && (
+              <button
+                type="button"
+                onClick={() => setStep('form')}
+                className="w-full text-sm text-gray-500 hover:text-gray-700 mt-2"
+              >
+                Back to Details
+              </button>
+            )}
 
             <p className="text-center text-sm text-gray-600">
               {t('auth.has_account')}{' '}
@@ -133,3 +213,4 @@ export default function SignupPage() {
     </div>
   );
 }
+
