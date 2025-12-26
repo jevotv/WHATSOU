@@ -1,4 +1,5 @@
 import imageCompression from 'browser-image-compression';
+import { slugify } from '@/lib/utils/slug';
 
 interface ProcessedImages {
     thumbnail: File;
@@ -96,18 +97,6 @@ function calculateDimensions(
 }
 
 /**
- * Sanitize product name for use in file path
- */
-function sanitizeName(name: string): string {
-    return name
-        .toLowerCase()
-        .replace(/[^a-z0-9\u0600-\u06FF]/g, '-') // Allow Arabic characters
-        .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '')
-        .substring(0, 50);
-}
-
-/**
  * Process an image file into thumbnail and full-size WebP versions
  */
 export async function processProductImage(
@@ -119,7 +108,7 @@ export async function processProductImage(
     basePath: string;
 }> {
     const timestamp = options.timestamp || Date.now();
-    const productSlug = sanitizeName(options.productName);
+    const productSlug = slugify(options.productName);
 
     // Create both versions in parallel
     const [thumbnail, full] = await Promise.all([
@@ -147,4 +136,4 @@ export async function processProductImage(
     };
 }
 
-export { sanitizeName };
+export { };

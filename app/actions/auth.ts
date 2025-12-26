@@ -124,3 +124,47 @@ export async function getSession() {
         return null
     }
 }
+
+export async function changePassword(formData: FormData) {
+    const currentPassword = formData.get('currentPassword') as string
+    const newPassword = formData.get('newPassword') as string
+
+    if (!currentPassword || !newPassword) {
+        return { error: 'Current and new passwords are required' }
+    }
+
+    const session = await getSession()
+    if (!session || !session.id) {
+        return { error: 'Unauthorized' }
+    }
+
+    // Get user to verify current password
+    const { data: user, error: userError } = await supabase
+        .from('users')
+        .select('password_hash')
+        .eq('id', session.id)
+        .single()
+
+    if (userError || !user) {
+        return { error: 'User not found' }
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password_hash)
+    if (!isMatch) {
+        return { error: 'Incorrect current password' }
+    }
+
+    const newPasswordHash = await bcrypt.hash(newPassword, 10)
+
+    const { error: updateError } = await supabase
+        .from('users')
+        .update({ password_hash: newPasswordHash })
+        .eq('id', session.id)
+
+    if (updateError) {
+        console.error('Password update error:', updateError)
+        return { error: 'Failed to update password' }
+    }
+
+    return { success: true }
+}

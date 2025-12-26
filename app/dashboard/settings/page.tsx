@@ -9,12 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Save, Store as StoreIcon, Phone, Share2, Upload, Truck, QrCode } from 'lucide-react';
+import { ArrowLeft, Save, Store as StoreIcon, Phone, Share2, Upload, Truck, QrCode, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { regenerateStoreQR } from '@/app/actions/store';
+import { changePassword } from '@/app/actions/auth';
 
 export default function SettingsPage() {
     const [store, setStore] = useState<Store | null>(null);
@@ -37,6 +38,12 @@ export default function SettingsPage() {
     const [locationUrl, setLocationUrl] = useState('');
     const [allowDelivery, setAllowDelivery] = useState(true);
     const [allowPickup, setAllowPickup] = useState(false);
+
+    // Password Change
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [changingPassword, setChangingPassword] = useState(false);
 
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
@@ -191,6 +198,69 @@ export default function SettingsPage() {
             });
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handlePasswordChange = async () => {
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            toast({
+                title: t('common.error'),
+                description: direction === 'rtl' ? 'يرجى ملء جميع حقول كلمة المرور' : 'Please fill all password fields',
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            toast({
+                title: t('common.error'),
+                description: direction === 'rtl' ? 'كلمات المرور الجديدة غير متطابقة' : 'New passwords do not match',
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            toast({
+                title: t('common.error'),
+                description: direction === 'rtl' ? 'يجب أن تكون كلمة المرور 6 أحرف على الأقل' : 'Password must be at least 6 characters',
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        setChangingPassword(true);
+        try {
+            const formData = new FormData();
+            formData.append('currentPassword', currentPassword);
+            formData.append('newPassword', newPassword);
+
+            const result = await changePassword(formData);
+
+            if (result.error) {
+                throw new Error(result.error);
+            }
+
+            toast({
+                title: t('settings.saved'),
+                description: direction === 'rtl' ? 'تم تغيير كلمة المرور بنجاح' : 'Password changed successfully',
+            });
+
+            // Clear fields
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmPassword('');
+
+        } catch (error: any) {
+            toast({
+                title: t('common.error'),
+                description: error.message === 'Incorrect current password'
+                    ? (direction === 'rtl' ? 'كلمة المرور الحالية غير صحيحة' : 'Incorrect current password')
+                    : error.message,
+                variant: 'destructive',
+            });
+        } finally {
+            setChangingPassword(false);
         }
     };
 
@@ -512,6 +582,53 @@ export default function SettingsPage() {
                                     </Button>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Security / Password Change */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
+                            <Lock className="w-5 h-5 text-[#008069]" />
+                            {direction === 'rtl' ? 'الأمان' : 'Security'}
+                        </h3>
+                        <div className="space-y-4 max-w-md">
+                            <div className="space-y-1.5">
+                                <Label className="text-sm font-bold text-gray-700">{direction === 'rtl' ? 'كلمة المرور الحالية' : 'Current Password'}</Label>
+                                <Input
+                                    type="password"
+                                    value={currentPassword}
+                                    onChange={(e) => setCurrentPassword(e.target.value)}
+                                    placeholder="••••••"
+                                    className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#008069]"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label className="text-sm font-bold text-gray-700">{direction === 'rtl' ? 'كلمة المرور الجديدة' : 'New Password'}</Label>
+                                <Input
+                                    type="password"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    placeholder="••••••"
+                                    className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#008069]"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label className="text-sm font-bold text-gray-700">{direction === 'rtl' ? 'تأكيد كلمة المرور الجديدة' : 'Confirm New Password'}</Label>
+                                <Input
+                                    type="password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    placeholder="••••••"
+                                    className="h-11 rounded-lg bg-gray-50 border-none focus:ring-2 focus:ring-[#008069]"
+                                />
+                            </div>
+                            <Button
+                                onClick={handlePasswordChange}
+                                disabled={changingPassword}
+                                className="bg-[#008069] hover:bg-green-500 text-white font-bold rounded-lg mt-2 w-full"
+                            >
+                                {changingPassword ? (direction === 'rtl' ? 'جاري التغيير...' : 'Changing...') : (direction === 'rtl' ? 'تغيير كلمة المرور' : 'Change Password')}
+                            </Button>
                         </div>
                     </div>
 
