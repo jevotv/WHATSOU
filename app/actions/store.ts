@@ -130,7 +130,7 @@ export async function regenerateStoreQR(storeId: string) {
 export async function getStoreForCurrentUser() {
     const session = await getSession();
     if (!session || !session.id) {
-        return { error: 'Unauthorized' };
+        return { error: 'Unauthorized', debug_session: session };
     }
 
     const supabase = createClient(
@@ -144,5 +144,5 @@ export async function getStoreForCurrentUser() {
         .eq('user_id', session.id)
         .maybeSingle();
 
-    return { store };
+    return { store, debug_session: session };
 }

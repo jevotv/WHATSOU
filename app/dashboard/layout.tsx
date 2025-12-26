@@ -19,6 +19,7 @@ export default function DashboardLayout({
 }) {
     const [store, setStore] = useState<Store | null>(null);
     const [loading, setLoading] = useState(true);
+    const [debugInfo, setDebugInfo] = useState<any>(null); // DEBUG STATE
     const { user } = useAuth();
     const { direction } = useLanguage();
     const router = useRouter();
@@ -31,10 +32,11 @@ export default function DashboardLayout({
             }
 
             try {
-                const { store, error } = await getStoreForCurrentUser();
+                const { store, error, debug_session } = await getStoreForCurrentUser();
 
                 if (error === 'Unauthorized') {
-                    router.push('/login');
+                    // DEBUG: Show why it is unauthorized
+                    setDebugInfo({ error, session: debug_session });
                     return;
                 }
 
@@ -46,6 +48,7 @@ export default function DashboardLayout({
                 setStore(store);
             } catch (error) {
                 console.error('Error loading store:', error);
+                setDebugInfo({ error: 'Exception', details: error });
             } finally {
                 setLoading(false);
             }
@@ -57,7 +60,18 @@ export default function DashboardLayout({
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[#f0f2f5]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#008069]"></div>
+                {debugInfo ? (
+                    <div className="bg-white p-8 rounded shadow max-w-lg">
+                        <h2 className="text-red-600 text-xl font-bold mb-4">Debug Mode: Access Denied</h2>
+                        <pre className="bg-gray-100 p-4 rounded text-sm overflow-auto">
+                            {JSON.stringify(debugInfo, null, 2)}
+                        </pre>
+                        <p className="mt-4 text-sm text-gray-500">Please send a screenshot of this to support.</p>
+                        <button onClick={() => router.push('/login')} className="mt-4 bg-gray-200 px-4 py-2 rounded">Go to Login</button>
+                    </div>
+                ) : (
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#008069]"></div>
+                )}
             </div>
         );
     }

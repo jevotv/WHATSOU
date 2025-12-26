@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // FALLBACK: Set cookie manually if server header was dropped
     if ((result as any).token) {
       const cookieValue = encodeURIComponent((result as any).token);
-      document.cookie = `whatsou_token=${cookieValue}; path=/; max-age=604800; samesite=lax; secure`;
+      document.cookie = `whatsou_token=${cookieValue}; path=/; max-age=604800; samesite=lax`;
 
       // DEBUG: Verify cookie was set
       if (document.cookie.indexOf('whatsou_token') === -1) {
@@ -81,7 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // FALLBACK: Set cookie manually if server header was dropped
     if ((result as any).token) {
       const cookieValue = encodeURIComponent((result as any).token);
-      document.cookie = `whatsou_token=${cookieValue}; path=/; max-age=604800; samesite=lax; secure`;
+      document.cookie = `whatsou_token=${cookieValue}; path=/; max-age=604800; samesite=lax`;
 
       if (document.cookie.indexOf('whatsou_token') === -1) {
         throw new Error('Browser blocked cookie setting. Please enable cookies.');
