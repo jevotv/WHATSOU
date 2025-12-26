@@ -126,3 +126,23 @@ export async function regenerateStoreQR(storeId: string) {
 
     return { success: true, qr_code: qrCodeDataUrl };
 }
+
+export async function getStoreForCurrentUser() {
+    const session = await getSession();
+    if (!session || !session.id) {
+        return { error: 'Unauthorized' };
+    }
+
+    const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    const { data: store } = await supabase
+        .from('stores')
+        .select('*')
+        .eq('user_id', session.id)
+        .maybeSingle();
+
+    return { store };
+}

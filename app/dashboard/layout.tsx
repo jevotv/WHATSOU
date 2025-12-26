@@ -10,6 +10,7 @@ import { useAuth } from '@/lib/contexts/AuthContext';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { supabase } from '@/lib/supabase/client';
 import { Store } from '@/lib/types/database';
+import { getStoreForCurrentUser } from '@/app/actions/store';
 
 export default function DashboardLayout({
     children,
@@ -30,18 +31,14 @@ export default function DashboardLayout({
             }
 
             try {
-                const { data: storeData } = await supabase
-                    .from('stores')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .maybeSingle();
+                const { store, error } = await getStoreForCurrentUser();
 
-                if (!storeData) {
+                if (error === 'Unauthorized' || !store) {
                     router.push('/onboarding');
                     return;
                 }
 
-                setStore(storeData);
+                setStore(store);
             } catch (error) {
                 console.error('Error loading store:', error);
             } finally {
