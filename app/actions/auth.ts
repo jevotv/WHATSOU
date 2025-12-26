@@ -119,7 +119,21 @@ export async function getSession() {
     const sessionCookie = cookies().get(SESSION_COOKIE_NAME)
     if (!sessionCookie) return null
     try {
-        return JSON.parse(sessionCookie.value)
+        const session = JSON.parse(sessionCookie.value)
+
+        // Validate user still exists
+        const { data: user } = await supabase
+            .from('users')
+            .select('id')
+            .eq('id', session.id)
+            .single()
+
+        if (!user) {
+            cookies().delete(SESSION_COOKIE_NAME)
+            return null
+        }
+
+        return session
     } catch (e) {
         return null
     }
