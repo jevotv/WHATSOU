@@ -33,7 +33,12 @@ export default function DashboardLayout({
             try {
                 const { store, error } = await getStoreForCurrentUser();
 
-                if (error === 'Unauthorized' || !store) {
+                if (error === 'Unauthorized') {
+                    router.push('/login');
+                    return;
+                }
+
+                if (!store) {
                     router.push('/onboarding');
                     return;
                 }
