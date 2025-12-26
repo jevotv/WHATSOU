@@ -65,9 +65,12 @@ export async function signUp(formData: FormData) {
     sendNewUserAlert(newUser.phone, newUser.created_at).catch(console.error);
 
     // Set session
-    cookies().set(SESSION_COOKIE_NAME, JSON.stringify({ id: newUser.id, phone: newUser.phone }), {
-        httpOnly: true,
-        secure: false, // DEBUG: Disable secure flag to test if HTTPS/Proxy is the issue
+    const payload = JSON.stringify({ id: newUser.id, phone: newUser.phone });
+    const encodedValue = Buffer.from(payload).toString('base64');
+
+    cookies().set(SESSION_COOKIE_NAME, encodedValue, {
+        httpOnly: false, // DEBUG: Allow client to see if cookie is set
+        secure: false, // DEBUG: Disable secure flag
         sameSite: 'lax',
         maxAge: 60 * 60 * 24 * 7, // 1 week
         path: '/',
@@ -112,9 +115,12 @@ export async function signIn(formData: FormData) {
     }
 
     // Set session
-    cookies().set(SESSION_COOKIE_NAME, JSON.stringify({ id: user.id, phone: user.phone }), {
-        httpOnly: true,
-        secure: false, // DEBUG: Disable secure flag to test if HTTPS/Proxy is the issue
+    const payload = JSON.stringify({ id: user.id, phone: user.phone });
+    const encodedValue = Buffer.from(payload).toString('base64');
+
+    cookies().set(SESSION_COOKIE_NAME, encodedValue, {
+        httpOnly: false, // DEBUG: Allow client to see if cookie is set
+        secure: false, // DEBUG: Disable secure flag
         sameSite: 'lax',
         maxAge: 60 * 60 * 24 * 7, // 1 week
         path: '/',
@@ -132,7 +138,9 @@ export async function getSession() {
     const sessionCookie = cookies().get(SESSION_COOKIE_NAME)
     if (!sessionCookie) return null
     try {
-        const session = JSON.parse(sessionCookie.value)
+        // Decode Base64 value
+        const jsonString = Buffer.from(sessionCookie.value, 'base64').toString('utf-8')
+        const session = JSON.parse(jsonString)
 
         // MANUAL BLACKLIST: Known deleted user causing zombie sessions
         // This is safer than checking DB if permissions are flaky or connection is bad
