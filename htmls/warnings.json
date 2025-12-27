@@ -1,0 +1,758 @@
+[
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.stores\\` has a row level security policy \\`Users can delete their own store\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "stores",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_stores_Users can delete their own store"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.products\\` has a row level security policy \\`Store owners can insert products\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "products",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_products_Store owners can insert products"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.products\\` has a row level security policy \\`Store owners can update products\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "products",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_products_Store owners can update products"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.products\\` has a row level security policy \\`Store owners can delete products\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "products",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_products_Store owners can delete products"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.product_variants\\` has a row level security policy \\`Store owners can insert variants\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "product_variants",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_product_variants_Store owners can insert variants"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.stores\\` has a row level security policy \\`Store owners can view their own stores\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "stores",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_stores_Store owners can view their own stores"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.stores\\` has a row level security policy \\`Store owners can create stores\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "stores",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_stores_Store owners can create stores"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.stores\\` has a row level security policy \\`Store owners can update their own stores\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "stores",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_stores_Store owners can update their own stores"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.stores\\` has a row level security policy \\`Store owners can delete their own stores\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "stores",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_stores_Store owners can delete their own stores"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.products\\` has a row level security policy \\`Store owners can view their products\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "products",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_products_Store owners can view their products"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.products\\` has a row level security policy \\`Store owners can create products\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "products",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_products_Store owners can create products"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.products\\` has a row level security policy \\`Store owners can update their products\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "products",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_products_Store owners can update their products"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.products\\` has a row level security policy \\`Store owners can delete their products\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "products",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_products_Store owners can delete their products"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.orders\\` has a row level security policy \\`Store owners can view their orders\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "orders",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_orders_Store owners can view their orders"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.product_variants\\` has a row level security policy \\`Store owners can view their variants\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "product_variants",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_product_variants_Store owners can view their variants"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.product_variants\\` has a row level security policy \\`Store owners can create variants\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "product_variants",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_product_variants_Store owners can create variants"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.stores\\` has a row level security policy \\`Users can create their own store\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "stores",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_stores_Users can create their own store"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.stores\\` has a row level security policy \\`Users can update their own store\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "stores",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_stores_Users can update their own store"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.product_variants\\` has a row level security policy \\`Store owners can update variants\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "product_variants",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_product_variants_Store owners can update variants"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.product_variants\\` has a row level security policy \\`Store owners can delete variants\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "product_variants",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_product_variants_Store owners can delete variants"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.orders\\` has a row level security policy \\`Store owners can view orders\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "orders",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_orders_Store owners can view orders"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.orders\\` has a row level security policy \\`Store owners can update orders\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "orders",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_orders_Store owners can update orders"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.users\\` has a row level security policy \\`Users can view their own profile\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "users",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_users_Users can view their own profile"
+    },
+    {
+        "name": "auth_rls_initplan",
+        "title": "Auth RLS Initialization Plan",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+        "detail": "Table \\`public.users\\` has a row level security policy \\`Users can update their own profile\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+        "metadata": {
+            "name": "users",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "auth_rls_init_plan_public_users_Users can update their own profile"
+    },
+    {
+        "name": "multiple_permissive_policies",
+        "title": "Multiple Permissive Policies",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if multiple permissive row level security policies are present on a table for the same \\`role\\` and \\`action\\` (e.g. insert). Multiple permissive policies are suboptimal for performance as each policy must be executed for every relevant query.",
+        "detail": "Table \\`public.orders\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{\"Store owners can view orders\",\"Store owners can view their orders\"}\\`",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies",
+        "metadata": {
+            "name": "orders",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "multiple_permissive_policies_public_orders_authenticated_SELECT"
+    },
+    {
+        "name": "multiple_permissive_policies",
+        "title": "Multiple Permissive Policies",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if multiple permissive row level security policies are present on a table for the same \\`role\\` and \\`action\\` (e.g. insert). Multiple permissive policies are suboptimal for performance as each policy must be executed for every relevant query.",
+        "detail": "Table \\`public.product_variants\\` has multiple permissive policies for role \\`anon\\` for action \\`SELECT\\`. Policies include \\`{\"Anyone can view variants from public stores\",\"Public variants are viewable by everyone\"}\\`",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies",
+        "metadata": {
+            "name": "product_variants",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "multiple_permissive_policies_public_product_variants_anon_SELECT"
+    },
+    {
+        "name": "multiple_permissive_policies",
+        "title": "Multiple Permissive Policies",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if multiple permissive row level security policies are present on a table for the same \\`role\\` and \\`action\\` (e.g. insert). Multiple permissive policies are suboptimal for performance as each policy must be executed for every relevant query.",
+        "detail": "Table \\`public.product_variants\\` has multiple permissive policies for role \\`authenticated\\` for action \\`INSERT\\`. Policies include \\`{\"Store owners can create variants\",\"Store owners can insert variants\"}\\`",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies",
+        "metadata": {
+            "name": "product_variants",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "multiple_permissive_policies_public_product_variants_authenticated_INSERT"
+    },
+    {
+        "name": "multiple_permissive_policies",
+        "title": "Multiple Permissive Policies",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if multiple permissive row level security policies are present on a table for the same \\`role\\` and \\`action\\` (e.g. insert). Multiple permissive policies are suboptimal for performance as each policy must be executed for every relevant query.",
+        "detail": "Table \\`public.product_variants\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{\"Public variants are viewable by everyone\",\"Store owners can view their variants\"}\\`",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies",
+        "metadata": {
+            "name": "product_variants",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "multiple_permissive_policies_public_product_variants_authenticated_SELECT"
+    },
+    {
+        "name": "multiple_permissive_policies",
+        "title": "Multiple Permissive Policies",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if multiple permissive row level security policies are present on a table for the same \\`role\\` and \\`action\\` (e.g. insert). Multiple permissive policies are suboptimal for performance as each policy must be executed for every relevant query.",
+        "detail": "Table \\`public.products\\` has multiple permissive policies for role \\`anon\\` for action \\`SELECT\\`. Policies include \\`{\"Public can view products\",\"Public products are viewable by everyone\"}\\`",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies",
+        "metadata": {
+            "name": "products",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "multiple_permissive_policies_public_products_anon_SELECT"
+    },
+    {
+        "name": "multiple_permissive_policies",
+        "title": "Multiple Permissive Policies",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if multiple permissive row level security policies are present on a table for the same \\`role\\` and \\`action\\` (e.g. insert). Multiple permissive policies are suboptimal for performance as each policy must be executed for every relevant query.",
+        "detail": "Table \\`public.products\\` has multiple permissive policies for role \\`authenticated\\` for action \\`DELETE\\`. Policies include \\`{\"Store owners can delete products\",\"Store owners can delete their products\"}\\`",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies",
+        "metadata": {
+            "name": "products",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "multiple_permissive_policies_public_products_authenticated_DELETE"
+    },
+    {
+        "name": "multiple_permissive_policies",
+        "title": "Multiple Permissive Policies",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if multiple permissive row level security policies are present on a table for the same \\`role\\` and \\`action\\` (e.g. insert). Multiple permissive policies are suboptimal for performance as each policy must be executed for every relevant query.",
+        "detail": "Table \\`public.products\\` has multiple permissive policies for role \\`authenticated\\` for action \\`INSERT\\`. Policies include \\`{\"Store owners can create products\",\"Store owners can insert products\"}\\`",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies",
+        "metadata": {
+            "name": "products",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "multiple_permissive_policies_public_products_authenticated_INSERT"
+    },
+    {
+        "name": "multiple_permissive_policies",
+        "title": "Multiple Permissive Policies",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if multiple permissive row level security policies are present on a table for the same \\`role\\` and \\`action\\` (e.g. insert). Multiple permissive policies are suboptimal for performance as each policy must be executed for every relevant query.",
+        "detail": "Table \\`public.products\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{\"Public can view products\",\"Public products are viewable by everyone\",\"Store owners can view their products\"}\\`",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies",
+        "metadata": {
+            "name": "products",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "multiple_permissive_policies_public_products_authenticated_SELECT"
+    },
+    {
+        "name": "multiple_permissive_policies",
+        "title": "Multiple Permissive Policies",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if multiple permissive row level security policies are present on a table for the same \\`role\\` and \\`action\\` (e.g. insert). Multiple permissive policies are suboptimal for performance as each policy must be executed for every relevant query.",
+        "detail": "Table \\`public.products\\` has multiple permissive policies for role \\`authenticated\\` for action \\`UPDATE\\`. Policies include \\`{\"Store owners can update products\",\"Store owners can update their products\"}\\`",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies",
+        "metadata": {
+            "name": "products",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "multiple_permissive_policies_public_products_authenticated_UPDATE"
+    },
+    {
+        "name": "multiple_permissive_policies",
+        "title": "Multiple Permissive Policies",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if multiple permissive row level security policies are present on a table for the same \\`role\\` and \\`action\\` (e.g. insert). Multiple permissive policies are suboptimal for performance as each policy must be executed for every relevant query.",
+        "detail": "Table \\`public.products\\` has multiple permissive policies for role \\`authenticator\\` for action \\`SELECT\\`. Policies include \\`{\"Public can view products\",\"Public products are viewable by everyone\"}\\`",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies",
+        "metadata": {
+            "name": "products",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "multiple_permissive_policies_public_products_authenticator_SELECT"
+    },
+    {
+        "name": "multiple_permissive_policies",
+        "title": "Multiple Permissive Policies",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if multiple permissive row level security policies are present on a table for the same \\`role\\` and \\`action\\` (e.g. insert). Multiple permissive policies are suboptimal for performance as each policy must be executed for every relevant query.",
+        "detail": "Table \\`public.products\\` has multiple permissive policies for role \\`dashboard_user\\` for action \\`SELECT\\`. Policies include \\`{\"Public can view products\",\"Public products are viewable by everyone\"}\\`",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies",
+        "metadata": {
+            "name": "products",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "multiple_permissive_policies_public_products_dashboard_user_SELECT"
+    },
+    {
+        "name": "multiple_permissive_policies",
+        "title": "Multiple Permissive Policies",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if multiple permissive row level security policies are present on a table for the same \\`role\\` and \\`action\\` (e.g. insert). Multiple permissive policies are suboptimal for performance as each policy must be executed for every relevant query.",
+        "detail": "Table \\`public.stores\\` has multiple permissive policies for role \\`anon\\` for action \\`SELECT\\`. Policies include \\`{\"Public can view stores\",\"Public stores are viewable by everyone\"}\\`",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies",
+        "metadata": {
+            "name": "stores",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "multiple_permissive_policies_public_stores_anon_SELECT"
+    },
+    {
+        "name": "multiple_permissive_policies",
+        "title": "Multiple Permissive Policies",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if multiple permissive row level security policies are present on a table for the same \\`role\\` and \\`action\\` (e.g. insert). Multiple permissive policies are suboptimal for performance as each policy must be executed for every relevant query.",
+        "detail": "Table \\`public.stores\\` has multiple permissive policies for role \\`authenticated\\` for action \\`DELETE\\`. Policies include \\`{\"Store owners can delete their own stores\",\"Users can delete their own store\"}\\`",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies",
+        "metadata": {
+            "name": "stores",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "multiple_permissive_policies_public_stores_authenticated_DELETE"
+    },
+    {
+        "name": "multiple_permissive_policies",
+        "title": "Multiple Permissive Policies",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if multiple permissive row level security policies are present on a table for the same \\`role\\` and \\`action\\` (e.g. insert). Multiple permissive policies are suboptimal for performance as each policy must be executed for every relevant query.",
+        "detail": "Table \\`public.stores\\` has multiple permissive policies for role \\`authenticated\\` for action \\`INSERT\\`. Policies include \\`{\"Store owners can create stores\",\"Users can create their own store\"}\\`",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies",
+        "metadata": {
+            "name": "stores",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "multiple_permissive_policies_public_stores_authenticated_INSERT"
+    },
+    {
+        "name": "multiple_permissive_policies",
+        "title": "Multiple Permissive Policies",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if multiple permissive row level security policies are present on a table for the same \\`role\\` and \\`action\\` (e.g. insert). Multiple permissive policies are suboptimal for performance as each policy must be executed for every relevant query.",
+        "detail": "Table \\`public.stores\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{\"Public can view stores\",\"Public stores are viewable by everyone\",\"Store owners can view their own stores\"}\\`",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies",
+        "metadata": {
+            "name": "stores",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "multiple_permissive_policies_public_stores_authenticated_SELECT"
+    },
+    {
+        "name": "multiple_permissive_policies",
+        "title": "Multiple Permissive Policies",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if multiple permissive row level security policies are present on a table for the same \\`role\\` and \\`action\\` (e.g. insert). Multiple permissive policies are suboptimal for performance as each policy must be executed for every relevant query.",
+        "detail": "Table \\`public.stores\\` has multiple permissive policies for role \\`authenticated\\` for action \\`UPDATE\\`. Policies include \\`{\"Store owners can update their own stores\",\"Users can update their own store\"}\\`",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies",
+        "metadata": {
+            "name": "stores",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "multiple_permissive_policies_public_stores_authenticated_UPDATE"
+    },
+    {
+        "name": "multiple_permissive_policies",
+        "title": "Multiple Permissive Policies",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if multiple permissive row level security policies are present on a table for the same \\`role\\` and \\`action\\` (e.g. insert). Multiple permissive policies are suboptimal for performance as each policy must be executed for every relevant query.",
+        "detail": "Table \\`public.stores\\` has multiple permissive policies for role \\`authenticator\\` for action \\`SELECT\\`. Policies include \\`{\"Public can view stores\",\"Public stores are viewable by everyone\"}\\`",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies",
+        "metadata": {
+            "name": "stores",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "multiple_permissive_policies_public_stores_authenticator_SELECT"
+    },
+    {
+        "name": "multiple_permissive_policies",
+        "title": "Multiple Permissive Policies",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+            "PERFORMANCE"
+        ],
+        "description": "Detects if multiple permissive row level security policies are present on a table for the same \\`role\\` and \\`action\\` (e.g. insert). Multiple permissive policies are suboptimal for performance as each policy must be executed for every relevant query.",
+        "detail": "Table \\`public.stores\\` has multiple permissive policies for role \\`dashboard_user\\` for action \\`SELECT\\`. Policies include \\`{\"Public can view stores\",\"Public stores are viewable by everyone\"}\\`",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies",
+        "metadata": {
+            "name": "stores",
+            "type": "table",
+            "schema": "public"
+        },
+        "cache_key": "multiple_permissive_policies_public_stores_dashboard_user_SELECT"
+    }
+]

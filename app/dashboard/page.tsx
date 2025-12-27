@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { deleteProduct } from '@/app/actions/dashboard';
 import { Store, Product, ProductVariant } from '@/lib/types/database';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -101,12 +102,11 @@ export default function DashboardPage() {
     if (!confirm(t('products.delete_confirm'))) return;
 
     try {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', productId);
+      const result = await deleteProduct(productId);
 
-      if (error) throw error;
+      if (result.error) {
+        throw new Error(result.error);
+      }
 
       toast({
         title: t('dashboard.delete_product_title'),

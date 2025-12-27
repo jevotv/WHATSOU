@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Product, ProductOption, ProductVariant } from '@/lib/types/database';
 import { supabase } from '@/lib/supabase/client';
+import { createProduct, updateProduct } from '@/app/actions/dashboard';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -335,6 +336,7 @@ export default function ProductFormModal({
         (opt) => opt.name && opt.values.length > 0
       );
 
+      // Prepare data for server action
       const productData = {
         store_id: storeId,
         name,
@@ -347,61 +349,37 @@ export default function ProductFormModal({
         image_url: uploadedImages.imageUrl || null,
         thumbnail_url: uploadedImages.thumbnailUrl || null,
         options: validOptions,
-      };
-
-      let productId = product?.id;
-
-      if (product) {
-        const { error } = await supabase
-          .from('products')
-          .update(productData)
-          .eq('id', product.id);
-
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase
-          .from('products')
-          .insert(productData)
-          .select()
-          .single();
-
-        if (error) throw error;
-        productId = data.id;
-      }
-
-      // Save variants if there are any
-      if (variants.length > 0 && productId) {
-        // Delete existing variants
-        await supabase
-          .from('product_variants')
-          .delete()
-          .eq('product_id', productId);
-
-        // Insert new variants
-        const variantsToInsert = variants.map((v) => ({
-          product_id: productId,
+        // Include variant data in the same payload for atomic transaction in server action (roughly)
+        variants: variants.map((v) => ({
           option_values: v.option_values,
           price: parseFloat(v.price) || 0,
           quantity: parseInt(v.quantity) || 0,
-          unlimited_stock: unlimitedStock, // Inherit from main product for now
           sku: v.sku || null,
-        }));
+        }))
+      };
 
-        const { error: variantError } = await supabase
-          .from('product_variants')
-          .insert(variantsToInsert);
+      let result;
 
-        if (variantError) throw variantError;
+      if (product) {
+        // Update existing
+        // We pass variants inside productData, but server action expects them separately?
+        // Let's check server action signature: updateProduct(id, data)
+        // Data in server action expects variants inside data object.
+        result = await updateProduct(product.id, productData);
+      } else {
+        // Create new
+        result = await createProduct(productData);
+      }
+
+      if (result.error) {
+        throw new Error(result.error);
       }
 
       toast({
         title: product ? t('products.edit_product') : t('products.add_new'),
         description: product
-          ? t('dashboard.product_updated_desc') // Need to check if I have this key, or use generic
-          : t('dashboard.product_added_desc'), // I added delete keys but maybe not these specific ones. I'll use hardcoded for now or generic success.
-        // actually I'll use common.success or leave hardcoded if I didn't add the key.
-        // I didn't add 'product_updated_desc'. I'll skip toast descriptions for now to avoid errors, or use what I have.
-        // Let's stick to replacing labels first.
+          ? t('dashboard.product_updated_desc')
+          : t('dashboard.product_added_desc'),
       });
 
       onSaved();
@@ -411,6 +389,7 @@ export default function ProductFormModal({
         description: error.message,
         variant: 'destructive',
       });
+    } finally {
       setLoading(false);
     }
   };

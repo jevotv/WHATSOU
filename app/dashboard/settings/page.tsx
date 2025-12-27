@@ -15,6 +15,7 @@ import Image from 'next/image';
 import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { regenerateStoreQR } from '@/app/actions/store';
+import { updateStore } from '@/app/actions/dashboard';
 import { changePassword } from '@/app/actions/auth';
 
 export default function SettingsPage() {
@@ -162,29 +163,31 @@ export default function SettingsPage() {
         if (!store) return;
         setSaving(true);
 
+
         try {
             const uploadedLogoUrl = await uploadLogo();
 
-            const { error } = await supabase
-                .from('stores')
-                .update({
-                    name,
-                    description: description || null,
-                    whatsapp_number: standardizePhoneNumber(whatsappNumber),
-                    default_language: defaultLanguage,
-                    email: email || null,
-                    logo_url: uploadedLogoUrl,
-                    facebook_url: facebookUrl || null,
-                    instagram_url: instagramUrl || null,
-                    twitter_url: twitterUrl || null,
-                    tiktok_url: tiktokUrl || null,
-                    location_url: locationUrl || null,
-                    allow_delivery: allowDelivery,
-                    allow_pickup: allowPickup,
-                })
-                .eq('id', store.id);
+            const storeData = {
+                name,
+                description: description || null,
+                whatsapp_number: standardizePhoneNumber(whatsappNumber),
+                default_language: defaultLanguage,
+                email: email || null,
+                logo_url: uploadedLogoUrl,
+                facebook_url: facebookUrl || null,
+                instagram_url: instagramUrl || null,
+                twitter_url: twitterUrl || null,
+                tiktok_url: tiktokUrl || null,
+                location_url: locationUrl || null,
+                allow_delivery: allowDelivery,
+                allow_pickup: allowPickup,
+            };
 
-            if (error) throw error;
+            const result = await updateStore(store.id, storeData);
+
+            if (result.error) {
+                throw new Error(result.error);
+            }
 
             toast({
                 title: t('settings.saved'),
