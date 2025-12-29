@@ -3,6 +3,8 @@ import { createServerClient } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
 import { Product, ProductVariant } from '@/lib/types/database';
 import StorefrontClient from '@/components/storefront/StorefrontClient';
+import StorePausedPage from '@/components/storefront/StorePausedPage';
+import { unstable_cache } from 'next/cache';
 
 // Force dynamic rendering to prevent build-time data fetching
 export const dynamic = 'force-dynamic';
@@ -47,6 +49,33 @@ export async function generateMetadata({ params }: StorefrontPageProps): Promise
   };
 }
 
+// Cached function to check subscription status (revalidates every 5 minutes)
+const getCachedSubscriptionStatus = unstable_cache(
+  async (userId: string) => {
+    const supabase = await createServerClient();
+    const { data: subscription } = await supabase
+      .from('subscriptions')
+      .select('status, storefront_paused_at')
+      .eq('user_id', userId)
+      .single();
+
+    if (!subscription) {
+      return { isPaused: false }; // No subscription = allow access (new stores)
+    }
+
+    // Check if storefront should be paused
+    if (subscription.storefront_paused_at) {
+      const pausedAt = new Date(subscription.storefront_paused_at);
+      if (new Date() > pausedAt) {
+        return { isPaused: true };
+      }
+    }
+
+    return { isPaused: false };
+  },
+  ['subscription-status'],
+  { revalidate: 300 } // Cache for 5 minutes
+);
 
 async function getStoreData(slug: string) {
   const supabase = await createServerClient();
@@ -91,6 +120,19 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
 
   if (!data) {
     notFound();
+  }
+
+  // Check subscription status with caching
+  const subscriptionStatus = await getCachedSubscriptionStatus(data.store.user_id);
+
+  // Show paused page if storefront is paused due to expired subscription
+  if (subscriptionStatus.isPaused) {
+    return (
+      <StorePausedPage
+        whatsappNumber={data.store.whatsapp_number}
+        storeName={data.store.name}
+      />
+    );
   }
 
   const jsonLd = {

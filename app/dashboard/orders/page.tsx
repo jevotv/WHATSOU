@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { getOrders } from '@/app/actions/dashboard';
 import { useAuth } from '@/lib/contexts/AuthContext';
-import { Loader2, Package, Calendar, Phone, MapPin, Search, Filter, ChevronDown, ChevronUp, Home, Store as StoreIcon } from 'lucide-react';
+import { Loader2, Package, Calendar, Phone, MapPin, Search, Filter, ChevronDown, ChevronUp, Home, Store as StoreIcon, Lock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/select";
 import { format, isToday, isYesterday, subDays, isAfter, startOfDay, parseISO } from 'date-fns';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useSubscription } from '@/lib/contexts/SubscriptionContext';
+import Link from 'next/link';
 
 type Order = {
     id: string;
@@ -35,7 +37,9 @@ export default function OrdersPage() {
     const [dateFilter, setDateFilter] = useState('all');
     const [deliveryFilter, setDeliveryFilter] = useState('all');
     const [showDeliveryFilter, setShowDeliveryFilter] = useState(false);
-    const { t, direction } = useLanguage();
+    const { t, direction, language } = useLanguage();
+    const { subscription, loading: subLoading } = useSubscription();
+    const isReadOnly = subscription?.isReadOnly ?? false;
 
     const { user } = useAuth();
 
@@ -72,10 +76,34 @@ export default function OrdersPage() {
         setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
     };
 
-    if (loading) {
+    if (loading || subLoading) {
         return (
             <div className="flex items-center justify-center min-h-[50vh]">
                 <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+            </div>
+        );
+    }
+
+    if (isReadOnly) {
+        return (
+            <div className="max-w-md mx-auto px-4 py-16 text-center">
+                <div className="bg-red-100 border-2 border-red-500 rounded-2xl p-8">
+                    <Lock className="w-16 h-16 mx-auto text-red-600 mb-4" />
+                    <h2 className="text-xl font-bold text-red-700 mb-2">
+                        {language === 'ar' ? 'وضع القراءة فقط' : 'Read-Only Mode'}
+                    </h2>
+                    <p className="text-red-600 mb-6">
+                        {language === 'ar'
+                            ? 'اشتراكك منتهي. جدد للوصول لبيانات الطلبات.'
+                            : 'Your subscription has expired. Renew to access order data.'}
+                    </p>
+                    <Link
+                        href="/dashboard/subscription"
+                        className="inline-block bg-red-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700"
+                    >
+                        {language === 'ar' ? 'جدد الآن' : 'Renew Now'}
+                    </Link>
+                </div>
             </div>
         );
     }

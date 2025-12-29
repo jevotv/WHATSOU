@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { getCustomers } from '@/app/actions/dashboard';
-import { Loader2, Phone, ShoppingBag, MessageCircle, Search } from 'lucide-react';
+import { Loader2, Phone, ShoppingBag, MessageCircle, Search, Lock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useSubscription } from '@/lib/contexts/SubscriptionContext';
 import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
+import Link from 'next/link';
 
 type Customer = {
     name: string;
@@ -19,7 +21,9 @@ export default function CustomersPage() {
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const { t, direction } = useLanguage();
+    const { t, direction, language } = useLanguage();
+    const { subscription, loading: subLoading } = useSubscription();
+    const isReadOnly = subscription?.isReadOnly ?? false;
 
     const { user } = useAuth();
 
@@ -70,10 +74,34 @@ export default function CustomersPage() {
         fetchCustomers();
     }, [user]);
 
-    if (loading) {
+    if (loading || subLoading) {
         return (
             <div className="flex items-center justify-center min-h-[50vh]">
                 <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+            </div>
+        );
+    }
+
+    if (isReadOnly) {
+        return (
+            <div className="max-w-md mx-auto px-4 py-16 text-center">
+                <div className="bg-red-100 border-2 border-red-500 rounded-2xl p-8">
+                    <Lock className="w-16 h-16 mx-auto text-red-600 mb-4" />
+                    <h2 className="text-xl font-bold text-red-700 mb-2">
+                        {language === 'ar' ? 'وضع القراءة فقط' : 'Read-Only Mode'}
+                    </h2>
+                    <p className="text-red-600 mb-6">
+                        {language === 'ar'
+                            ? 'اشتراكك منتهي. جدد للوصول لبيانات العملاء.'
+                            : 'Your subscription has expired. Renew to access customer data.'}
+                    </p>
+                    <Link
+                        href="/dashboard/subscription"
+                        className="inline-block bg-red-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700"
+                    >
+                        {language === 'ar' ? 'جدد الآن' : 'Renew Now'}
+                    </Link>
+                </div>
             </div>
         );
     }

@@ -1,16 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import BottomNav from '@/components/dashboard/BottomNav';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import PwaInstallBanner from '@/components/dashboard/PwaInstallBanner';
+import SubscriptionCountdown from '@/components/dashboard/SubscriptionCountdown';
+import { SubscriptionProvider } from '@/lib/contexts/SubscriptionContext';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { supabase } from '@/lib/supabase/client';
 import { Store } from '@/lib/types/database';
 import { getStoreForCurrentUser } from '@/app/actions/store';
+import { getSubscriptionStatus } from '@/app/actions/subscription';
 
 export default function DashboardLayout({
     children,
@@ -79,16 +82,20 @@ export default function DashboardLayout({
         );
     }
 
+
     return (
         <AuthGuard>
-            <div className="min-h-screen bg-[#f0f2f5] overflow-x-hidden" dir={direction}>
-                <PwaInstallBanner />
-                <DashboardHeader store={store} />
-                <div className="pb-24">
-                    {children}
+            <SubscriptionProvider>
+                <div className="min-h-screen bg-[#f0f2f5] overflow-x-hidden" dir={direction}>
+                    <PwaInstallBanner />
+                    <DashboardHeader store={store} />
+                    <SubscriptionCountdown />
+                    <div className="pb-24">
+                        {children}
+                    </div>
+                    <BottomNav />
                 </div>
-                <BottomNav />
-            </div>
+            </SubscriptionProvider>
         </AuthGuard>
     );
 }

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Package, LogOut, Copy, Settings, Globe, Share, QrCode, Download, MoreVertical, MessageCircle } from 'lucide-react';
+import { Package, LogOut, Copy, Settings, Globe, Share, QrCode, Download, MoreVertical, MessageCircle, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -129,6 +129,13 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
                                 >
                                     <Globe className="w-4 h-4 mr-2" />
                                     {language === 'en' ? 'العربية' : 'English'}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => router.push('/dashboard/subscription')}
+                                    className="cursor-pointer"
+                                >
+                                    <CreditCard className="w-4 h-4 mr-2" />
+                                    {t('dashboard.nav_subscription') || 'Subscription'}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     onClick={() => router.push('/dashboard/settings')}

@@ -231,7 +231,7 @@ export default function OnboardingPage() {
         description: t('onboarding.welcome_message'),
       });
 
-      router.push('/dashboard');
+      router.push('/dashboard/subscription');
     } catch (error: any) {
       toast({
         title: t('common.error'),

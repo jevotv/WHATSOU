@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import ProductCard from '@/components/dashboard/ProductCard';
 import ProductFormModal from '@/components/dashboard/ProductFormModal';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useSubscription } from '@/lib/contexts/SubscriptionContext';
 
 export default function DashboardPage() {
   const [store, setStore] = useState<Store | null>(null);
@@ -25,7 +26,9 @@ export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  const { t, direction } = useLanguage();
+  const { t, direction, language } = useLanguage();
+  const { subscription } = useSubscription();
+  const isReadOnly = subscription?.isReadOnly ?? false;
 
 
 
@@ -94,11 +97,27 @@ export default function DashboardPage() {
   };
 
   const handleEditProduct = (product: Product) => {
+    if (isReadOnly) {
+      toast({
+        title: language === 'ar' ? 'وضع القراءة فقط' : 'Read-Only Mode',
+        description: language === 'ar' ? 'جدد اشتراكك لتعديل المنتجات' : 'Renew your subscription to edit products',
+        variant: 'destructive',
+      });
+      return;
+    }
     setEditingProduct(product);
     setShowProductForm(true);
   };
 
   const handleDeleteProduct = async (productId: string) => {
+    if (isReadOnly) {
+      toast({
+        title: language === 'ar' ? 'وضع القراءة فقط' : 'Read-Only Mode',
+        description: language === 'ar' ? 'جدد اشتراكك لحذف المنتجات' : 'Renew your subscription to delete products',
+        variant: 'destructive',
+      });
+      return;
+    }
     if (!confirm(t('products.delete_confirm'))) return;
 
     try {
@@ -177,8 +196,18 @@ export default function DashboardPage() {
               {t('dashboard.start_selling')}
             </p>
             <Button
-              onClick={() => setShowProductForm(true)}
-              className="rounded-3xl bg-[#008069] hover:bg-[#017561] h-12 px-8"
+              onClick={() => {
+                if (isReadOnly) {
+                  toast({
+                    title: language === 'ar' ? 'وضع القراءة فقط' : 'Read-Only Mode',
+                    description: language === 'ar' ? 'جدد اشتراكك لإضافة منتجات' : 'Renew your subscription to add products',
+                    variant: 'destructive',
+                  });
+                  return;
+                }
+                setShowProductForm(true);
+              }}
+              className={`rounded-3xl h-12 px-8 ${isReadOnly ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#008069] hover:bg-[#017561]'}`}
             >
               <Plus className={`w-5 h-5 ${direction === 'rtl' ? 'ml-2' : 'mr-2'}`} />
               {t('dashboard.add_first_product')}
@@ -238,8 +267,18 @@ export default function DashboardPage() {
 
       {products.length > 0 && !showProductForm && (
         <button
-          onClick={() => setShowProductForm(true)}
-          className={`fixed bottom-28 ${direction === 'rtl' ? 'left-8' : 'right-8'} z-[60] bg-[#008069] text-white rounded-full p-5 shadow-2xl hover:bg-[#017561] transition-all hover:scale-110`}
+          onClick={() => {
+            if (isReadOnly) {
+              toast({
+                title: language === 'ar' ? 'وضع القراءة فقط' : 'Read-Only Mode',
+                description: language === 'ar' ? 'جدد اشتراكك لإضافة منتجات' : 'Renew your subscription to add products',
+                variant: 'destructive',
+              });
+              return;
+            }
+            setShowProductForm(true);
+          }}
+          className={`fixed bottom-28 ${direction === 'rtl' ? 'left-8' : 'right-8'} z-[60] ${isReadOnly ? 'bg-gray-400' : 'bg-[#008069] hover:bg-[#017561] hover:scale-110'} text-white rounded-full p-5 shadow-2xl transition-all`}
           aria-label={t('dashboard.add_product')}
         >
           <Plus className="w-8 h-8" />
