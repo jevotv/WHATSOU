@@ -54,6 +54,59 @@ export default function MockDashboardHeader({ store }: MockDashboardHeaderProps)
         });
     };
 
+    const handleDownloadQr = async () => {
+        if (!qrCodeUrl) return;
+        try {
+            const response = await fetch(qrCodeUrl);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `qr-${store?.slug || 'store'}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            toast({
+                title: t('common.success'),
+                description: t('dashboard.qr_downloaded'),
+            });
+        } catch (error) {
+            console.error('Download failed:', error);
+            toast({
+                title: t('common.error'),
+                description: "Failed to download QR",
+                variant: "destructive"
+            });
+        }
+    };
+
+    const handleShareQr = async () => {
+        if (!qrCodeUrl || !navigator.share) {
+            handleCopyStoreLink(); // Fallback to link copy
+            return;
+        }
+        try {
+            const response = await fetch(qrCodeUrl);
+            const blob = await response.blob();
+            const file = new File([blob], "qr-code.png", { type: "image/png" });
+
+            await navigator.share({
+                title: store?.name || 'Store QR',
+                text: `Scan to order from ${store?.name}`,
+                files: [file]
+            });
+        } catch (error) {
+            console.error('Share failed:', error);
+            // Fallback if sharing file is not supported or cancelled
+            toast({
+                title: "Sharing not supported",
+                description: "Falling back to copying link.",
+            });
+            handleCopyStoreLink();
+        }
+    };
+
     const handleMockAction = (action: string) => {
         toast({
             title: "Demo Mode",
@@ -161,7 +214,7 @@ export default function MockDashboardHeader({ store }: MockDashboardHeaderProps)
                                             <div className="flex gap-2 w-full">
                                                 <Button
                                                     className="flex-1 bg-[#008069] hover:bg-[#017561]"
-                                                    onClick={() => handleMockAction('Share QR')}
+                                                    onClick={handleShareQr}
                                                 >
                                                     <Share className="w-4 h-4 mr-2" />
                                                     {t('dashboard.share')}
@@ -169,7 +222,7 @@ export default function MockDashboardHeader({ store }: MockDashboardHeaderProps)
                                                 <Button
                                                     variant="outline"
                                                     className="flex-1"
-                                                    onClick={() => handleMockAction('Download QR')}
+                                                    onClick={handleDownloadQr}
                                                 >
                                                     <Download className="w-4 h-4 mr-2" />
                                                     {t('common.download')}

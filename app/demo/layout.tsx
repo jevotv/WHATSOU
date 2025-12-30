@@ -19,47 +19,98 @@ export default async function DemoLayout({
         .ilike('name', '%John%')
         .limit(1);
 
-    const johnStore = stores?.[0];
+    let demoStore = stores?.[0];
+    let demoProducts: any[] = [];
+    let demoOrders: any[] = [];
 
-    if (!johnStore) {
-        return <div>Error loading Demo: John Store not found.</div>;
-    }
+    // Fallback Mock Data if "John" store doesn't exist (e.g. locally or deleted)
+    if (!demoStore) {
+        demoStore = {
+            id: 'mock-store-id',
+            user_id: 'mock-user',
+            name: 'John Store',
+            slug: 'john',
+            description: 'This is a demo store for testing purposes.',
+            qr_code: '/demo/john-qr.png',
+            whatsapp_number: '201000000000',
+            currency: 'EGP',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            allow_delivery: true,
+            allow_pickup: true
+        } as any; // Cast to avoid strict type checks on optional mock fields
 
-    // 2. Fetch Products
-    const { data: products } = await supabase
-        .from('products')
-        .select('*')
-        .eq('store_id', johnStore.id)
-        .order('created_at', { ascending: false });
-
-    // 3. Fetch Variants & Attach
-    let productsWithVariants: Product[] = [];
-    if (products && products.length > 0) {
-        const productIds = products.map((p: { id: string }) => p.id);
-        const { data: variants } = await supabase
-            .from('product_variants')
+        // Mock Products
+        demoProducts = [
+            {
+                id: 'p1',
+                store_id: 'mock-store-id',
+                name: 'Premium Headphones',
+                description: 'High quality noise cancelling headphones.',
+                current_price: 2500,
+                quantity: 10,
+                category: 'Electronics',
+                image_url: '/demo/1766646435982-full.webp',
+                thumbnail_url: '/demo/1766646435982-full.webp',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                options: []
+            },
+            {
+                id: 'p2',
+                store_id: 'mock-store-id',
+                name: 'Cotton T-Shirt',
+                description: '100% Organic Cotton.',
+                current_price: 300,
+                quantity: 50,
+                category: 'Clothing',
+                image_url: '/demo/1766646655020-full.webp',
+                thumbnail_url: '/demo/1766646655020-full.webp',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                options: [{ name: 'Size', values: ['S', 'M', 'L'] }]
+            }
+        ];
+    } else {
+        // 2. Fetch Products
+        const { data: products } = await supabase
+            .from('products')
             .select('*')
-            .in('product_id', productIds);
+            .eq('store_id', demoStore.id)
+            .order('created_at', { ascending: false });
 
-        productsWithVariants = products.map((p: Product) => ({
-            ...p,
-            variants: variants?.filter((v: ProductVariant) => v.product_id === p.id) || [],
-        }));
+        demoProducts = products || [];
+
+        // 3. Fetch Variants & Attach
+        if (demoProducts.length > 0) {
+            const productIds = demoProducts.map((p: { id: string }) => p.id);
+            const { data: variants } = await supabase
+                .from('product_variants')
+                .select('*')
+                .in('product_id', productIds);
+
+            demoProducts = demoProducts.map((p: Product) => ({
+                ...p,
+                variants: variants?.filter((v: ProductVariant) => v.product_id === p.id) || [],
+            }));
+        }
+
+        // 4. Fetch Orders
+        const { data: orders } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('store_id', demoStore.id)
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+        demoOrders = orders || [];
     }
-
-    // 4. Fetch a few sample orders for context (can also mock these if privacy is a concern, but request said real data)
-    const { data: orders } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('store_id', johnStore.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
 
     return (
         <MockDashboardProvider
-            initialStore={johnStore}
-            initialProducts={productsWithVariants}
-            initialOrders={orders || []}
+            initialStore={demoStore}
+            initialProducts={demoProducts}
+            initialOrders={demoOrders}
         >
             <DemoLayoutClient>
                 {children}

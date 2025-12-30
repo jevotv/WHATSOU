@@ -10,6 +10,7 @@ export interface SubscriptionStatus {
     daysRemaining: number | null;
     isReadOnly: boolean;
     amount: number;
+    isFirstSubscription: boolean;
 }
 
 export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
@@ -23,6 +24,7 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
             daysRemaining: null,
             isReadOnly: false,
             amount: 100, // First subscription price
+            isFirstSubscription: true,
         };
     }
 
@@ -73,8 +75,21 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
             calculatedStatus = 'active';
             isReadOnly = false;
         }
+    } else if (subscription.pending_expires_at) {
+        // Check for 24h temporary access from manual payment
+        const pendingExpiresAt = new Date(subscription.pending_expires_at);
+        if (now <= pendingExpiresAt) {
+            // Within 24h temp access window
+            calculatedStatus = 'active'; // Treat as active for UI
+            isReadOnly = false; // Grant access
+            daysRemaining = null; // No days remaining for temp access
+        } else {
+            // Temp access expired
+            calculatedStatus = 'inactive';
+            isReadOnly = true;
+        }
     } else {
-        // Subscription exists but not yet paid (no expires_at)
+        // Subscription exists but not yet paid (no expires_at or pending_expires_at)
         calculatedStatus = 'inactive';
         isReadOnly = true; // Block access until paid
     }
@@ -89,6 +104,7 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
         daysRemaining,
         isReadOnly,
         amount,
+        isFirstSubscription: !!subscription.is_first_subscription,
     };
 }
 
@@ -149,4 +165,45 @@ export async function getPaymentHistory() {
         .limit(10);
 
     return { transactions: transactions || [] };
+}
+
+export async function initiateManualPayment(
+    paymentMethod: 'instapay' | 'vodafone',
+    subscriptionPeriod: 'monthly' | 'yearly' = 'monthly'
+) {
+    const session = await getSession();
+
+    if (!session || !session.id) {
+        return { error: 'Unauthorized' };
+    }
+
+    try {
+        // Call the edge function
+        const response = await fetch(
+            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/manual-payment-request`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+                },
+                body: JSON.stringify({
+                    user_id: session.id,
+                    payment_method: paymentMethod,
+                    subscription_period: subscriptionPeriod,
+                }),
+            }
+        );
+
+        if (!response.ok) {
+            const error = await response.json();
+            return { error: error.error || 'Manual payment request failed' };
+        }
+
+        const data = await response.json();
+        return { success: true, ...data };
+    } catch (error: any) {
+        console.error('Manual payment error:', error);
+        return { error: error.message || 'Manual payment request failed' };
+    }
 }

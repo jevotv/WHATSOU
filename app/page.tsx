@@ -52,10 +52,10 @@ export default function Home() {
                   <span>ابدأ متجرك المجاني الآن</span>
                   <span className="material-icons-outlined text-sm rtl:rotate-180">arrow_forward</span>
                 </Link>
-                <a href="#demo" className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 text-lg px-8 py-4 rounded-full font-bold transition-all flex items-center justify-center gap-2">
+                {/* <a href="#demo" className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 text-lg px-8 py-4 rounded-full font-bold transition-all flex items-center justify-center gap-2">
                   <span>شاهد الفيديو</span>
                   <span className="material-icons-outlined text-landing-primary">play_circle</span>
-                </a>
+                </a> */}
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mt-4">
@@ -90,6 +90,43 @@ export default function Home() {
                 />
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Join CTA */}
+      <section className="py-16 bg-gradient-to-br from-green-50 to-white dark:from-gray-900 dark:to-gray-800 border-b border-gray-100 dark:border-gray-800">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <div className="flex justify-center gap-1 mb-4">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <span key={star} className="material-icons-outlined text-yellow-500 text-2xl">star</span>
+            ))}
+          </div>
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6">
+            انضم لـ <span className="text-landing-primary">+100 تاجر</span> بدأوا ينظموا مبيعاتهم مع WhatSou.
+          </h2>
+          <div className="flex flex-col items-center justify-center gap-8">
+            {/* Social Links */}
+            <div className="flex flex-col items-center gap-4">
+              <span className="text-gray-500 dark:text-gray-400 font-bold">تابعنا على</span>
+              <div className="flex items-center gap-6">
+                <a href="https://www.facebook.com/whatsoueg/" target="_blank" className="text-gray-400 hover:text-blue-600 transition-colors transform hover:scale-110">
+                  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" /></svg>
+                </a>
+                <a href="https://www.instagram.com/whatsoueg/" target="_blank" className="text-gray-400 hover:text-pink-600 transition-colors transform hover:scale-110">
+                  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fillRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772 4.902 4.902 0 011.772-1.153c.636-.247 1.363-.416 2.427-.465 1.067-.047 1.409-.06 4.123-.06h.08zM12 7a5 5 0 110 10 5 5 0 010-10zm0 2a3 3 0 100 6 3 3 0 000-6zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clipRule="evenodd" /></svg>
+                </a>
+                <a href="https://www.tiktok.com/@whatsoueg" target="_blank" className="text-gray-400 hover:text-black dark:hover:text-white transition-colors transform hover:scale-110">
+                  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93v10.1c-.05 2.12-.87 4.22-2.38 5.69-1.5 1.53-3.6 2.43-5.71 2.42-4.27-.07-7.74-3.47-7.8-7.75-.03-3.84 2.78-7.25 6.55-7.91V14.8c-1.39.5-2.27 1.84-2.22 3.3.05 1.6 1.32 2.89 2.92 2.91 1.61.02 2.92-1.28 2.93-2.88V.02z" /></svg>
+                </a>
+              </div>
+            </div>
+
+            {/* WhatsApp CTA */}
+            <a href="https://wa.me/201000499431" target="_blank" className="group bg-[#25D366] hover:bg-[#128C7E] text-white px-10 py-5 rounded-full shadow-xl shadow-green-500/20 transition-all flex items-center gap-3 transform hover:-translate-y-1">
+              <svg className="w-10 h-10 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>
+              <span className="text-xl font-bold">ابعت لنا رسالة على الواتساب</span>
+            </a>
           </div>
         </div>
       </section>
@@ -201,7 +238,7 @@ export default function Home() {
                 <span className="material-icons-outlined text-4xl">share</span>
               </div>
               <div className="inline-block bg-landing-primary text-white text-xs font-bold px-3 py-1 rounded-full mb-4">خطوة 2</div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">شارك الرابط</h3>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">شارك الرابط او ال QR</h3>
               <p className="text-gray-600 dark:text-gray-400">حط لينك متجرك في بايو الإنستجرام أو الفيسبوك أو أرسله لعملائك.</p>
             </div>
 
@@ -213,6 +250,53 @@ export default function Home() {
               <div className="inline-block bg-landing-primary text-white text-xs font-bold px-3 py-1 rounded-full mb-4">خطوة 3</div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">استقبل الطلبات</h3>
               <p className="text-gray-600 dark:text-gray-400">الأوردر هيجيلك منظم على الواتساب وهيتسجل تلقائياً في لوحة تحكمك.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* QR Code Section */}
+      <section className="py-20 bg-green-50 dark:bg-green-900/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="order-2 lg:order-1">
+              <span className="text-landing-primary font-bold tracking-wider uppercase text-sm">حصرياً للمطاعم والبازارات</span>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mt-2 mb-6">
+                بازار - مطعم - كافيه؟ <br />
+                <span className="text-landing-primary">واتسو هيسد معاك في الزحمه</span>
+              </h2>
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+                مش محتاج منيو ورقي ولا ويتر ياخد الطلب. العميل بيصور الـ QR Code، يختار طلبه، ويبعته لك على الواتساب جاهز.
+              </p>
+              <div className="space-y-4">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm text-landing-primary">
+                    <span className="material-icons-outlined text-2xl">print</span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">اطبع الـ QR وعلقه</h3>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">حطه على الترابيزات أو عند الكاشير.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm text-landing-primary">
+                    <span className="material-icons-outlined text-2xl">speed</span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">استقبل طلبات أسرع</h3>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">وفر وقت الموظفين وقلل طوابير الانتظار.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="order-1 lg:order-2 flex justify-center">
+              <div className="relative w-72 h-72 bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 transform rotate-3 hover:rotate-0 transition-transform duration-500 border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center">
+                <span className="material-icons-outlined text-9xl text-gray-800 dark:text-white mb-2">qr_code_2</span>
+                <span className="text-gray-500 text-sm font-mono">scan me to order</span>
+                <div className="absolute -top-6 -right-6 w-16 h-16 bg-landing-primary rounded-full flex items-center justify-center text-white font-bold shadow-lg animate-bounce">
+                  New!
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -262,6 +346,24 @@ export default function Home() {
                 <p className="text-gray-600 dark:text-gray-400">حدد خيارات الشحن أو الاستلام من الفرع ودع العميل يختار الأنسب.</p>
               </div>
             </div>
+            <div className="flex items-start p-6 bg-gray-50 dark:bg-gray-800 rounded-2xl hover:bg-green-50 dark:hover:bg-gray-700/50 transition-colors group">
+              <div className="flex-shrink-0 p-3 bg-white dark:bg-gray-700 rounded-xl shadow-sm text-landing-primary group-hover:scale-110 transition-transform">
+                <span className="material-icons-outlined text-3xl">travel_explore</span>
+              </div>
+              <div className="mr-6">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">جاهز تظهر في نتائج جوجل؟</h3>
+                <p className="text-gray-600 dark:text-gray-400">متجرك مبني بأحدث تقنيات الـ SEO عشان عملاءك يلاقوك بسهولة.</p>
+              </div>
+            </div>
+            <div className="flex items-start p-6 bg-gray-50 dark:bg-gray-800 rounded-2xl hover:bg-green-50 dark:hover:bg-gray-700/50 transition-colors group">
+              <div className="flex-shrink-0 p-3 bg-white dark:bg-gray-700 rounded-xl shadow-sm text-landing-primary group-hover:scale-110 transition-transform">
+                <span className="material-icons-outlined text-3xl">security</span>
+              </div>
+              <div className="mr-6">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">بياناتك في أمان</h3>
+                <p className="text-gray-600 dark:text-gray-400">نظام حماية متكامل وتشفير للبيانات لضمان خصوصيتك وخصوصية عملائك.</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -273,36 +375,21 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">جدول الأسعار</h2>
             <p className="text-gray-600 dark:text-gray-400">ابدأ مجاناً، وادفع فقط عندما تنمو</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Free Plan */}
-            <div className="bg-white dark:bg-landing-surface-dark rounded-3xl p-8 border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">الباقة المجانية</h3>
-              <div className="text-4xl font-extrabold text-gray-900 dark:text-white mb-6">0 <span className="text-lg font-normal text-gray-500">ج.م / للأبد</span></div>
-              <ul className="space-y-4 mb-8 flex-1">
-                <li className="flex items-center gap-3 text-gray-600 dark:text-gray-300">
-                  <span className="material-icons-outlined text-green-500">check</span>
-                  <span>حتى 20 منتج</span>
-                </li>
-                <li className="flex items-center gap-3 text-gray-600 dark:text-gray-300">
-                  <span className="material-icons-outlined text-green-500">check</span>
-                  <span>طلبات عبر الواتساب فقط</span>
-                </li>
-                <li className="flex items-center gap-3 text-gray-600 dark:text-gray-300">
-                  <span className="material-icons-outlined text-green-500">check</span>
-                  <span>مظهر WhatSou الأساسي</span>
-                </li>
-              </ul>
-              <Link href="/signup" className="block w-full text-center bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white py-3 rounded-full font-bold transition-colors">
-                ابدأ مجاناً
-              </Link>
-            </div>
-
+          <div className="max-w-md mx-auto">
             {/* Pro Plan */}
-            <div className="bg-white dark:bg-landing-surface-dark rounded-3xl p-8 border-2 border-landing-primary shadow-xl relative transform md:-translate-y-4 flex flex-col">
-              <div className="absolute top-0 right-1/2 transform translate-x-1/2 -translate-y-1/2 bg-landing-primary text-white px-4 py-1 rounded-full text-sm font-bold">الأكثر طلباً</div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">الباقة الاحترافية</h3>
-              <div className="text-4xl font-extrabold text-gray-900 dark:text-white mb-6">300 <span className="text-lg font-normal text-gray-500">ج.م / شهر</span></div>
-              <ul className="space-y-4 mb-8 flex-1">
+            <div className="bg-white dark:bg-landing-surface-dark rounded-3xl p-8 border-2 border-landing-primary shadow-xl relative flex flex-col items-center text-center">
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-landing-primary text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">الباقة الكاملة</div>
+
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 mt-4">الباقة الاحترافية</h3>
+
+              <div className="flex flex-col items-center mb-6">
+                <div className="text-5xl font-extrabold text-gray-900 dark:text-white">300 <span className="text-lg font-normal text-gray-500">ج.م / شهر</span></div>
+                <div className="bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 px-4 py-1 rounded-full text-sm font-bold mt-2">
+                  أول شهر بـ 100 ج.م فقط 🔥
+                </div>
+              </div>
+
+              <ul className="space-y-4 mb-8 w-full text-right px-4">
                 <li className="flex items-center gap-3 text-gray-800 dark:text-gray-200 font-medium">
                   <span className="material-icons-outlined text-landing-primary">check_circle</span>
                   <span>منتجات غير محدودة</span>
@@ -319,29 +406,21 @@ export default function Home() {
                   <span className="material-icons-outlined text-landing-primary">check_circle</span>
                   <span>روابط السوشيال ميديا واللوكيشن</span>
                 </li>
+                <li className="flex items-center gap-3 text-gray-800 dark:text-gray-200 font-medium">
+                  <span className="material-icons-outlined text-landing-primary">check_circle</span>
+                  <span>دعم فني خاص</span>
+                </li>
               </ul>
-              <Link href="/signup" className="block w-full text-center bg-landing-primary hover:bg-landing-primary-hover text-white py-3 rounded-full font-bold shadow-lg shadow-landing-primary/30 transition-colors">
-                اشترك الآن
+
+              <Link href="/signup" className="block w-full text-center bg-landing-primary hover:bg-landing-primary-hover text-white py-4 rounded-full font-bold shadow-lg shadow-landing-primary/30 transition-transform transform hover:-translate-y-1 text-lg">
+                ابدأ تجربتك بـ 100 ج.م
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-16 bg-gradient-to-br from-green-50 to-white dark:from-gray-900 dark:to-gray-800 border-t border-gray-100 dark:border-gray-800">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6">
-            انضم لـ <span className="text-landing-primary">+100 تاجر</span> بدأوا ينظموا مبيعاتهم مع WhatSou.
-          </h2>
-          <div className="flex justify-center">
-            <a href="#" className="group bg-white dark:bg-transparent border-2 border-landing-primary text-landing-primary hover:bg-landing-primary hover:text-white px-8 py-3 rounded-full font-bold transition-all flex items-center gap-2">
-              <span>شوف شكل متجرك هيكون عامل ازاي (Demo)</span>
-              <span className="material-icons-outlined transform group-hover:-translate-x-1 transition-transform rtl:rotate-180">arrow_right_alt</span>
-            </a>
-          </div>
-        </div>
-      </section>
+
 
       {/* FAQ Section */}
       <section className="py-20 bg-white dark:bg-landing-surface-dark">
@@ -369,7 +448,7 @@ export default function Home() {
                 </span>
               </summary>
               <p className="text-gray-600 dark:text-gray-300 mt-4 leading-relaxed">
-                حالياً نوفر نطاقات فرعية (subdomains) مجانية مثل storename.whatsou.com، ونعمل على إتاحة ربط النطاقات الخاصة في التحديثات القادمة للباقة الاحترافية.
+                حالياً نوفر نطاقات فرعية (subdomains) مجانية مثل whatsou.com/storename، ونعمل على إتاحة ربط النطاقات الخاصة في التحديثات القادمة للباقة الاحترافية.
               </p>
             </details>
           </div>

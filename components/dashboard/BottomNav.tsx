@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ShoppingBag, Users, CreditCard } from 'lucide-react';
+import { Home, ShoppingBag, Users } from 'lucide-react';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 
 export default function BottomNav() {
@@ -53,20 +53,6 @@ export default function BottomNav() {
                     <Users className={`w-5 h-5 ${isActive('/dashboard/customers') ? 'fill-current' : ''}`} />
                     <span className="text-[10px] font-bold mt-1 text-center leading-3 whitespace-nowrap">
                         {t('dashboard.nav_customers') || 'Customers'}
-                    </span>
-                </Link>
-
-                {/* Subscription */}
-                <Link
-                    href="/dashboard/subscription"
-                    className={`flex flex-col items-center justify-center min-w-[64px] px-4 h-14 rounded-full transition-all duration-300 ${isActive('/dashboard/subscription')
-                        ? 'bg-[#008069] text-white shadow-lg translate-y-[-4px]'
-                        : 'text-gray-500 hover:text-[#111813] hover:bg-gray-100'
-                        }`}
-                >
-                    <CreditCard className={`w-5 h-5 ${isActive('/dashboard/subscription') ? 'fill-current' : ''}`} />
-                    <span className="text-[10px] font-bold mt-1 text-center leading-3 whitespace-nowrap">
-                        {t('dashboard.nav_subscription') || 'Subscription'}
                     </span>
                 </Link>
             </nav>

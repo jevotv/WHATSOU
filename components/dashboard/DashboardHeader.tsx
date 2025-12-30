@@ -131,13 +131,6 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
                                     {language === 'en' ? 'العربية' : 'English'}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                    onClick={() => router.push('/dashboard/subscription')}
-                                    className="cursor-pointer"
-                                >
-                                    <CreditCard className="w-4 h-4 mr-2" />
-                                    {t('dashboard.nav_subscription') || 'Subscription'}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
                                     onClick={() => router.push('/dashboard/settings')}
                                     className="cursor-pointer"
                                 >

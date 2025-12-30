@@ -51,10 +51,50 @@ Deno.serve(async (req) => {
     const results = {
         active_to_grace: 0,
         grace_to_expired: 0,
+        pending_expired: 0,
         notifications_sent: 0,
     };
 
     try {
+        // 0. Handle Expired Manual Pending Payments (24h temp access)
+        const { data: expiredPending } = await supabase
+            .from("subscriptions")
+            .select("id, user_id, pending_payment_method, users(phone)")
+            .not("pending_expires_at", "is", null)
+            .lt("pending_expires_at", now.toISOString());
+
+        if (expiredPending && expiredPending.length > 0) {
+            for (const sub of expiredPending) {
+                // Revoke temp access
+                await supabase
+                    .from("subscriptions")
+                    .update({
+                        pending_payment_method: null,
+                        pending_payment_at: null,
+                        pending_expires_at: null,
+                    })
+                    .eq("id", sub.id);
+
+                // Mark related pending transactions as expired
+                await supabase
+                    .from("payment_transactions")
+                    .update({
+                        status: "expired",
+                        error_message: "24h temp access expired without confirmation",
+                    })
+                    .eq("subscription_id", sub.id)
+                    .eq("status", "pending");
+
+                // Notify customer via WhatsApp
+                if (sub.users?.phone) {
+                    const message = `❌ لم يتم تأكيد اشتراكك\n\nانتهت صلاحية طلب الدفع (24 ساعة).\nيرجى رفع سكرين شوت التحويل أو إعادة الدفع:\nhttps://whatsou.com/dashboard/subscription`;
+                    await sendWhatsAppMessage(sub.users.phone, message);
+                }
+
+                results.pending_expired++;
+            }
+        }
+
         // 1. Bulk Update: Active -> Grace
         const { data: updatedGrace } = await supabase
             .from("subscriptions")
