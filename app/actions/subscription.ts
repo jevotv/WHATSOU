@@ -47,6 +47,7 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
             daysRemaining: null,
             isReadOnly: false,
             amount: 100, // First subscription price
+            isFirstSubscription: true,
         };
     }
 
