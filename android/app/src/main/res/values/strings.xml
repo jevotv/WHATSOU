@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">WhatSou</string>
+    <string name="title_activity_main">WhatSou</string>
+    <string name="package_name">com.whatsou.app</string>
+    <string name="custom_url_scheme">com.whatsou.app</string>
+</resources>

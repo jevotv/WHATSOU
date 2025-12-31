@@ -11,12 +11,16 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Upload, Plus, Trash2, ChevronDown, Sparkles, DollarSign, Infinity as InfinityIcon, Info } from 'lucide-react';
+import { Upload, Plus, Trash2, ChevronDown, Sparkles, DollarSign, Infinity as InfinityIcon, Info, Camera as CameraIcon } from 'lucide-react';
 import Image from 'next/image';
 import { Switch } from '@/components/ui/switch';
 import { processProductImage } from '@/lib/utils/imageProcessor';
 import { slugify } from '@/lib/utils/slug';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Capacitor } from '@capacitor/core';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { useRef } from 'react';
 
 interface ProductFormModalProps {
   storeId: string;
@@ -116,6 +120,46 @@ export default function ProductFormModal({
           sku: v.sku || '',
         };
       }));
+    }
+  };
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleNativeCamera = async () => {
+    try {
+      const image = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.Uri,
+        source: CameraSource.Prompt,
+      });
+
+      if (image.webPath) {
+        setImagePreview(image.webPath);
+
+        // Convert to File for existing upload logic
+        const response = await fetch(image.webPath);
+        const blob = await response.blob();
+        const file = new File([blob], 'product_photo.jpg', { type: blob.type });
+        setImageFile(file);
+      }
+    } catch (error: any) {
+      console.error('Camera error:', error);
+      if (error.message !== 'User cancelled photos app') {
+        toast({
+          title: 'Error',
+          description: 'Could not access camera',
+          variant: 'destructive',
+        });
+      }
+    }
+  };
+
+  const handleImageAreaClick = () => {
+    if (Capacitor.isNativePlatform()) {
+      handleNativeCamera();
+    } else {
+      fileInputRef.current?.click();
     }
   };
 
@@ -327,6 +371,11 @@ export default function ProductFormModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (Capacitor.isNativePlatform()) {
+      await Haptics.impact({ style: ImpactStyle.Light });
+    }
+
     setLoading(true);
 
     try {
@@ -420,18 +469,26 @@ export default function ProductFormModal({
                   />
                 </div>
               )}
-              <label className="cursor-pointer">
-                <div className="border-2 border-dashed rounded-2xl p-6 hover:bg-gray-50 transition">
-                  <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+              <div
+                className="cursor-pointer"
+                onClick={handleImageAreaClick}
+              >
+                <div className="border-2 border-dashed rounded-2xl p-6 hover:bg-gray-50 transition flex flex-col items-center justify-center min-w-[120px]">
+                  {Capacitor.isNativePlatform() ? (
+                    <CameraIcon className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                  ) : (
+                    <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                  )}
                   <p className="text-sm text-gray-600">{t('products.images_label')}</p>
                 </div>
                 <input
+                  ref={fileInputRef}
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
                   className="hidden"
                 />
-              </label>
+              </div>
             </div>
           </div>
 

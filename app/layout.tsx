@@ -1,11 +1,12 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+// import { Inter } from 'next/font/google';
 import { AuthProvider } from '@/lib/contexts/AuthContext';
 import { CartProvider } from '@/lib/contexts/CartContext';
 import { Toaster } from '@/components/ui/toaster';
+import { CapacitorProvider } from '@/components/providers/CapacitorProvider';
 
-const inter = Inter({ subsets: ['latin'] });
+// const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'WhatSou - WhatsApp Commerce Platform',
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
     initialScale: 1,
     maximumScale: 1,
     userScalable: false,
+    viewportFit: 'cover',
   },
   openGraph: {
     title: 'WhatSou - WhatsApp Commerce Platform',
@@ -37,11 +39,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className="font-sans">
         <AuthProvider>
           <CartProvider>
             <LanguageProvider>
-              {children}
+              <CapacitorProvider>
+                {children}
+              </CapacitorProvider>
               <Toaster />
             </LanguageProvider>
           </CartProvider>
