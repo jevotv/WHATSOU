@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { App } from '@capacitor/app';
@@ -20,6 +20,7 @@ export function CapacitorProvider({ children }: { children: React.ReactNode }) {
     const { toast } = useToast();
     const [isLocked, setIsLocked] = useState(false);
     const [isChecking, setIsChecking] = useState(true);
+    const backgroundTime = useRef<number>(Date.now());
 
     const checkBiometricLock = async () => {
         if (!Capacitor.isNativePlatform()) {
@@ -59,10 +60,16 @@ export function CapacitorProvider({ children }: { children: React.ReactNode }) {
         if (Capacitor.isNativePlatform()) {
             checkBiometricLock();
 
-            // Listen for app resume
+            // Listen for app state changes
             App.addListener('appStateChange', ({ isActive }) => {
-                if (isActive) {
-                    checkBiometricLock();
+                if (!isActive) {
+                    backgroundTime.current = Date.now();
+                } else {
+                    const timeGone = Date.now() - backgroundTime.current;
+                    // Only re-lock if gone for more than 5 seconds (prevents loop with biometric dialog)
+                    if (timeGone > 5000) {
+                        checkBiometricLock();
+                    }
                 }
             });
 
