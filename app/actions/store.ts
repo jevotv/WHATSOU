@@ -1,9 +1,8 @@
 'use server';
 
+import { getSupabaseAdmin } from '@/lib/supabase/admin';
 import { getSession } from '@/app/actions/auth';
-import { createClient } from '@supabase/supabase-js';
 import QRCode from 'qrcode';
-import { Store } from '@/lib/types/database';
 
 export async function createStore(prevState: any, formData: FormData) {
     const session = await getSession();
@@ -12,13 +11,23 @@ export async function createStore(prevState: any, formData: FormData) {
         return { error: 'Unauthorized' };
     }
 
-    // Use Service Role to bypass RLS since we are using custom auth
-    const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    // Use Admin Client (Service Role)
+    // This expects SUPABASE_SERVICE_ROLE_KEY to be set in .env
+    const supabase = getSupabaseAdmin();
 
     const user = session;
+
+    // Verify user exists in public.users before creating store to avoid FK error
+    const { data: userExists, error: userCheckError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+    if (userCheckError || !userExists) {
+        console.error('User check failed:', userCheckError);
+        return { error: 'User record mismatch. Please log out and log in again.' };
+    }
 
     const name = formData.get('name') as string;
     const slug = formData.get('slug') as string;
@@ -36,20 +45,9 @@ export async function createStore(prevState: any, formData: FormData) {
     const allow_pickup = formData.get('allow_pickup') === 'true';
 
     try {
-        // Generate QR Code
-        // The link should point to the store's public page
-        // We'll assume the base URL is derived from the environment or headers, 
-        // but here we can just store the relative path or fully qualified if we know the domain.
-        // Ideally we use a fully qualified URL. For now, we'll assume the client sends the origin or we construct it.
-        // BUT server actions don't easily get window.location.
-        // Let's store the full URL if possible, or just the slug path and client constructs full URL for display?
-        // User asked to store the QR code *image string* (Base64), not just the link.
-        // The QR should ENCODE the link to the store.
+        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://whatsou.com';
 
-        // Construct the store URL. In production, use NEXT_PUBLIC_SITE_URL or similar.
-        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://whatsou.com'; // Fallback
-
-        // 1. Insert store first to get the ID
+        // 1. Insert store
         const { data: store, error: insertError } = await supabase.from('stores').insert({
             user_id: user.id,
             name,
@@ -70,7 +68,7 @@ export async function createStore(prevState: any, formData: FormData) {
 
         if (insertError) throw insertError;
 
-        // 2. Generate QR pointing to /go/[id]
+        // 2. Generate QR
         const dynamicUrl = `${baseUrl}/go/${store.id}`;
         const qrCodeDataUrl = await QRCode.toDataURL(dynamicUrl);
 
@@ -87,7 +85,6 @@ export async function createStore(prevState: any, formData: FormData) {
         return { success: true, store: { ...store, qr_code: qrCodeDataUrl } };
     } catch (error: any) {
         console.error('Create store error:', error);
-
         return { error: error.message };
     }
 }
@@ -98,10 +95,7 @@ export async function regenerateStoreQR(storeId: string) {
         return { error: 'Unauthorized' };
     }
 
-    const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabase = getSupabaseAdmin();
 
     // Verify ownership
     const { data: store, error: fetchError } = await supabase
@@ -133,10 +127,7 @@ export async function getStoreForCurrentUser() {
         return { error: 'Unauthorized', debug_session: session };
     }
 
-    const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabase = getSupabaseAdmin();
 
     const { data: store } = await supabase
         .from('stores')
