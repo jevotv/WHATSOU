@@ -1,6 +1,9 @@
+'use client';
+
 import Link from 'next/link';
 import { Cairo } from 'next/font/google';
 import Image from 'next/image';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 const cairo = Cairo({ subsets: ['arabic'], weight: ['300', '400', '600', '700', '800'] });
 
@@ -52,10 +55,25 @@ export default function Home() {
                   <span>ابدأ متجرك الآن</span>
                   <span className="material-icons-outlined text-sm rtl:rotate-180">arrow_forward</span>
                 </Link>
-                {/* <a href="#demo" className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 text-lg px-8 py-4 rounded-full font-bold transition-all flex items-center justify-center gap-2">
-                  <span>شاهد الفيديو</span>
-                  <span className="material-icons-outlined text-landing-primary">play_circle</span>
-                </a> */}
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <button className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 text-lg px-8 py-4 rounded-full font-bold transition-all flex items-center justify-center gap-2 cursor-pointer">
+                      <span>شاهد الفيديو</span>
+                      <span className="material-icons-outlined text-landing-primary">play_circle</span>
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-black border-none text-white">
+                    <div className="relative pt-[177.78%] w-full h-0">
+                      <iframe
+                        src="https://www.youtube.com/embed/5-o_X4lOiAU?autoplay=1"
+                        title="WhatSou Demo"
+                        className="absolute top-0 left-0 w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mt-4">
