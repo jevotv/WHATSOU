@@ -130,16 +130,16 @@ export default function ProductFormModal({
       const image = await Camera.getPhoto({
         quality: 90,
         allowEditing: false,
-        resultType: CameraResultType.Uri,
+        resultType: CameraResultType.DataUrl, // Use DataUrl for Hosted App compatibility checks
         source: CameraSource.Prompt,
       });
 
-      if (image.webPath) {
-        setImagePreview(image.webPath);
+      if (image.dataUrl) {
+        setImagePreview(image.dataUrl);
 
-        // Convert to File for existing upload logic
-        const response = await fetch(image.webPath);
-        const blob = await response.blob();
+        // Convert Base64 DataURL to File
+        const res: Response = await fetch(image.dataUrl);
+        const blob: Blob = await res.blob();
         const file = new File([blob], 'product_photo.jpg', { type: blob.type });
         setImageFile(file);
       }

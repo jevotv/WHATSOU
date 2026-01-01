@@ -21,6 +21,7 @@ export function CapacitorProvider({ children }: { children: React.ReactNode }) {
     const [isLocked, setIsLocked] = useState(false);
     const [isChecking, setIsChecking] = useState(true);
     const backgroundTime = useRef<number>(Date.now());
+    const isVerifying = useRef(false);
 
     const checkBiometricLock = async () => {
         if (!Capacitor.isNativePlatform()) {
@@ -28,12 +29,16 @@ export function CapacitorProvider({ children }: { children: React.ReactNode }) {
             return;
         }
 
+        // If already verifying, don't start another check
+        if (isVerifying.current) return;
+
         try {
             const { value } = await Preferences.get({ key: 'biometric_enabled' });
             if (value === 'true') {
                 setIsLocked(true);
                 setIsChecking(false);
 
+                isVerifying.current = true;
                 try {
                     await NativeBiometric.verifyIdentity({
                         reason: "Unlock Dashboard",
@@ -45,6 +50,11 @@ export function CapacitorProvider({ children }: { children: React.ReactNode }) {
                 } catch (e) {
                     console.error("Biometric verify failed", e);
                     // Keep locked
+                } finally {
+                    // Small delay to allow app to fully resume before clearing flag
+                    setTimeout(() => {
+                        isVerifying.current = false;
+                    }, 500);
                 }
             } else {
                 setIsChecking(false);

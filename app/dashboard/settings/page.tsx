@@ -130,15 +130,15 @@ export default function SettingsPage() {
             const image = await Camera.getPhoto({
                 quality: 90,
                 allowEditing: true,
-                resultType: CameraResultType.Uri,
+                resultType: CameraResultType.DataUrl,
                 source: CameraSource.Prompt,
             });
 
-            if (image.webPath) {
-                setLogoPreview(image.webPath);
-                // Convert to File
-                const response = await fetch(image.webPath);
-                const blob = await response.blob();
+            if (image.dataUrl) {
+                setLogoPreview(image.dataUrl);
+                // Convert Base64 DataURL to File
+                const res = await fetch(image.dataUrl);
+                const blob = await res.blob();
                 const file = new File([blob], 'logo.jpg', { type: blob.type });
                 setLogoFile(file);
             }
