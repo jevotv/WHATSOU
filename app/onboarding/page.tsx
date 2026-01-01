@@ -16,6 +16,8 @@ import Image from 'next/image';
 import { Label } from '@/components/ui/label';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { slugify } from '@/lib/utils/slug';
+import { Geolocation } from '@capacitor/geolocation';
+import { Capacitor } from '@capacitor/core';
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(1);
@@ -102,7 +104,41 @@ export default function OnboardingPage() {
     }
   };
 
-  const handleGetLocation = () => {
+  const handleGetLocation = async () => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        toast({
+          title: t('onboarding.locating'),
+          description: t('onboarding.getting_location'),
+        });
+
+        const permission = await Geolocation.checkPermissions();
+        if (permission.location !== 'granted') {
+          const request = await Geolocation.requestPermissions();
+          if (request.location !== 'granted') {
+            throw new Error('Permission denied');
+          }
+        }
+
+        const position = await Geolocation.getCurrentPosition();
+        const { latitude, longitude } = position.coords;
+        const link = `https://www.google.com/maps?q=${latitude},${longitude}`;
+        setLocationUrl(link);
+        toast({
+          title: t('onboarding.location_found'),
+          description: t('onboarding.location_set'),
+        });
+      } catch (error: any) {
+        console.error('Geolocation error:', error);
+        toast({
+          title: t('common.error'),
+          description: error.message || t('onboarding.location_error'),
+          variant: 'destructive',
+        });
+      }
+      return;
+    }
+
     if (!navigator.geolocation) {
       toast({
         title: t('common.error'),

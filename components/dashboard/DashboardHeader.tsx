@@ -22,6 +22,9 @@ import { useAuth } from '@/lib/contexts/AuthContext';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { Store } from '@/lib/types/database';
+import { AppLauncher } from '@capacitor/app-launcher';
+import { Capacitor } from '@capacitor/core';
+import { Share as CapacitorShare } from '@capacitor/share';
 
 interface DashboardHeaderProps {
     store: Store | null;
@@ -59,7 +62,7 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
     };
 
     return (
-        <header className="bg-[#008069] text-white sticky top-0 z-40 shadow-lg">
+        <header className="bg-[#008069] text-white sticky top-0 z-40 shadow-lg pt-[var(--sat)]">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     <div className="flex items-center gap-3 flex-1 min-w-0 pr-4">
@@ -86,12 +89,29 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
                                     {t('dashboard.copy_link')}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                    onClick={() => {
-                                        if (store && navigator.share) {
+                                    onClick={async () => {
+                                        if (!store) return;
+                                        const url = `${window.location.origin}/${store.slug}`;
+
+                                        if (Capacitor.isNativePlatform()) {
+                                            try {
+                                                await CapacitorShare.share({
+                                                    title: store.name,
+                                                    text: store.description || '',
+                                                    url: url,
+                                                    dialogTitle: t('dashboard.share_store'),
+                                                });
+                                                return;
+                                            } catch (e) {
+                                                console.error('Share failed', e);
+                                            }
+                                        }
+
+                                        if (navigator.share) {
                                             navigator.share({
                                                 title: store.name,
                                                 text: store.description || '',
-                                                url: `${window.location.origin}/${store.slug}`,
+                                                url: url,
                                             }).catch(console.error);
                                         } else {
                                             handleCopyStoreLink();
@@ -138,7 +158,21 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
                                     {t('dashboard.settings')}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                    onClick={() => window.open('https://wa.me/201000499431', '_blank')}
+                                    onClick={async () => {
+                                        const phone = '201000499431';
+                                        if (Capacitor.isNativePlatform()) {
+                                            try {
+                                                const canOpen = await AppLauncher.canOpenUrl({ url: 'whatsapp://' });
+                                                if (canOpen.value) {
+                                                    await AppLauncher.openUrl({ url: `whatsapp://send?phone=${phone}` });
+                                                    return;
+                                                }
+                                            } catch (e) {
+                                                console.error('AppLauncher error', e);
+                                            }
+                                        }
+                                        window.open(`https://wa.me/${phone}`, '_blank');
+                                    }}
                                     className="cursor-pointer"
                                 >
                                     <MessageCircle className="w-4 h-4 mr-2" />

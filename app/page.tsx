@@ -52,7 +52,7 @@ export default function Home() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link href="/signup" className="bg-landing-primary hover:bg-landing-primary-hover text-white text-lg px-8 py-4 rounded-full font-bold shadow-xl shadow-landing-primary/40 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2">
-                  <span>ابدأ متجرك المجاني الآن</span>
+                  <span>ابدأ متجرك الآن</span>
                   <span className="material-icons-outlined text-sm rtl:rotate-180">arrow_forward</span>
                 </Link>
                 <Dialog>
@@ -288,8 +288,7 @@ export default function Home() {
       <section className="py-20 bg-landing-background-light dark:bg-landing-background-dark">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">جدول الأسعار</h2>
-            <p className="text-gray-600 dark:text-gray-400">ابدأ مجاناً، وادفع فقط عندما تنمو</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4"> الأسعار</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Free Plan */}

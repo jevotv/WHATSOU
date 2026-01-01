@@ -17,6 +17,13 @@ import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { regenerateStoreQR } from '@/app/actions/store';
 import { updateStore } from '@/app/actions/dashboard';
 import { changePassword } from '@/app/actions/auth';
+import { Geolocation } from '@capacitor/geolocation';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Capacitor } from '@capacitor/core';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { Switch } from "@/components/ui/switch";
+import { Preferences } from '@capacitor/preferences';
+import { NativeBiometric } from 'capacitor-native-biometric';
 
 export default function SettingsPage() {
     const [store, setStore] = useState<Store | null>(null);
@@ -45,6 +52,9 @@ export default function SettingsPage() {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [changingPassword, setChangingPassword] = useState(false);
+    const [biometricEnabled, setBiometricEnabled] = useState(false);
+    const [biometricAvailable, setBiometricAvailable] = useState(false);
+
 
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
@@ -58,6 +68,14 @@ export default function SettingsPage() {
 
         if (user) {
             loadStore();
+            if (Capacitor.isNativePlatform()) {
+                NativeBiometric.isAvailable().then((result) => {
+                    setBiometricAvailable(result.isAvailable);
+                    Preferences.get({ key: 'biometric_enabled' }).then(({ value }) => {
+                        setBiometricEnabled(value === 'true');
+                    });
+                }).catch(() => { });
+            }
         }
     }, [user, router, authLoading]);
 
@@ -107,6 +125,28 @@ export default function SettingsPage() {
         }
     };
 
+    const handleNativeLogoCamera = async () => {
+        try {
+            const image = await Camera.getPhoto({
+                quality: 90,
+                allowEditing: true,
+                resultType: CameraResultType.Uri,
+                source: CameraSource.Prompt,
+            });
+
+            if (image.webPath) {
+                setLogoPreview(image.webPath);
+                // Convert to File
+                const response = await fetch(image.webPath);
+                const blob = await response.blob();
+                const file = new File([blob], 'logo.jpg', { type: blob.type });
+                setLogoFile(file);
+            }
+        } catch (error) {
+            console.error('Camera error', error);
+        }
+    };
+
     const uploadLogo = async (): Promise<string | null> => {
         if (!logoFile) return logoUrl;
 
@@ -139,6 +179,11 @@ export default function SettingsPage() {
 
     const handleRegenerateQR = async () => {
         if (!store) return;
+
+        if (Capacitor.isNativePlatform()) {
+            await Haptics.impact({ style: ImpactStyle.Heavy });
+        }
+
         setSaving(true);
         try {
             const result = await regenerateStoreQR(store.id);
@@ -161,6 +206,11 @@ export default function SettingsPage() {
 
     const handleSave = async () => {
         if (!store) return;
+
+        if (Capacitor.isNativePlatform()) {
+            await Haptics.impact({ style: ImpactStyle.Medium });
+        }
+
         setSaving(true);
 
 
@@ -330,13 +380,21 @@ export default function SettingsPage() {
                                             </div>
                                         )}
                                     </div>
-                                    <label className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                    <label
+                                        className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                        onClick={(e) => {
+                                            if (Capacitor.isNativePlatform()) {
+                                                e.preventDefault();
+                                                handleNativeLogoCamera();
+                                            }
+                                        }}
+                                    >
                                         <Upload className="w-8 h-8 text-white" />
                                         <input
                                             type="file"
                                             accept="image/*"
                                             onChange={handleLogoChange}
-                                            className="hidden"
+                                            className={Capacitor.isNativePlatform() ? "hidden" : "hidden"} // Always hidden, driven by label click for non-native default behavior
                                         />
                                     </label>
                                 </div>
@@ -533,7 +591,41 @@ export default function SettingsPage() {
                                     <Button
                                         type="button"
                                         variant="outline"
-                                        onClick={() => {
+                                        onClick={async () => {
+                                            if (Capacitor.isNativePlatform()) {
+                                                try {
+                                                    toast({
+                                                        title: t('onboarding.locating'),
+                                                        description: t('onboarding.getting_location'),
+                                                    });
+
+                                                    const permission = await Geolocation.checkPermissions();
+                                                    if (permission.location !== 'granted') {
+                                                        const request = await Geolocation.requestPermissions();
+                                                        if (request.location !== 'granted') {
+                                                            throw new Error('Permission denied');
+                                                        }
+                                                    }
+
+                                                    const position = await Geolocation.getCurrentPosition();
+                                                    const { latitude, longitude } = position.coords;
+                                                    const link = `https://www.google.com/maps?q=${latitude},${longitude}`;
+                                                    setLocationUrl(link);
+                                                    toast({
+                                                        title: t('onboarding.location_found'),
+                                                        description: t('onboarding.location_set'),
+                                                    });
+                                                } catch (error: any) {
+                                                    console.error('Geolocation error:', error);
+                                                    toast({
+                                                        title: t('common.error'),
+                                                        description: error.message || t('onboarding.location_error'),
+                                                        variant: 'destructive',
+                                                    });
+                                                }
+                                                return;
+                                            }
+
                                             if (!navigator.geolocation) {
                                                 toast({
                                                     title: t('common.error'),
@@ -635,6 +727,53 @@ export default function SettingsPage() {
                         </div>
                     </div>
 
+                    {/* Biometric Settings */}
+                    {biometricAvailable && (
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-0.5">
+                                    <h3 className="text-lg font-bold flex items-center gap-2">
+                                        <Lock className="w-5 h-5 text-[#008069]" />
+                                        {direction === 'rtl' ? 'تسجيل الدخول بالبصمة' : 'Biometric Login'}
+                                    </h3>
+                                    <p className="text-xs text-gray-500">
+                                        {direction === 'rtl'
+                                            ? 'استخدم بصمة الإصبع أو الوجه لتسجيل الدخول'
+                                            : 'Use fingerprint or face ID to log in'}
+                                    </p>
+                                </div>
+                                <Switch
+                                    checked={biometricEnabled}
+                                    onCheckedChange={async (checked) => {
+                                        setBiometricEnabled(checked);
+                                        await Preferences.set({
+                                            key: 'biometric_enabled',
+                                            value: String(checked),
+                                        });
+                                        if (checked) {
+                                            try {
+                                                await NativeBiometric.verifyIdentity({
+                                                    reason: "Verify to enable",
+                                                    title: "Biometric Setup",
+                                                    subtitle: "",
+                                                    description: ""
+                                                });
+                                            } catch (e) {
+                                                setBiometricEnabled(false);
+                                                await Preferences.set({ key: 'biometric_enabled', value: 'false' });
+                                                toast({
+                                                    title: t('common.error'),
+                                                    description: "Biometric verification failed",
+                                                    variant: "destructive"
+                                                });
+                                            }
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    )}
+
                     {/* Advanced Settings / QR Code */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                         <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
@@ -658,7 +797,7 @@ export default function SettingsPage() {
                         </div>
                     </div>
                 </div>
-            </main>
-        </div>
+            </main >
+        </div >
     );
 }
