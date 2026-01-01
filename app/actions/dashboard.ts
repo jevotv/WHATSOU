@@ -277,5 +277,31 @@ export async function getOrders() {
         return { error: 'Failed to fetch orders' };
     }
 
+
+
     return { success: true, orders, storeSettings: { allow_delivery: store.allow_delivery, allow_pickup: store.allow_pickup } };
+}
+
+export async function getOrdersCount() {
+    const session = await getSession();
+    if (!session || !session.id) return { count: 0 };
+
+    const supabase = getSupabaseAdmin();
+
+    const { data: store } = await supabase
+        .from('stores')
+        .select('id')
+        .eq('user_id', session.id)
+        .single();
+
+    if (!store) return { count: 0 };
+
+    const { count, error } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('store_id', store.id);
+
+    if (error) return { count: 0 };
+
+    return { count: count || 0 };
 }

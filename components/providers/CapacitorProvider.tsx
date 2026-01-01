@@ -70,11 +70,29 @@ export function CapacitorProvider({ children }: { children: React.ReactNode }) {
         if (Capacitor.isNativePlatform()) {
             checkBiometricLock();
 
+            // Define badge updater
+            const updateBadgeCount = async () => {
+                try {
+                    const { getOrdersCount } = await import('@/app/actions/dashboard');
+                    const { count } = await getOrdersCount();
+                    if (count !== undefined) {
+                        try {
+                            await Badge.set({ count });
+                        } catch (err) {
+                            console.warn('Badge set failed', err);
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error setting badge:", e);
+                }
+            };
+
             // Listen for app state changes
             App.addListener('appStateChange', ({ isActive }) => {
                 if (!isActive) {
                     backgroundTime.current = Date.now();
                 } else {
+                    updateBadgeCount(); // Update badge on resume
                     const timeGone = Date.now() - backgroundTime.current;
                     // Only re-lock if gone for more than 5 seconds (prevents loop with biometric dialog)
                     if (timeGone > 5000) {
@@ -95,48 +113,69 @@ export function CapacitorProvider({ children }: { children: React.ReactNode }) {
 
             // 2. Push Notifications
             const setupPushNotifications = async () => {
-                let permStatus = await PushNotifications.checkPermissions();
+                try {
+                    let permStatus = await PushNotifications.checkPermissions();
 
-                // If prompt, requested on load for Merchant App utility
-                if (permStatus.receive === 'prompt') {
-                    permStatus = await PushNotifications.requestPermissions();
-                }
-
-                if (permStatus.receive !== 'granted') return;
-
-                await PushNotifications.register();
-
-                PushNotifications.addListener('registration', async (token) => {
-                    if (user?.id) {
-                        const { error } = await supabase
-                            .from('users')
-                            .update({ fcm_token: token.value })
-                            .eq('id', user.id);
-                        if (error) console.error('Error saving FCM token:', error);
+                    // If prompt, requested on load
+                    if (permStatus.receive === 'prompt') {
+                        permStatus = await PushNotifications.requestPermissions();
                     }
-                });
 
-                PushNotifications.addListener('pushNotificationReceived', (notification) => {
-                    toast({
-                        title: notification.title || 'New Notification',
-                        description: notification.body,
+                    if (permStatus.receive !== 'granted') return;
+
+                    await PushNotifications.register();
+
+                    PushNotifications.addListener('registration', async (token) => {
+                        console.log('Push Registration Success', token.value);
+                        if (user?.id) {
+                            const { error } = await supabase
+                                .from('users')
+                                .update({ fcm_token: token.value })
+                                .eq('id', user.id);
+
+                            if (error) {
+                                console.error('Error saving FCM token:', error);
+                                toast({ title: 'Token Save Failed', description: error.message, variant: 'destructive' });
+                            } else {
+                                // Temporary Debug Toast
+                                // toast({ title: 'Device Registered', description: 'Ready to receive orders!' });
+                            }
+                        }
                     });
-                });
 
-                PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-                    const data = notification.notification.data;
-                    if (data?.url) {
-                        router.push(data.url);
-                    } else if (data?.orderId) {
-                        router.push(`/dashboard/orders/${data.orderId}`);
-                    } else {
-                        router.push('/dashboard');
-                    }
-                });
+                    PushNotifications.addListener('registrationError', (error: any) => {
+                        console.error('Push registration error: ', error);
+                        toast({
+                            title: 'Push Error',
+                            description: 'Google Play Services likely missing or updated required.',
+                            variant: 'destructive'
+                        });
+                    });
+                    PushNotifications.addListener('pushNotificationReceived', (notification) => {
+                        toast({
+                            title: notification.title || 'New Notification',
+                            description: notification.body,
+                        });
+                    });
+
+                    PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+                        const data = notification.notification.data;
+                        if (data?.url) {
+                            router.push(data.url);
+                        } else if (data?.orderId) {
+                            router.push(`/dashboard/orders/${data.orderId}`);
+                        } else {
+                            router.push('/dashboard');
+                        }
+                    });
+                } catch (error) {
+                    console.error('Push notification setup failed:', error);
+                }
             };
 
             if (user) {
                 setupPushNotifications();
+                updateBadgeCount();
             }
 
             return () => {
