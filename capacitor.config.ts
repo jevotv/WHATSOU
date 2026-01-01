@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'WhatSou',
   webDir: 'out',
   server: {
-    url: 'https://www.whatsou.com/dashboard',
+    url: 'https://whatsoubuilder-git-paymob-integration-jevotv-3403s-projects.vercel.app/dashboard',
     cleartext: true,
     allowNavigation: [
       '*.vercel.app',
