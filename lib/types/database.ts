@@ -79,3 +79,32 @@ export interface Order {
 export interface CartItem extends OrderItem {
   image_url?: string;
 }
+
+export interface ProductImage {
+  id: string;
+  product_id: string;
+  image_url: string;
+  thumbnail_url?: string;
+  display_order: number;
+  alt_text?: string;
+  created_at: string;
+}
+
+export interface Product {
+  id: string;
+  store_id: string;
+  name: string;
+  description?: string;
+  current_price: number;  // Base price / "Starting from" price
+  original_price?: number;
+  image_url?: string;      // Full size (1200x1200) - Main Image
+  thumbnail_url?: string;  // Thumbnail (200x200)
+  images?: ProductImage[]; // All images including main
+  category?: string;
+  quantity: number;  // Used for simple products without variants
+  unlimited_stock?: boolean;
+  options: ProductOption[];
+  variants?: ProductVariant[];  // Loaded when needed
+  created_at: string;
+  updated_at: string;
+}

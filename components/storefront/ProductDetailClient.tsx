@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Store, Product, ProductVariant } from '@/lib/types/database';
 import { useCart } from '@/lib/contexts/CartContext';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ShoppingCart, Package, Minus, Plus, Zap, Check } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Package, Minus, Plus, Zap, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import CartDrawer from './CartDrawer';
@@ -25,6 +25,11 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
   const [showCart, setShowCart] = useState(false);
   const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+
+  // Gallery State
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   const { addItem, totalItems } = useCart();
   const router = useRouter();
   const { toast } = useToast();
@@ -37,6 +42,28 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
   const discountPercent = hasDiscount
     ? Math.round(((product.original_price! - product.current_price) / product.original_price!) * 100)
     : 0;
+
+  // Prepare Images List (merging legacy and new system if needed)
+  const productImages = product.images && product.images.length > 0
+    ? product.images.sort((a, b) => a.display_order - b.display_order).map(img => img.image_url)
+    : [product.image_url].filter(Boolean) as string[];
+
+  // SEO Schema
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.description,
+    image: productImages,
+    offers: {
+      '@type': 'Offer',
+      price: product.current_price,
+      priceCurrency: 'EGP', // Assuming EGP based on previous context, needs dynamic currency if multi-currency
+      availability: (product.unlimited_stock || product.quantity > 0)
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+    }
+  };
 
   // Load variants when product has options
   useEffect(() => {
@@ -52,7 +79,6 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
       .eq('product_id', product.id);
 
     if (data) {
-      // Convert option_values to strings to ensure proper comparison
       const processedVariants = data.map((v: ProductVariant) => ({
         ...v,
         option_values: Object.fromEntries(
@@ -76,7 +102,6 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
       return;
     }
 
-    // Find matching variant
     const match = variants.find((v) => {
       return Object.entries(selectedOptions).every(
         ([key, value]) => String(v.option_values[key] || '') === String(value)
@@ -86,7 +111,6 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
     setSelectedVariant(match || null);
   }, [selectedOptions, variants, hasOptions, product.options]);
 
-  // Calculate effective price and stock
   const getEffectivePrice = () => {
     if (selectedVariant) return selectedVariant.price;
     return product.current_price;
@@ -138,7 +162,6 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
       return;
     }
 
-    // Validate stock
     if (!product.unlimited_stock && quantity > effectiveStock) {
       toast({
         title: t('storefront.not_enough_stock'),
@@ -166,15 +189,12 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
     setShowCart(true);
   };
 
-  // Check if an option value is available (has at least one variant with stock)
   const isOptionValueAvailable = (optionName: string, value: string) => {
     if (!hasOptions || variants.length === 0) return true;
 
     return variants.some((v) => {
       if (String(v.option_values[optionName] || '') !== String(value)) return false;
       if (!v.unlimited_stock && v.quantity <= 0) return false;
-
-      // Check if compatible with other selected options
       for (const [key, selectedValue] of Object.entries(selectedOptions)) {
         if (key !== optionName && String(v.option_values[key] || '') !== String(selectedValue)) {
           return false;
@@ -184,12 +204,39 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
     });
   };
 
+  // Gallery Helpers
+  const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const scrollToImage = useCallback((index: number) => {
+    const slide = slideRefs.current[index];
+    if (slide) {
+      slide.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      setActiveImageIndex(index);
+    }
+  }, []);
+
+  const handleScroll = useCallback(() => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const scrollPos = container.scrollLeft;
+      const slideWidth = container.clientWidth;
+      const newIndex = Math.round(scrollPos / slideWidth);
+      if (newIndex !== activeImageIndex && newIndex >= 0 && newIndex < productImages.length) {
+        setActiveImageIndex(newIndex);
+      }
+    }
+  }, [activeImageIndex, productImages.length]);
+
   return (
     <div className="min-h-screen bg-[#f6f8f6] pb-24">
-      {/* Admin Bar */}
+      {/* Schema.org */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       {!loading && isOwner && <AdminBar />}
 
-      {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
@@ -211,40 +258,111 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
 
       <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Left Column: Image */}
-          <div className="relative aspect-square sm:aspect-[4/3] lg:aspect-square bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100">
-            {product.image_url ? (
-              <Image
-                src={product.image_url}
-                alt={`${product.name} | ${store.name}`}
-                fill
-                className="object-cover hover:scale-105 transition-transform duration-700"
-                priority
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-50">
-                <Package className="w-32 h-32 text-gray-300" />
-              </div>
-            )}
-
-            {/* Badges Overlay */}
-            <div className="absolute top-6 left-6 flex flex-col gap-2">
-              {hasDiscount && (
-                <div className="bg-[#E4405F] text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-md">
-                  -{discountPercent}%
-                </div>
-              )}
-              {(product.unlimited_stock || effectiveStock > 0) ? (
-                <div className="bg-[#19e65e] text-[#111813] px-4 py-1.5 rounded-full text-sm font-bold shadow-md flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-[#111813] animate-pulse"></div>
-                  {t('storefront.in_stock')}
+          {/* Left Column: Image Gallery */}
+          <div className="space-y-4">
+            <div className="relative aspect-square sm:aspect-[4/3] lg:aspect-square bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 group">
+              {productImages.length > 0 ? (
+                <div
+                  ref={scrollContainerRef}
+                  onScroll={handleScroll}
+                  className="w-full h-full flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
+                  {productImages.map((src, idx) => (
+                    <div
+                      key={idx}
+                      ref={(el) => { slideRefs.current[idx] = el; }}
+                      className="min-w-full w-full flex-shrink-0 snap-center relative h-full"
+                    >
+                      <Image
+                        src={src}
+                        alt={`${product.name} - Image ${idx + 1}`}
+                        fill
+                        className="object-cover"
+                        priority={idx === 0}
+                      />
+                    </div>
+                  ))}
                 </div>
               ) : (
-                <div className="bg-gray-900 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-md">
-                  {t('storefront.out_of_stock')}
+                <div className="w-full h-full flex items-center justify-center bg-gray-50">
+                  <Package className="w-32 h-32 text-gray-300" />
+                </div>
+              )}
+
+              {/* Arrows (Desktop) */}
+              {productImages.length > 1 && (
+                <>
+                  <button
+                    onClick={() => scrollToImage(Math.max(0, activeImageIndex - 1))}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0"
+                    disabled={activeImageIndex === 0}
+                  >
+                    <ChevronLeft className="w-6 h-6 text-gray-800" />
+                  </button>
+                  <button
+                    onClick={() => scrollToImage(Math.min(productImages.length - 1, activeImageIndex + 1))}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0"
+                    disabled={activeImageIndex === productImages.length - 1}
+                  >
+                    <ChevronRight className="w-6 h-6 text-gray-800" />
+                  </button>
+                </>
+              )}
+
+              {/* Badges Overlay */}
+              <div className="absolute top-6 left-6 flex flex-col gap-2 pointer-events-none">
+                {hasDiscount && (
+                  <div className="bg-[#E4405F] text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-md">
+                    -{discountPercent}%
+                  </div>
+                )}
+                {(product.unlimited_stock || effectiveStock > 0) ? (
+                  <div className="bg-[#19e65e] text-[#111813] px-4 py-1.5 rounded-full text-sm font-bold shadow-md flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-[#111813] animate-pulse"></div>
+                    {t('storefront.in_stock')}
+                  </div>
+                ) : (
+                  <div className="bg-gray-900 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-md">
+                    {t('storefront.out_of_stock')}
+                  </div>
+                )}
+              </div>
+
+              {/* Dots (Mobile/All) */}
+              {productImages.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                  {productImages.map((_, idx) => (
+                    <div
+                      key={idx}
+                      className={`w-2 h-2 rounded-full transition-all ${idx === activeImageIndex ? 'bg-white w-4' : 'bg-white/50'
+                        }`}
+                    />
+                  ))}
                 </div>
               )}
             </div>
+
+            {/* Thumbnail Strip */}
+            {productImages.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                {productImages.map((src, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => scrollToImage(idx)}
+                    className={`relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 border-2 transition-all ${idx === activeImageIndex ? 'border-[#19e65e]' : 'border-transparent opacity-70 hover:opacity-100'
+                      }`}
+                  >
+                    <Image
+                      src={src}
+                      alt={`Thumbnail ${idx + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right Column: Details */}
@@ -274,8 +392,6 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
                       </span>
                     )}
                   </div>
-
-
                 </div>
 
                 {product.description && (
@@ -363,7 +479,6 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
                   </div>
 
                   <div className="flex gap-3 sm:gap-4">
-                    {/* Usage of consistent Quantity styling from StorefrontClient/Globals could be nice, but matching style manually here */}
                     <div className="flex items-center bg-gray-100 rounded-full p-1 h-16 border border-gray-200 min-w-[130px] sm:min-w-[160px] shrink-0">
                       <button
                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -405,7 +520,6 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
         </div>
       </main>
 
-      {/* Powered by WhatSou - Fixed Bottom Left */}
       <div className="fixed bottom-6 left-6 z-40 hidden md:flex">
         <a
           href="https://www.whatsou.com"
@@ -418,7 +532,6 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
         </a>
       </div>
 
-      {/* Floating Cart Button - Fixed Bottom Right */}
       <div className="fixed bottom-6 right-6 z-40">
         <button
           onClick={() => setShowCart(true)}
@@ -436,6 +549,6 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
         onClose={() => setShowCart(false)}
         store={store}
       />
-    </div >
+    </div>
   );
 }

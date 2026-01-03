@@ -61,7 +61,7 @@ export default function DashboardPage() {
 
       const { data: productsData } = await supabase
         .from('products')
-        .select('*')
+        .select('*, images:product_images(*)')
         .eq('store_id', storeData.id)
         .order('created_at', { ascending: false });
 

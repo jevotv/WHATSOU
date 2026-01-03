@@ -134,6 +134,9 @@
         "no_customers": "No customers found yet."
     },
     "products": {
+        "add_image": "Add Image",
+        "add_first_image": "Add main Image",
+        "alt_text_placeholder": "Alt Text",
         "title": "Products",
         "add_new": "Add New Product",
         "edit_product": "Edit Product",

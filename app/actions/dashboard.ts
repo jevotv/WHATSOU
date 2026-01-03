@@ -26,6 +26,11 @@ export async function createProduct(data: any) {
         return { error: 'Store ID required' }
     }
 
+    // Validate image limit
+    if (data.images && data.images.length > 5) {
+        return { error: 'Maximum 5 images allowed per product' }
+    }
+
     const isOwner = await verifyStoreOwnership(data.store_id, session.id)
     if (!isOwner) {
         return { error: 'Unauthorized: You do not own this store' }
@@ -34,6 +39,10 @@ export async function createProduct(data: any) {
     const supabase = getSupabaseAdmin()
 
     // 1. Insert Product
+    // Use the first image as the main image_url for backward compatibility
+    const mainImage = data.images && data.images.length > 0 ? data.images[0].url : null;
+    const thumbnailImage = data.images && data.images.length > 0 ? data.images[0].thumbnailUrl : null;
+
     const { data: product, error } = await supabase
         .from('products')
         .insert({
@@ -45,8 +54,8 @@ export async function createProduct(data: any) {
             category: data.category,
             quantity: data.quantity,
             unlimited_stock: data.unlimited_stock,
-            image_url: data.image_url,
-            thumbnail_url: data.thumbnail_url,
+            image_url: mainImage,
+            thumbnail_url: thumbnailImage,
             options: data.options
         })
         .select()
@@ -57,7 +66,27 @@ export async function createProduct(data: any) {
         return { error: error.message }
     }
 
-    // 2. Insert Variants if any
+    // 2. Insert Images
+    if (data.images && data.images.length > 0) {
+        const imagesToInsert = data.images.map((img: any, index: number) => ({
+            product_id: product.id,
+            image_url: img.url,
+            thumbnail_url: img.thumbnailUrl,
+            display_order: index,
+            alt_text: img.altText || null
+        }))
+
+        const { error: imagesError } = await supabase
+            .from('product_images')
+            .insert(imagesToInsert)
+
+        if (imagesError) {
+            console.error('Create images error:', imagesError)
+            return { error: 'Product created but failed to save images' }
+        }
+    }
+
+    // 3. Insert Variants if any
     if (data.variants && data.variants.length > 0) {
         const variantsToInsert = data.variants.map((v: any) => ({
             product_id: product.id,
@@ -88,6 +117,11 @@ export async function updateProduct(productId: string, data: any) {
         return { error: 'Unauthorized' }
     }
 
+    // Validate image limit
+    if (data.images && data.images.length > 5) {
+        return { error: 'Maximum 5 images allowed per product' }
+    }
+
     // Need to fetch product first to check store ownership
     const supabase = getSupabaseAdmin()
     const { data: existingProduct } = await supabase
@@ -103,6 +137,51 @@ export async function updateProduct(productId: string, data: any) {
         return { error: 'Unauthorized' }
     }
 
+    // STORAGE CLEANUP LOGIC
+    // 1. Get existing images
+    const { data: existingImages } = await supabase
+        .from('product_images')
+        .select('image_url, thumbnail_url')
+        .eq('product_id', productId)
+
+    // Also consider the main product image if it was set independently (legacy)
+    // For now, we assume product_images is source of truth if we are migrating fully.
+    // However, if we are transitioning, we should be careful.
+    // Strategy: Delete files that are NOT in the new data.images list.
+
+    const newImageUrls = new Set(data.images?.map((img: any) => img.url) || []);
+
+    if (existingImages) {
+        const imagesToDelete = existingImages.filter(img => !newImageUrls.has(img.image_url));
+
+        for (const img of imagesToDelete) {
+            try {
+                // Extract path from URL. Assuming standard Supabase Storage URL format
+                // .../storage/v1/object/public/products/path/to/image.webp
+                const urlObj = new URL(img.image_url);
+                const pathParts = urlObj.pathname.split('/products/'); // Assuming bucket name 'products'
+                if (pathParts.length > 1) {
+                    const filePath = pathParts[1];
+                    await supabase.storage.from('products').remove([filePath]);
+                }
+
+                if (img.thumbnail_url) {
+                    const thumbUrlObj = new URL(img.thumbnail_url);
+                    const thumbPathParts = thumbUrlObj.pathname.split('/products/');
+                    if (thumbPathParts.length > 1) {
+                        const thumbPath = thumbPathParts[1];
+                        await supabase.storage.from('products').remove([thumbPath]);
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to delete image from storage:", e);
+            }
+        }
+    }
+
+    const mainImage = data.images && data.images.length > 0 ? data.images[0].url : null;
+    const thumbnailImage = data.images && data.images.length > 0 ? data.images[0].thumbnailUrl : null;
+
     const { error } = await supabase
         .from('products')
         .update({
@@ -113,8 +192,8 @@ export async function updateProduct(productId: string, data: any) {
             category: data.category,
             quantity: data.quantity,
             unlimited_stock: data.unlimited_stock,
-            image_url: data.image_url,
-            thumbnail_url: data.thumbnail_url,
+            image_url: mainImage,
+            thumbnail_url: thumbnailImage,
             options: data.options,
             updated_at: new Date().toISOString()
         })
@@ -122,9 +201,33 @@ export async function updateProduct(productId: string, data: any) {
 
     if (error) return { error: error.message }
 
-    // Handle Variants
+    // Handle Images Updates (Delete all and re-insert for simplicity and order guarantee)
+    // Since we handled storage cleanup above, we can safely clear the table for this product
+    const { error: deleteImagesError } = await supabase
+        .from('product_images')
+        .delete()
+        .eq('product_id', productId)
+
+    if (deleteImagesError) return { error: 'Failed to update images' }
+
+    if (data.images && data.images.length > 0) {
+        const imagesToInsert = data.images.map((img: any, index: number) => ({
+            product_id: productId,
+            image_url: img.url,
+            thumbnail_url: img.thumbnailUrl,
+            display_order: index,
+            alt_text: img.altText || null
+        }))
+
+        const { error: insertImagesError } = await supabase
+            .from('product_images')
+            .insert(imagesToInsert)
+
+        if (insertImagesError) return { error: 'Failed to save new images' }
+    }
+
+    // Handle Variants (Existing Logic)
     if (data.variants) {
-        // Delete existing
         await supabase.from('product_variants').delete().eq('product_id', productId)
 
         if (data.variants.length > 0) {
@@ -164,6 +267,38 @@ export async function deleteProduct(productId: string) {
 
     const isOwner = await verifyStoreOwnership(existingProduct.store_id, session.id)
     if (!isOwner) return { error: 'Unauthorized' }
+
+    // STORAGE CLEANUP - Clean ALL images associated with product
+    const { data: images } = await supabase
+        .from('product_images')
+        .select('image_url, thumbnail_url')
+        .eq('product_id', productId)
+
+    if (images) {
+        const filesToDelete: string[] = [];
+        for (const img of images) {
+            try {
+                const urlObj = new URL(img.image_url);
+                const pathParts = urlObj.pathname.split('/products/');
+                if (pathParts.length > 1) filesToDelete.push(pathParts[1]);
+
+                if (img.thumbnail_url) {
+                    const thumbUrlObj = new URL(img.thumbnail_url);
+                    const thumbPathParts = thumbUrlObj.pathname.split('/products/');
+                    if (thumbPathParts.length > 1) filesToDelete.push(thumbPathParts[1]);
+                }
+            } catch (e) {
+                console.error("Url parsing error", e);
+            }
+        }
+
+        // Also check legacy/main image in products table if not covered (though product_images should cover it)
+        // For safety, let's rely on product_images as the comprehensive source if populated.
+
+        if (filesToDelete.length > 0) {
+            await supabase.storage.from('products').remove(filesToDelete);
+        }
+    }
 
     const { error } = await supabase.from('products').delete().eq('id', productId)
     if (error) return { error: error.message }

@@ -91,7 +91,7 @@ async function getStoreData(slug: string) {
 
   const { data: products } = await supabase
     .from('products')
-    .select('*')
+    .select('*, images:product_images(*)')
     .eq('store_id', store.id)
     .order('created_at', { ascending: false });
 

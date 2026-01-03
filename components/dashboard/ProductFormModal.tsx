@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Product, ProductOption, ProductVariant } from '@/lib/types/database';
+import { useState, useEffect, useRef } from 'react';
+import { Product, ProductOption, ProductVariant, ProductImage } from '@/lib/types/database';
 import { supabase } from '@/lib/supabase/client';
 import { createProduct, updateProduct } from '@/app/actions/dashboard';
 import { useToast } from '@/hooks/use-toast';
@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Upload, Plus, Trash2, ChevronDown, Sparkles, DollarSign, Infinity as InfinityIcon, Info, Camera as CameraIcon } from 'lucide-react';
+import { Upload, Plus, Trash2, ChevronDown, Sparkles, DollarSign, Infinity as InfinityIcon, Info, Camera as CameraIcon, X, GripVertical, AlertCircle, RefreshCw } from 'lucide-react';
 import Image from 'next/image';
 import { Switch } from '@/components/ui/switch';
 import { processProductImage } from '@/lib/utils/imageProcessor';
@@ -20,7 +20,6 @@ import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { useRef } from 'react';
 
 interface ProductFormModalProps {
   storeId: string;
@@ -41,7 +40,17 @@ interface LocalVariant {
 interface LocalOption {
   name: string;
   values: string[];
-  rawValuesInput: string; // Store raw input for better UX
+  rawValuesInput: string;
+}
+
+interface ImageItem {
+  id: string; // generated uuid for key
+  url: string;
+  thumbnailUrl: string;
+  altText: string;
+  file?: File; // validation/upload
+  status: 'pending' | 'uploading' | 'completed' | 'error';
+  progress: number;
 }
 
 export default function ProductFormModal({
@@ -58,16 +67,18 @@ export default function ProductFormModal({
   const [category, setCategory] = useState('');
   const [quantity, setQuantity] = useState('');
   const [unlimitedStock, setUnlimitedStock] = useState(false);
-  const [imageUrl, setImageUrl] = useState('');
-  const [thumbnailUrl, setThumbnailUrl] = useState('');
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState('');
   const [options, setOptions] = useState<LocalOption[]>([]);
   const [variants, setVariants] = useState<LocalVariant[]>([]);
   const [loading, setLoading] = useState(false);
   const [variantsOpen, setVariantsOpen] = useState(true);
+
+  // Image State
+  const [images, setImages] = useState<ImageItem[]>([]);
+  const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(null);
+
   const { toast } = useToast();
   const { t } = useLanguage();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load existing product data
   useEffect(() => {
@@ -79,8 +90,38 @@ export default function ProductFormModal({
       setCategory(product.category || '');
       setQuantity((product.quantity ?? 0).toString());
       setUnlimitedStock(product.unlimited_stock || false);
-      setImageUrl(product.image_url || '');
-      setImagePreview(product.image_url || '');
+
+      // Load Images
+      // Ideally fetched from product_images table via backend relation
+      // But assuming product object might have them populated or we use the single legacy one if not.
+      // The `loadStoreAndProducts` in dashboard page should select product_images.
+      // If not present (e.g. first load), we fallback to image_url.
+
+      let initialImages: ImageItem[] = [];
+      if (product.images && product.images.length > 0) {
+        initialImages = product.images
+          .sort((a, b) => a.display_order - b.display_order)
+          .map(img => ({
+            id: img.id,
+            url: img.image_url,
+            thumbnailUrl: img.thumbnail_url || img.image_url,
+            altText: img.alt_text || '',
+            status: 'completed',
+            progress: 100
+          }));
+      } else if (product.image_url) {
+        // Fallback for legacy
+        initialImages = [{
+          id: 'legacy-main',
+          url: product.image_url,
+          thumbnailUrl: product.thumbnail_url || product.image_url,
+          altText: '',
+          status: 'completed',
+          progress: 100
+        }];
+      }
+      setImages(initialImages);
+
       const productOptions = Array.isArray(product.options) ? product.options : [];
       setOptions(productOptions.map((opt: ProductOption) => {
         const stringValues = Array.isArray(opt.values)
@@ -92,7 +133,7 @@ export default function ProductFormModal({
           rawValuesInput: stringValues.join(', ')
         };
       }));
-      setThumbnailUrl(product.thumbnail_url || '');
+
       loadVariants(product.id);
     }
   }, [product]);
@@ -105,7 +146,6 @@ export default function ProductFormModal({
 
     if (data) {
       setVariants(data.map((v: ProductVariant) => {
-        // Convert all option_values to strings
         const stringOptionValues: { [key: string]: string } = {};
         if (v.option_values) {
           Object.entries(v.option_values).forEach(([key, value]) => {
@@ -123,70 +163,79 @@ export default function ProductFormModal({
     }
   };
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // --- Image Handling ---
 
   const handleNativeCamera = async () => {
     try {
+      if (images.length >= 5) {
+        toast({ title: 'Limit Reached', description: 'Maximum 5 images allowed.', variant: 'destructive' });
+        return;
+      }
+
       const image = await Camera.getPhoto({
         quality: 90,
         allowEditing: false,
-        resultType: CameraResultType.DataUrl, // Use DataUrl for Hosted App compatibility checks
+        resultType: CameraResultType.DataUrl,
         source: CameraSource.Prompt,
       });
 
       if (image.dataUrl) {
-        setImagePreview(image.dataUrl);
-
-        // Convert Base64 DataURL to File
         const res: Response = await fetch(image.dataUrl);
         const blob: Blob = await res.blob();
-        const file = new File([blob], 'product_photo.jpg', { type: blob.type });
-        setImageFile(file);
+        const file = new File([blob], 'camera_photo.jpg', { type: blob.type });
+        handleAddFiles([file]);
       }
     } catch (error: any) {
-      console.error('Camera error:', error);
       if (error.message !== 'User cancelled photos app') {
-        toast({
-          title: 'Error',
-          description: 'Could not access camera',
-          variant: 'destructive',
-        });
+        toast({ title: 'Error', description: 'Could not access camera', variant: 'destructive' });
       }
     }
   };
 
-  const handleImageAreaClick = () => {
-    if (Capacitor.isNativePlatform()) {
-      handleNativeCamera();
-    } else {
-      fileInputRef.current?.click();
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleAddFiles(Array.from(e.target.files));
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  const handleAddFiles = async (files: File[]) => {
+    const remainingSlots = 5 - images.length;
+    if (remainingSlots <= 0) {
+      toast({ title: 'Limit Reached', description: 'Maximum 5 images allowed.', variant: 'destructive' });
+      return;
     }
+
+    const filesToUpload = files.slice(0, remainingSlots);
+
+    // Create optimistic items
+    const newItems: ImageItem[] = filesToUpload.map(file => ({
+      id: Math.random().toString(36).substr(2, 9),
+      url: URL.createObjectURL(file), // Temporary preview
+      thumbnailUrl: URL.createObjectURL(file),
+      altText: '',
+      file,
+      status: 'pending',
+      progress: 0
+    }));
+
+    setImages(prev => [...prev, ...newItems]);
+
+    // Start uploads
+    newItems.forEach(item => uploadImageItem(item));
   };
 
-  const uploadImage = async (): Promise<{ imageUrl: string | null; thumbnailUrl: string | null }> => {
-    if (!imageFile) return { imageUrl, thumbnailUrl };
+  const uploadImageItem = async (item: ImageItem) => {
+    if (!item.file) return;
+
+    setImages(prev => prev.map(img => img.id === item.id ? { ...img, status: 'uploading' } : img));
 
     try {
-      // Process image to create thumbnail and full versions
-      const { thumbnail, full, basePath } = await processProductImage(imageFile, {
+      // Process
+      const { thumbnail, full, basePath } = await processProductImage(item.file, {
         productName: name || 'product',
       });
 
-      if (!storeSlug) {
-        throw new Error("Missing store information. Please refresh the page.");
-      }
+      if (!storeSlug) throw new Error("Store information missing");
 
       const formData = new FormData();
       formData.append('thumbnail', thumbnail);
@@ -194,39 +243,69 @@ export default function ProductFormModal({
       formData.append('storeSlug', storeSlug);
       formData.append('productPath', basePath);
 
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
+      // Upload
+      const response = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Upload failed');
-      }
+      if (!response.ok) throw new Error(data.error || 'Upload failed');
 
-      return {
-        imageUrl: data.fullUrl,
+      setImages(prev => prev.map(img => img.id === item.id ? {
+        ...img,
+        url: data.fullUrl,
         thumbnailUrl: data.thumbnailUrl,
-      };
-    } catch (error: any) {
-      toast({
-        title: 'Image upload failed',
-        description: error.message,
-        variant: 'destructive',
-      });
-      return { imageUrl: null, thumbnailUrl: null };
+        status: 'completed',
+        progress: 100
+      } : img));
+
+    } catch (error) {
+      console.error("Upload error", error);
+      setImages(prev => prev.map(img => img.id === item.id ? { ...img, status: 'error' } : img));
+      toast({ title: 'Upload Failed', description: 'Failed to upload image.', variant: 'destructive' });
     }
   };
 
-  // Option management
+  const retryUpload = (id: string) => {
+    const item = images.find(i => i.id === id);
+    if (item && item.status === 'error') {
+      uploadImageItem(item);
+    }
+  };
+
+  const removeImage = (id: string) => {
+    setImages(prev => prev.filter(i => i.id !== id));
+  };
+
+  const updateAltText = (id: string, text: string) => {
+    setImages(prev => prev.map(img => img.id === id ? { ...img, altText: text } : img));
+  };
+
+  // Drag and Drop Handlers
+  const handleDragStart = (index: number) => {
+    setDraggedImageIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedImageIndex === null || draggedImageIndex === index) return;
+
+    const newImages = [...images];
+    const draggedItem = newImages[draggedImageIndex];
+    newImages.splice(draggedImageIndex, 1);
+    newImages.splice(index, 0, draggedItem);
+
+    setImages(newImages);
+    setDraggedImageIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedImageIndex(null);
+  };
+
+  // --- Other Logic ---
+
   const addOption = () => {
     if (options.length >= 3) {
-      toast({
-        title: 'Maximum options reached',
-        description: 'You can only add up to 3 options per product',
-        variant: 'destructive',
-      });
+      toast({ title: 'Maximum options reached', description: 'You can only add up to 3 options', variant: 'destructive' });
       return;
     }
     setOptions([...options, { name: '', values: [], rawValuesInput: '' }]);
@@ -234,7 +313,7 @@ export default function ProductFormModal({
 
   const removeOption = (index: number) => {
     setOptions(options.filter((_, i) => i !== index));
-    setVariants([]); // Clear variants when options change
+    setVariants([]);
   };
 
   const updateOptionName = (index: number, name: string) => {
@@ -245,78 +324,32 @@ export default function ProductFormModal({
 
   const updateOptionValues = (index: number, valuesString: string) => {
     const newOptions = [...options];
-    // Store raw input for display
     newOptions[index].rawValuesInput = valuesString;
-    // Parse values for variant generation - support both English (,) and Arabic (،) commas
-    newOptions[index].values = valuesString
-      .split(/[,،]/)
-      .map((v) => v.trim())
-      .filter((v) => v.length > 0);
+    newOptions[index].values = valuesString.split(/[,،]/).map(v => v.trim()).filter(v => v.length > 0);
     setOptions(newOptions);
   };
 
-  // Cartesian product algorithm for generating variants
   const generateVariants = () => {
     try {
-      const validOptions = options.filter((opt) => opt.name && opt.values.length > 0);
-
+      const validOptions = options.filter(opt => opt.name && opt.values.length > 0);
       if (validOptions.length === 0) {
-        toast({
-          title: 'No options defined',
-          description: 'Please add at least one option with values first',
-          variant: 'destructive',
-        });
+        toast({ title: 'No options', description: 'Please add options first', variant: 'destructive' });
         return;
       }
 
-      // Validate that all values are valid strings
-      for (const opt of validOptions) {
-        for (const val of opt.values) {
-          if (typeof val !== 'string' || val.trim() === '') {
-            toast({
-              title: t('common.error'),
-              description: `Invalid value in option "${opt.name}". Please use text values separated by commas.`,
-              variant: 'destructive',
-            });
-            return;
-          }
-        }
-      }
-
-      // Cartesian product
       const cartesian = (...arrays: string[][]): string[][] => {
-        return arrays.reduce<string[][]>(
-          (acc, curr) => acc.flatMap((a) => curr.map((b) => [...a, b])),
-          [[]]
-        );
+        return arrays.reduce<string[][]>((acc, curr) => acc.flatMap(a => curr.map(b => [...a, b])), [[]]);
       };
 
-      const optionArrays = validOptions.map((opt) => opt.values.map(v => String(v).trim()));
+      const optionArrays = validOptions.map(opt => opt.values.map(v => String(v).trim()));
       const combinations = cartesian(...optionArrays);
 
-      const newVariants: LocalVariant[] = combinations.map((combo) => {
+      const newVariants: LocalVariant[] = combinations.map(combo => {
         const optionValues: { [key: string]: string } = {};
-        validOptions.forEach((opt, i) => {
-          optionValues[String(opt.name)] = String(combo[i] || '');
-        });
+        validOptions.forEach((opt, i) => { optionValues[String(opt.name)] = String(combo[i] || ''); });
 
-        // Check if variant already exists
-        const existing = variants.find(
-          (v) => JSON.stringify(v.option_values) === JSON.stringify(optionValues)
-        );
-
-        if (existing) {
-          // Ensure all values are strings
-          return {
-            id: existing.id,
-            option_values: Object.fromEntries(
-              Object.entries(existing.option_values || {}).map(([k, v]) => [String(k), String(v)])
-            ),
-            price: String(existing.price ?? 0),
-            quantity: String(existing.quantity ?? 0),
-            sku: String(existing.sku || ''),
-          };
-        }
+        const existing = variants.find(v => JSON.stringify(v.option_values) === JSON.stringify(optionValues));
+        if (existing) return { ...existing, id: existing.id || undefined, price: String(existing.price), quantity: String(existing.quantity), sku: String(existing.sku) } as LocalVariant;
 
         return {
           option_values: optionValues,
@@ -327,65 +360,46 @@ export default function ProductFormModal({
       });
 
       setVariants(newVariants);
-      toast({
-        title: 'Variants generated!',
-        description: `${newVariants.length} variants created`,
-      });
-    } catch (error: any) {
-      console.error('Error generating variants:', error);
-      toast({
-        title: t('common.error'),
-        description: 'Failed to generate variants. Please check your option values.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Variants generated!', description: `${newVariants.length} variants created` });
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to generate variants', variant: 'destructive' });
     }
   };
 
-  // Bulk edit functions
-  const applyPriceToAll = () => {
-    if (!currentPrice) return;
-    setVariants(variants.map((v) => ({ ...v, price: currentPrice })));
-    toast({ title: 'Price applied to all variants' });
-  };
+  const applyPriceToAll = () => { setVariants(variants.map(v => ({ ...v, price: currentPrice }))); };
+  const applyQuantityToAll = (qty: string) => { setVariants(variants.map(v => ({ ...v, quantity: qty }))); };
 
-  const applyQuantityToAll = (qty: string) => {
-    setVariants(variants.map((v) => ({ ...v, quantity: qty })));
-    toast({ title: 'Quantity applied to all variants' });
-  };
-
-  // Variant management
   const updateVariant = (index: number, field: keyof LocalVariant, value: string) => {
     const newVariants = [...variants];
     (newVariants[index] as any)[field] = value;
     setVariants(newVariants);
   };
 
-  const removeVariant = (index: number) => {
-    setVariants(variants.filter((_, i) => i !== index));
-  };
-
-  // Get variant display label
-  const getVariantLabel = (variant: LocalVariant) => {
-    return Object.values(variant.option_values || {}).map(v => String(v)).join(' / ');
-  };
+  const removeVariant = (index: number) => { setVariants(variants.filter((_, i) => i !== index)); };
+  const getVariantLabel = (variant: LocalVariant) => Object.values(variant.option_values || {}).map(v => String(v)).join(' / ');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (Capacitor.isNativePlatform()) await Haptics.impact({ style: ImpactStyle.Light });
 
-    if (Capacitor.isNativePlatform()) {
-      await Haptics.impact({ style: ImpactStyle.Light });
+    // Validate images
+    if (images.length === 0) {
+      toast({ title: 'Image Required', description: 'Please add at least one image', variant: 'destructive' });
+      return;
+    }
+    if (images.some(i => i.status === 'uploading' || i.status === 'pending')) {
+      toast({ title: 'Upload in Progress', description: 'Please wait for images to finish uploading', variant: 'destructive' });
+      return;
+    }
+    if (images.some(i => i.status === 'error')) {
+      toast({ title: 'Upload Failed', description: 'Please remove or retry failed images', variant: 'destructive' });
+      return;
     }
 
     setLoading(true);
 
     try {
-      const uploadedImages = await uploadImage();
-
-      const validOptions = options.filter(
-        (opt) => opt.name && opt.values.length > 0
-      );
-
-      // Prepare data for server action
+      const validOptions = options.filter(opt => opt.name && opt.values.length > 0);
       const productData = {
         store_id: storeId,
         name,
@@ -395,11 +409,10 @@ export default function ProductFormModal({
         category: category || null,
         quantity: parseInt(quantity) || 0,
         unlimited_stock: unlimitedStock,
-        image_url: uploadedImages.imageUrl || null,
-        thumbnail_url: uploadedImages.thumbnailUrl || null,
+        // Backend handles pulling first image for legacy fields
+        images: images.map(img => ({ url: img.url, thumbnailUrl: img.thumbnailUrl, altText: img.altText })),
         options: validOptions,
-        // Include variant data in the same payload for atomic transaction in server action (roughly)
-        variants: variants.map((v) => ({
+        variants: variants.map(v => ({
           option_values: v.option_values,
           price: parseFloat(v.price) || 0,
           quantity: parseInt(v.quantity) || 0,
@@ -408,36 +421,21 @@ export default function ProductFormModal({
       };
 
       let result;
-
       if (product) {
-        // Update existing
-        // We pass variants inside productData, but server action expects them separately?
-        // Let's check server action signature: updateProduct(id, data)
-        // Data in server action expects variants inside data object.
         result = await updateProduct(product.id, productData);
       } else {
-        // Create new
         result = await createProduct(productData);
       }
 
-      if (result.error) {
-        throw new Error(result.error);
-      }
+      if (result.error) throw new Error(result.error);
 
       toast({
         title: product ? t('products.edit_product') : t('products.add_new'),
-        description: product
-          ? t('dashboard.product_updated_desc')
-          : t('dashboard.product_added_desc'),
+        description: product ? t('dashboard.product_updated_desc') : t('dashboard.product_added_desc'),
       });
-
       onSaved();
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -455,40 +453,88 @@ export default function ProductFormModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Image Upload */}
-          <div className="space-y-2">
-            <Label>{t('products.image_label')}</Label>
-            <div className="flex items-center gap-4">
-              {imagePreview && (
-                <div className="relative w-32 h-32 rounded-2xl overflow-hidden bg-gray-100">
-                  <Image
-                    src={imagePreview}
-                    alt="Preview"
-                    fill
-                    className="object-cover"
-                  />
+
+          {/* --- Images Section --- */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label>{t('products.images_label')} ({images.length}/5)</Label>
+              {images.length < 5 && (
+                <Button type="button" variant="outline" size="sm" onClick={() => Capacitor.isNativePlatform() ? handleNativeCamera() : fileInputRef.current?.click()}>
+                  <Plus className="w-4 h-4 mr-1" /> {t('products.add_image')}
+                </Button>
+              )}
+            </div>
+
+            {/* Hidden Input */}
+            <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFileSelect} className="hidden" />
+
+            {/* Drag & Drop List */}
+            <div className="grid gap-3">
+              {images.length === 0 && (
+                <div
+                  className="border-2 border-dashed rounded-2xl p-8 hover:bg-gray-50 transition flex flex-col items-center justify-center text-gray-400 cursor-pointer"
+                  onClick={() => Capacitor.isNativePlatform() ? handleNativeCamera() : fileInputRef.current?.click()}
+                >
+                  <CameraIcon className="w-8 h-8 mb-2" />
+                  <p>{t('products.add_first_image')}</p>
                 </div>
               )}
-              <div
-                className="cursor-pointer"
-                onClick={handleImageAreaClick}
-              >
-                <div className="border-2 border-dashed rounded-2xl p-6 hover:bg-gray-50 transition flex flex-col items-center justify-center min-w-[120px]">
-                  {Capacitor.isNativePlatform() ? (
-                    <CameraIcon className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-                  ) : (
-                    <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-                  )}
-                  <p className="text-sm text-gray-600">{t('products.images_label')}</p>
+              {images.map((img, index) => (
+                <div
+                  key={img.id}
+                  draggable
+                  onDragStart={() => handleDragStart(index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragEnd={handleDragEnd}
+                  className={`
+                            relative flex items-center gap-3 p-2 bg-white rounded-xl border border-gray-100 shadow-sm group
+                            ${draggedImageIndex === index ? 'opacity-50 border-blue-400' : ''}
+                        `}
+                >
+                  {/* Drag Handle */}
+                  <div className="cursor-grab text-gray-400 hover:text-gray-600">
+                    <GripVertical className="w-5 h-5" />
+                  </div>
+
+                  {/* Thumbnail */}
+                  <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+                    <Image src={img.thumbnailUrl || img.url} alt="Thumbnail" fill className={`object-cover ${img.status === 'uploading' ? 'opacity-50' : ''}`} />
+                    {img.status === 'uploading' && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    )}
+                    {img.status === 'error' && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-red-500/10">
+                        <AlertCircle className="w-6 h-6 text-red-500" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Details */}
+                  <div className="flex-1 min-w-0">
+                    <Input
+                      placeholder={t('products.alt_text_placeholder') || "Alt text (SEO)"}
+                      value={img.altText}
+                      onChange={(e) => updateAltText(img.id, e.target.value)}
+                      className="h-8 text-sm"
+                    />
+                    {img.status === 'error' && <p className="text-xs text-red-500 mt-1">Upload failed</p>}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-1">
+                    {img.status === 'error' && (
+                      <Button type="button" variant="ghost" size="sm" onClick={() => retryUpload(img.id)} className="h-8 w-8 p-0 text-blue-500">
+                        <RefreshCw className="w-4 h-4" />
+                      </Button>
+                    )}
+                    <Button type="button" variant="ghost" size="sm" onClick={() => removeImage(img.id)} className="h-8 w-8 p-0 text-red-500 hover:bg-red-50">
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-              </div>
+              ))}
             </div>
           </div>
 
@@ -649,7 +695,6 @@ export default function ProductFormModal({
                 </CollapsibleTrigger>
 
                 <CollapsibleContent>
-                  {/* Bulk Actions */}
                   <div className="p-3 bg-gray-100 border-b flex gap-2 flex-wrap">
                     <Button
                       type="button"
@@ -678,7 +723,6 @@ export default function ProductFormModal({
                     </div>
                   )}
 
-                  {/* Variant List Headers */}
                   <div className="flex items-center gap-3 p-3 bg-gray-50 border-b text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     <div className="flex-1">{t('products.variants_label')}</div>
                     <div className="w-24">{t('products.price_label')}</div>
@@ -686,7 +730,6 @@ export default function ProductFormModal({
                     <div className="w-8"></div>
                   </div>
 
-                  {/* Variant List - WhatsApp Style Cards */}
                   <div className="max-h-[300px] overflow-y-auto">
                     {variants.map((variant, index) => (
                       <div
@@ -694,14 +737,12 @@ export default function ProductFormModal({
                         className="p-3 border-b last:border-b-0 hover:bg-gray-50 transition"
                       >
                         <div className="flex items-center gap-3">
-                          {/* Variant Label - Chat Bubble Style */}
                           <div className="flex-1 min-w-0">
                             <div className="inline-block bg-[#dcf8c6] px-3 py-1.5 rounded-2xl rounded-bl-sm text-sm font-medium">
                               {getVariantLabel(variant)}
                             </div>
                           </div>
 
-                          {/* Price Input */}
                           <Input
                             type="number"
                             step="1"
@@ -711,7 +752,6 @@ export default function ProductFormModal({
                             className="w-24 h-8 text-sm rounded-xl"
                           />
 
-                          {/* Quantity Input */}
                           {!unlimitedStock ? (
                             <Input
                               type="number"
@@ -726,7 +766,6 @@ export default function ProductFormModal({
                             </div>
                           )}
 
-                          {/* Delete Button */}
                           <Button
                             type="button"
                             onClick={() => removeVariant(index)}

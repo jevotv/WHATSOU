@@ -66,7 +66,7 @@ async function getProductData(slug: string, productId: string) {
 
   const { data: product } = await supabase
     .from('products')
-    .select('*')
+    .select('*, images:product_images(*)')
     .eq('id', productId)
     .eq('store_id', store.id)
     .maybeSingle();

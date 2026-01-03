@@ -134,6 +134,9 @@
         "no_customers": "لا يوجد عملاء"
     },
     "products": {
+        "add_image": "إضافة صورة",
+        "add_first_image": "إضافة الصورة الرئيسية",
+        "alt_text_placeholder": "النص البديل",
         "title": "المنتجات",
         "add_new": "أضف منتج جديد",
         "edit_product": "تعديل المنتج",
