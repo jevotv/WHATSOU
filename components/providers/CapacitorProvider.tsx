@@ -128,16 +128,15 @@ export function CapacitorProvider({ children }: { children: React.ReactNode }) {
                     PushNotifications.addListener('registration', async (token) => {
                         console.log('Push Registration Success', token.value);
                         if (user?.id) {
-                            const { error } = await supabase
-                                .from('users')
-                                .update({ fcm_token: token.value })
-                                .eq('id', user.id);
+                            // Use server action to bypass RLS
+                            const { saveFcmToken } = await import('@/app/actions/auth');
+                            const result = await saveFcmToken(token.value);
 
-                            if (error) {
-                                console.error('Error saving FCM token:', error);
-                                toast({ title: 'Token Save Failed', description: error.message, variant: 'destructive' });
+                            if (result.error) {
+                                console.error('Error saving FCM token:', result.error);
+                                toast({ title: 'Token Save Failed', description: result.error, variant: 'destructive' });
                             } else {
-                                // Temporary Debug Toast
+                                console.log('FCM token saved successfully');
                                 // toast({ title: 'Device Registered', description: 'Ready to receive orders!' });
                             }
                         }

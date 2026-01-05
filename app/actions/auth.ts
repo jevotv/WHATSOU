@@ -194,3 +194,24 @@ export async function changePassword(formData: FormData) {
 
     return { success: true }
 }
+
+export async function saveFcmToken(token: string) {
+    const session = await getSession()
+    if (!session || !session.id) {
+        return { error: 'Unauthorized' }
+    }
+
+    const supabase = getSupabaseAdmin()
+    const { error } = await supabase
+        .from('users')
+        .update({ fcm_token: token })
+        .eq('id', session.id)
+
+    if (error) {
+        console.error('FCM token save error:', error)
+        return { error: error.message }
+    }
+
+    return { success: true }
+}
+
