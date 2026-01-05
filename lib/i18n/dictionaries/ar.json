@@ -31,7 +31,9 @@
         "create_account": "إنشاء حساب",
         "creating_account": "جاري الإنشاء...",
         "has_account": "لديك حساب بالفعل؟",
-        "sign_in_link": "سجل الدخول"
+        "sign_in_link": "سجل الدخول",
+        "agree_privacy": "أوافق على",
+        "privacy_policy": "سياسة الخصوصية"
     },
     "onboarding": {
         "step1_title": "أخبرنا عن متجرك",

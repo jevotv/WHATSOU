@@ -19,6 +19,7 @@ export default function SignupPage() {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [agreeToPrivacy, setAgreeToPrivacy] = useState(true);
   const { signUp } = useAuth();
   const { t, language, setLanguage, direction } = useLanguage();
 
@@ -166,6 +167,23 @@ export default function SignupPage() {
                     className="rounded-2xl h-12"
                   />
                 </div>
+
+                {/* Privacy Policy Checkbox */}
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="privacy-agree"
+                    checked={agreeToPrivacy}
+                    onChange={(e) => setAgreeToPrivacy(e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                  />
+                  <label htmlFor="privacy-agree" className="text-sm text-gray-600">
+                    {t('auth.agree_privacy')}{' '}
+                    <Link href="/privacy" target="_blank" className="text-green-600 hover:underline">
+                      {t('auth.privacy_policy')}
+                    </Link>
+                  </label>
+                </div>
               </>
             ) : (
               <div className="space-y-2">
@@ -185,7 +203,7 @@ export default function SignupPage() {
 
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || (step === 'form' && !agreeToPrivacy)}
               className="w-full h-12 rounded-3xl bg-green-600 hover:bg-green-700 text-base font-semibold"
             >
               {loading ? (step === 'form' ? 'Sending Code...' : 'Creating Account...') : (step === 'form' ? t('auth.create_account') : 'Verify & Signup')}

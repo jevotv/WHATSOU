@@ -31,7 +31,9 @@
         "create_account": "Create account",
         "creating_account": "Creating account...",
         "has_account": "Already have an account?",
-        "sign_in_link": "Sign in"
+        "sign_in_link": "Sign in",
+        "agree_privacy": "I agree to the",
+        "privacy_policy": "Privacy Policy"
     },
     "onboarding": {
         "step1_title": "Tell us about your store",
