@@ -27,6 +27,9 @@ type Order = {
     order_items: any[];
     delivery_type?: 'delivery' | 'pickup';
     notes?: string;
+    shipping_cost?: number;
+    city?: string;
+    district?: string;
 };
 
 export default function OrdersPage() {
@@ -244,7 +247,14 @@ export default function OrdersPage() {
                                     </div>
 
                                     <div className="flex items-center justify-between sm:justify-end gap-4 min-w-[120px]">
-                                        <span className="font-bold text-lg">{t('common.currency')} {Number(order.total_price).toFixed(2)}</span>
+                                        <div className="text-right">
+                                            <div className="font-bold text-lg">{t('common.currency')} {Number(order.total_price).toFixed(2)}</div>
+                                            {order.shipping_cost !== undefined && order.shipping_cost > 0 && (
+                                                <div className="text-xs text-gray-500">
+                                                    (Inc. {t('common.currency')} {Number(order.shipping_cost).toFixed(2)} Shipping)
+                                                </div>
+                                            )}
+                                        </div>
                                         {expandedOrderId === order.id ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
                                     </div>
                                 </div>
@@ -255,7 +265,14 @@ export default function OrdersPage() {
                                             <h4 className="font-medium mb-2 text-gray-700 flex items-center gap-2">
                                                 <MapPin className="w-4 h-4" /> {t('customers.delivery_address')}
                                             </h4>
-                                            <p className="text-gray-600 pl-6">{order.customer_address}</p>
+                                            <div className="text-gray-600 pl-6 space-y-1">
+                                                <p>{order.customer_address}</p>
+                                                {(order.city || order.district) && (
+                                                    <p className="text-sm text-gray-400">
+                                                        {[order.district, order.city].filter(Boolean).join(', ')}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </div>
 
                                         {order.notes && (

@@ -232,6 +232,7 @@
         "proceed": "Proceed to Checkout",
         "confirm_order": "Confirm Order",
         "processing": "Processing...",
+        "free": "Free shipping",
         "back_to_cart": "Back to Cart",
         "missing_info": "Missing information",
         "missing_info_desc": "Please fill in all fields",

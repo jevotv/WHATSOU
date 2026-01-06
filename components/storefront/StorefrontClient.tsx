@@ -60,7 +60,17 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
     // window.addEventListener('resize', handleResize);
     // return () => window.removeEventListener('resize', handleResize);
   }, []);
-  const { addItem, totalItems } = useCart();
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640) {
+        setViewMode('list');
+      } else {
+        setViewMode('grid');
+      }
+    };
+    handleResize();
+  }, []);
+  const { addItem, totalItems, totalPrice } = useCart();
   const { toast } = useToast();
   const { user, loading } = useAuth();
   const isOwner = user?.id === store.user_id;
@@ -142,9 +152,27 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
       image_url: product.thumbnail_url || product.image_url,
     });
 
+    const currentTotal = totalPrice + (product.current_price * qty);
+    const threshold = store.free_shipping_threshold;
+    let description = t('storefront.added_to_cart_desc', { quantity: qty, name: product.name });
+
+    // Add free shipping nudges
+    if (threshold && currentTotal < threshold) {
+      const remaining = threshold - currentTotal;
+      const msg = direction === 'rtl'
+        ? `\nمتبقي ${remaining.toFixed(2)} ${t('common.currency')} للشحن المجاني!`
+        : `\nAdd ${remaining.toFixed(2)} ${t('common.currency')} more for free shipping!`;
+      description += msg;
+    } else if (threshold && currentTotal >= threshold && totalPrice < threshold) {
+      const msg = direction === 'rtl'
+        ? `\n🎉 مبروك! لقد حصلت على شحن مجاني!`
+        : `\n🎉 Hooray! You unlocked free shipping!`;
+      description += msg;
+    }
+
     toast({
       title: t('storefront.added_to_cart'),
-      description: t('storefront.added_to_cart_desc', { quantity: qty, name: product.name }),
+      description: description,
     });
 
     // Reset quantity
@@ -161,6 +189,21 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
 
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-[#f6f8f6]">
+      {/* Free Shipping Marquee */}
+      {store.free_shipping_threshold && (
+        <div className="bg-[#008069] text-white py-2 overflow-hidden whitespace-nowrap relative z-50">
+          <div className={`inline-block ${direction === 'rtl' ? 'animate-marquee-rtl' : 'animate-marquee'}`}>
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <span key={i} className="inline-block px-8 font-medium text-sm">
+                {direction === 'rtl'
+                  ? `📦 شحن مجاني عند الشراء بـ ${store.free_shipping_threshold} ${t('common.currency')}`
+                  : `📦 Free shipping on orders over ${store.free_shipping_threshold} ${t('common.currency')}`}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Admin Bar - Only valid if not loading and user is owner */}
       {!loading && isOwner && <AdminBar />}
 

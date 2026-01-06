@@ -1,18 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Store } from '@/lib/types/database';
 import { useCart } from '@/lib/contexts/CartContext';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Trash2, Plus, Minus, ShoppingBag, Home, Store as StoreIconLucide } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, Home, Store as StoreIconLucide, Zap } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase/client';
 import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { ShippingConfig, City, District, calculateShippingPrice } from '@/types/shipping';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 
 interface CartDrawerProps {
   open: boolean;
@@ -30,19 +34,142 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
   const [loading, setLoading] = useState(false);
   const [deliveryType, setDeliveryType] = useState<'delivery' | 'pickup'>('delivery');
   const { toast } = useToast();
-  const { t, language } = useLanguage();
+  const { t, language, direction } = useLanguage();
+
+  // Shipping State
+  const [cities, setCities] = useState<City[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [selectedCityId, setSelectedCityId] = useState<string>('');
+  const [selectedDistrictId, setSelectedDistrictId] = useState<string>('');
+  const [streetAddress, setStreetAddress] = useState('');
+  const [shippingCost, setShippingCost] = useState(0);
+  const [isFreeShipping, setIsFreeShipping] = useState(false);
+
+  // Derived Shipping Config
+  const shippingConfig = (store.shipping_config as unknown as ShippingConfig) || { type: 'none' };
+  const freeShippingThreshold = store.free_shipping_threshold;
+
+  // Load Cities on Mount
+  // Load Cities on Mount
+  useEffect(() => {
+    if (open && cities.length === 0) {
+      supabase.from('cities').select('*').order('name_ar').then(({ data }) => {
+        if (data) {
+          let filtered = data;
+          if (shippingConfig.type === 'by_city' && 'rates' in shippingConfig) {
+            const allowed = Object.keys(shippingConfig.rates);
+            filtered = data.filter(c => allowed.includes(c.id.toString()));
+          }
+          setCities(filtered);
+        }
+      });
+    }
+  }, [open, cities.length, shippingConfig]);
+
+  // Load Districts when City changes
+  // Load Districts when City changes
+  useEffect(() => {
+    if (selectedCityId) {
+      supabase.from('districts').select('*').eq('city_id', selectedCityId).order('name_ar')
+        .then(({ data }) => {
+          if (data) {
+            let filtered = data;
+            if (shippingConfig.type === 'by_district' && 'rates' in shippingConfig) {
+              const allowed = Object.keys(shippingConfig.rates);
+              filtered = data.filter(d => allowed.includes(d.id.toString()));
+            }
+            setDistricts(filtered);
+            setSelectedDistrictId(''); // Reset district
+          }
+        });
+    } else {
+      setDistricts([]);
+      setSelectedDistrictId('');
+    }
+  }, [selectedCityId, shippingConfig]);
+
+  // Calculate Shipping Cost
+  useEffect(() => {
+    if (deliveryType === 'pickup') {
+      setShippingCost(0);
+      setIsFreeShipping(false);
+      return;
+    }
+
+    const { price, isFree } = calculateShippingPrice(
+      shippingConfig,
+      totalPrice,
+      freeShippingThreshold || null,
+      selectedCityId ? parseInt(selectedCityId) : undefined,
+      selectedDistrictId ? parseInt(selectedDistrictId) : undefined
+    );
+    setShippingCost(price);
+    setIsFreeShipping(isFree);
+  }, [totalPrice, selectedCityId, selectedDistrictId, deliveryType, shippingConfig, freeShippingThreshold]);
+
+  // Calculate final total
+  const finalTotal = totalPrice + shippingCost;
+
 
   const handleCheckout = async () => {
     // Validation based on delivery type
     const needsAddress = deliveryType === 'delivery';
-    if (!customerName || !customerPhone || (needsAddress && !customerAddress)) {
-      toast({
-        title: t('cart.missing_info'),
-        description: t('cart.missing_info_desc'),
-        variant: 'destructive',
-      });
-      return;
+
+    // Construct full address if using selectors
+    let finalAddress = customerAddress;
+    if (needsAddress) {
+      if (!customerName || !customerPhone) {
+        toast({
+          title: t('cart.missing_info'),
+          description: t('cart.missing_info_desc'),
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (shippingConfig.type !== 'none' && shippingConfig.type !== 'nationwide') {
+        // For city/district based shipping, require selections
+        if (!selectedCityId || (shippingConfig.type === 'by_district' && !selectedDistrictId) || !streetAddress) {
+          toast({
+            title: t('cart.missing_info'),
+            description: t('cart.missing_address_details'),
+            variant: 'destructive',
+          });
+          return;
+        }
+      } else {
+        // Basic address validation
+        if (!customerAddress && !streetAddress) {
+          toast({
+            title: t('cart.missing_info'),
+            description: t('cart.missing_info_desc'),
+            variant: 'destructive',
+          });
+          return;
+        }
+      }
+
+      // Construct final address string
+      if (selectedCityId) {
+        const city = cities.find(c => c.id.toString() === selectedCityId);
+        const district = districts.find(d => d.id.toString() === selectedDistrictId);
+        const cityName = direction === 'rtl' ? city?.name_ar : city?.name_en;
+        const districtName = direction === 'rtl' ? district?.name_ar : district?.name_en;
+        finalAddress = `${cityName || ''} - ${districtName || ''} - ${streetAddress}`;
+      } else {
+        finalAddress = customerAddress || streetAddress;
+      }
+    } else {
+      if (!customerName || !customerPhone) {
+        toast({
+          title: t('cart.missing_info'),
+          description: t('cart.missing_info_desc'),
+          variant: 'destructive',
+        });
+        return;
+      }
     }
+
 
     setLoading(true);
 
@@ -52,8 +179,8 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
       message += `${t('whatsapp.personal_details')}\n`;
       message += `${t('whatsapp.name', { name: customerName })}\n`;
       message += `${t('whatsapp.phone', { phone: standardizePhoneNumber(customerPhone) })}\n`;
-      if (deliveryType === 'delivery' && customerAddress) {
-        message += `${t('whatsapp.address', { address: customerAddress })}\n`;
+      if (deliveryType === 'delivery' && finalAddress) {
+        message += `${t('whatsapp.address', { address: finalAddress })}\n`;
       } else {
         message += `${t('whatsapp.pickup_order')}\n`;
       }
@@ -80,7 +207,13 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
         message += `${t('whatsapp.separator')}\n`;
       });
 
-      message += `\n${t('whatsapp.total', { total: totalPrice.toFixed(2) })}\n\n`;
+      message += `\n${t('whatsapp.subtotal', { total: totalPrice.toFixed(2) })}\n`;
+      if (shippingCost > 0) {
+        message += `${t('whatsapp.shipping', { cost: shippingCost.toFixed(2) })}\n`;
+      } else if (isFreeShipping) {
+        message += `${t('whatsapp.free_shipping')}\n`;
+      }
+      message += `${t('whatsapp.total', { total: finalTotal.toFixed(2) })}\n\n`;
       message += `${t('whatsapp.footer')}`;
 
       const whatsappUrl = `https://wa.me/${store.whatsapp_number}?text=${encodeURIComponent(message)}`;
@@ -109,6 +242,9 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
       });
 
       // 3. Background: Log Order to Supabase (Fire and Forget)
+      const cityName = selectedCityId ? cities.find(c => c.id.toString() === selectedCityId)?.name_en : null;
+      const districtName = selectedDistrictId ? districts.find(d => d.id.toString() === selectedDistrictId)?.name_en : null;
+
       supabase.from('orders').insert({
         store_id: store.id,
         customer_name: customerName,
@@ -116,7 +252,10 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
         customer_address: deliveryType === 'delivery' ? customerAddress : null,
         delivery_type: deliveryType,
         order_items: items,
-        total_price: totalPrice,
+        total_price: finalTotal,
+        shipping_cost: shippingCost,
+        city: cityName,
+        district: districtName,
         notes: notes,
       }).then(({ error }) => {
         if (error) {
@@ -259,6 +398,26 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
                   <span>{t('cart.total')}</span>
                   <span>{t('common.currency')} {totalPrice.toFixed(2)}</span>
                 </div>
+                {freeShippingThreshold && (
+                  <div className="space-y-2">
+                    {totalPrice >= freeShippingThreshold ? (
+                      <div className="text-sm font-bold text-green-600 flex items-center gap-2 bg-green-50 p-2 rounded-lg border border-green-100">
+                        <Zap className="w-4 h-4 fill-current" />
+                        {direction === 'rtl' ? 'مبروك! لقد حصلت على شحن مجاني' : 'Congratulations! You got free shipping'}
+                      </div>
+                    ) : (
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>{direction === 'rtl' ? 'متبقي للشحن المجاني' : 'Remaining for free shipping'}</span>
+                        <span>{t('common.currency')} {(freeShippingThreshold - totalPrice).toFixed(2)}</span>
+                      </div>
+                    )}
+                    <Progress
+                      value={Math.min((totalPrice / freeShippingThreshold) * 100, 100)}
+                      className={cn("h-2", totalPrice >= freeShippingThreshold ? "[&>div]:bg-green-500" : "")}
+                    />
+                  </div>
+                )}
+
                 <Button
                   onClick={() => setShowCheckout(true)}
                   className="w-full h-14 rounded-3xl bg-green-600 hover:bg-green-700 text-lg font-semibold"
@@ -327,15 +486,56 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
 
               {/* Address - Show if: delivery only OR (both options AND delivery selected) */}
               {(store.allow_delivery && (!store.allow_pickup || deliveryType === 'delivery')) && (
-                <div className="space-y-2">
-                  <Label>{t('cart.form.address')}</Label>
-                  <Input
-                    value={customerAddress}
-                    onChange={(e) => setCustomerAddress(e.target.value)}
-                    placeholder={t('cart.form.address_placeholder')}
-                    className="rounded-2xl h-12"
-                    required
-                  />
+                <div className="space-y-3 animate-in fade-in slide-in-from-top-1">
+                  {/* City Select */}
+                  <div className="space-y-2">
+                    <Label>{direction === 'rtl' ? 'المحافظة' : 'Governorate'}</Label>
+                    <Select value={selectedCityId} onValueChange={setSelectedCityId}>
+                      <SelectTrigger className="rounded-2xl h-12 bg-gray-50 border-none">
+                        <SelectValue placeholder={direction === 'rtl' ? 'اختر المحافظة' : 'Select Governorate'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {cities.map((city) => (
+                          <SelectItem key={city.id} value={city.id.toString()}>
+                            {direction === 'rtl' ? city.name_ar : city.name_en}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* District Select */}
+                  {selectedCityId && (
+                    <div className="space-y-2 animate-in fade-in slide-in-from-top-1">
+                      <Label>{direction === 'rtl' ? 'المنطقة' : 'District'}</Label>
+                      <Select value={selectedDistrictId} onValueChange={setSelectedDistrictId}>
+                        <SelectTrigger className="rounded-2xl h-12 bg-gray-50 border-none">
+                          <SelectValue placeholder={direction === 'rtl' ? 'اختر المنطقة' : 'Select District'} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {districts.map((district) => (
+                            <SelectItem key={district.id} value={district.id.toString()}>
+                              {direction === 'rtl' ? district.name_ar : district.name_en}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label>{t('cart.form.address')}</Label>
+                    <Input
+                      value={streetAddress || customerAddress} // Fallback to customerAddress if user typed there before component update
+                      onChange={(e) => {
+                        setStreetAddress(e.target.value);
+                        setCustomerAddress(e.target.value); // Sync for backward capability
+                      }}
+                      placeholder={direction === 'rtl' ? 'اسم الشارع، رقم المبنى، علامة مميزة' : 'Street Name, Building No., Landmark'}
+                      className="rounded-2xl h-12"
+                      required
+                    />
+                  </div>
                 </div>
               )}
 
@@ -351,6 +551,16 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
 
               <div className="bg-gray-50 p-4 rounded-2xl space-y-2">
                 <h4 className="font-semibold">{t('cart.form.summary')}</h4>
+
+                {freeShippingThreshold && totalPrice < freeShippingThreshold && (
+                  <div className="space-y-1 pb-2 border-b">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>{direction === 'rtl' ? 'متبقي للشحن المجاني' : 'Remaining for free shipping'}</span>
+                      <span>{t('common.currency')} {(freeShippingThreshold - totalPrice).toFixed(2)}</span>
+                    </div>
+                    <Progress value={(totalPrice / freeShippingThreshold) * 100} className="h-2" />
+                  </div>
+                )}
                 {items.map((item, index) => (
                   <div key={index} className="flex justify-between text-sm">
                     <span>
@@ -359,9 +569,28 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
                     <span>{t('common.currency')} {(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
+
+                <div className="border-t border-dashed my-2"></div>
+
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">{t('cart.subtotal')}</span>
+                  <span>{t('common.currency')} {totalPrice.toFixed(2)}</span>
+                </div>
+
+                {deliveryType === 'delivery' && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">{t('cart.shipping')}</span>
+                    {isFreeShipping ? (
+                      <span className="text-green-600 font-bold">{t('cart.free')}</span>
+                    ) : (
+                      <span>{shippingCost > 0 ? `${t('common.currency')} ${shippingCost.toFixed(2)}` : (direction === 'rtl' ? 'يتم حسابه عند اختيار العنوان' : 'Calculated at checkout')}</span>
+                    )}
+                  </div>
+                )}
+
                 <div className="flex justify-between font-bold text-lg pt-2 border-t">
                   <span>{t('cart.total')}</span>
-                  <span>{t('common.currency')} {totalPrice.toFixed(2)}</span>
+                  <span>{t('common.currency')} {finalTotal.toFixed(2)}</span>
                 </div>
               </div>
             </div>

@@ -1,3 +1,7 @@
+import { ShippingConfig } from '@/types/shipping';
+
+export type { ShippingConfig };
+
 export interface Store {
   id: string;
   user_id: string;
@@ -16,6 +20,8 @@ export interface Store {
   qr_code?: string | null;
   allow_delivery?: boolean;
   allow_pickup?: boolean;
+  shipping_config?: ShippingConfig | null;
+  free_shipping_threshold?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -74,6 +80,9 @@ export interface Order {
   total_price: number;
   created_at: string;
   notes?: string;
+  shipping_cost?: number;
+  city?: string;
+  district?: string;
 }
 
 export interface CartItem extends OrderItem {

@@ -24,6 +24,8 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { Switch } from "@/components/ui/switch";
 import { Preferences } from '@capacitor/preferences';
 import { NativeBiometric } from 'capacitor-native-biometric';
+import { StoreShippingSettings } from '@/components/dashboard/StoreShippingSettings';
+import { ShippingConfig } from '@/types/shipping';
 
 export default function SettingsPage() {
     const [store, setStore] = useState<Store | null>(null);
@@ -46,6 +48,10 @@ export default function SettingsPage() {
     const [locationUrl, setLocationUrl] = useState('');
     const [allowDelivery, setAllowDelivery] = useState(true);
     const [allowPickup, setAllowPickup] = useState(false);
+
+    // Shipping Configuration
+    const [shippingConfig, setShippingConfig] = useState<ShippingConfig>({ type: 'none' });
+    const [freeShippingThreshold, setFreeShippingThreshold] = useState<number | null>(null);
 
     // Password Change
     const [currentPassword, setCurrentPassword] = useState('');
@@ -105,6 +111,8 @@ export default function SettingsPage() {
                 setLocationUrl(data.location_url || '');
                 setAllowDelivery(data.allow_delivery ?? true);
                 setAllowPickup(data.allow_pickup ?? false);
+                setShippingConfig((data.shipping_config as unknown as ShippingConfig) || { type: 'none' });
+                setFreeShippingThreshold(data.free_shipping_threshold);
             }
         } catch (error) {
             console.error('Error loading store:', error);
@@ -231,6 +239,8 @@ export default function SettingsPage() {
                 location_url: locationUrl || null,
                 allow_delivery: allowDelivery,
                 allow_pickup: allowPickup,
+                shipping_config: shippingConfig,
+                free_shipping_threshold: freeShippingThreshold,
             };
 
             const result = await updateStore(store.id, storeData);
@@ -536,6 +546,15 @@ export default function SettingsPage() {
                             </label>
                         </div>
                     </div>
+
+                    {/* Shipping Settings */}
+                    <StoreShippingSettings
+                        shippingConfig={shippingConfig}
+                        freeShippingThreshold={freeShippingThreshold}
+                        onConfigChange={setShippingConfig}
+                        onThresholdChange={setFreeShippingThreshold}
+                    />
+
                     {/* Social Media */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                         <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
