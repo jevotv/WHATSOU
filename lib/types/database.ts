@@ -39,6 +39,7 @@ export interface ProductVariant {
   quantity: number;
   sku?: string;
   unlimited_stock?: boolean;
+  image_index?: number | null;  // Index of product image to show when variant selected (0-based). NULL = default image
   created_at?: string;
 }
 
@@ -114,6 +115,7 @@ export interface Product {
   unlimited_stock?: boolean;
   options: ProductOption[];
   variants?: ProductVariant[];  // Loaded when needed
+  sales_count?: number;
   created_at: string;
   updated_at: string;
 }

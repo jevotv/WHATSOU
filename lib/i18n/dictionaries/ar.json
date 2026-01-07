@@ -166,7 +166,9 @@
         "option_values_hint": "اكتب القيم وافصل بينها بفاصلة (مثال: أحمر، أزرق، أخضر)",
         "variants_label": "أنواع المنتج",
         "manage_variants": "إدارة الأنواع",
-        "options_available": "{count} خيارات متاحة"
+        "options_available": "{count} خيارات متاحة",
+        "variant_image": "صورة",
+        "default_image": "افتراضي"
     },
     "settings": {
         "title": "إعدادات المتجر",
@@ -222,7 +224,23 @@
         "not_enough_stock_desc": "المتاح فقط {count}",
         "missing_options": "برجاء اختيار كل الخيارات",
         "price": "جنيه",
-        "missing_options_desc": "يجب عليك اختيار قيمة لكل خيار"
+        "missing_options_desc": "يجب عليك اختيار قيمة لكل خيار",
+        "filters": "فلترة",
+        "price_range": "نطاق السعر",
+        "show_results": "عرض النتائج",
+        "clear_all": "مسح الكل",
+        "sort_by": "ترتيب حسب",
+        "sort_price_asc": "الأقل سعراً",
+        "sort_price_desc": "الأعلى سعراً",
+        "sort_newest": "الأحدث",
+        "sort_best_selling": "الأكثر مبيعا",
+        "no_products_found": "لم يتم العثور على منتجات",
+        "no_products_found_desc": "جرب تغيير الفلاتر أو البحث عن شيء آخر",
+        "clear_filters": "مسح الفلاتر"
+    },
+    "filters": {
+        "show_results": "عرض النتائج",
+        "clear_all": "مسح الكل"
     },
     "cart": {
         "title": "سلة المشتريات",

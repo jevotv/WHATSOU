@@ -166,7 +166,9 @@
         "option_values_hint": "Type values separated by comma (e.g. Red, Blue, Green)",
         "variants_label": "Variants",
         "manage_variants": "Manage Variants",
-        "options_available": "{count} options available"
+        "options_available": "{count} options available",
+        "variant_image": "Image",
+        "default_image": "Default"
     },
     "settings": {
         "title": "Store Settings",
@@ -222,7 +224,23 @@
         "not_enough_stock_desc": "Only {count} available",
         "missing_options": "Please select all options",
         "price": "EGP",
-        "missing_options_desc": "You must choose a value for each option"
+        "missing_options_desc": "You must choose a value for each option",
+        "filters": "Filters",
+        "price_range": "Price Range",
+        "show_results": "Show Results",
+        "clear_all": "Clear All",
+        "sort_by": "Sort By",
+        "sort_price_asc": "Price: Low to High",
+        "sort_price_desc": "Price: High to Low",
+        "sort_newest": "Newest",
+        "sort_best_selling": "Best Selling",
+        "no_products_found": "No products found",
+        "no_products_found_desc": "Try adjusting your filters or search query",
+        "clear_filters": "Clear Filters"
+    },
+    "filters": {
+        "show_results": "Show Results",
+        "clear_all": "Clear All"
     },
     "cart": {
         "title": "Your Cart",

@@ -11,7 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Upload, Plus, Trash2, ChevronDown, Sparkles, DollarSign, Infinity as InfinityIcon, Info, Camera as CameraIcon, X, GripVertical, AlertCircle, RefreshCw } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Upload, Plus, Trash2, ChevronDown, Sparkles, DollarSign, Infinity as InfinityIcon, Info, Camera as CameraIcon, X, GripVertical, AlertCircle, RefreshCw, ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import { Switch } from '@/components/ui/switch';
 import { processProductImage } from '@/lib/utils/imageProcessor';
@@ -35,6 +36,7 @@ interface LocalVariant {
   price: string;
   quantity: string;
   sku: string;
+  imageIndex?: number | null; // Index of product image (0-based)
 }
 
 interface LocalOption {
@@ -158,6 +160,7 @@ export default function ProductFormModal({
           price: (v.price ?? 0).toString(),
           quantity: (v.quantity ?? 0).toString(),
           sku: v.sku || '',
+          imageIndex: v.image_index ?? null,
         };
       }));
     }
@@ -349,13 +352,14 @@ export default function ProductFormModal({
         validOptions.forEach((opt, i) => { optionValues[String(opt.name)] = String(combo[i] || ''); });
 
         const existing = variants.find(v => JSON.stringify(v.option_values) === JSON.stringify(optionValues));
-        if (existing) return { ...existing, id: existing.id || undefined, price: String(existing.price), quantity: String(existing.quantity), sku: String(existing.sku) } as LocalVariant;
+        if (existing) return { ...existing, id: existing.id || undefined, price: String(existing.price), quantity: String(existing.quantity), sku: String(existing.sku), imageIndex: existing.imageIndex } as LocalVariant;
 
         return {
           option_values: optionValues,
           price: currentPrice || '0',
           quantity: '0',
           sku: '',
+          imageIndex: null,
         };
       });
 
@@ -377,6 +381,12 @@ export default function ProductFormModal({
 
   const removeVariant = (index: number) => { setVariants(variants.filter((_, i) => i !== index)); };
   const getVariantLabel = (variant: LocalVariant) => Object.values(variant.option_values || {}).map(v => String(v)).join(' / ');
+
+  const updateVariantImageIndex = (index: number, imageIndex: number | null) => {
+    const newVariants = [...variants];
+    newVariants[index].imageIndex = imageIndex;
+    setVariants(newVariants);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -417,6 +427,7 @@ export default function ProductFormModal({
           price: parseFloat(v.price) || 0,
           quantity: parseInt(v.quantity) || 0,
           sku: v.sku || null,
+          image_index: v.imageIndex ?? null,
         }))
       };
 
@@ -725,6 +736,7 @@ export default function ProductFormModal({
 
                   <div className="flex items-center gap-3 p-3 bg-gray-50 border-b text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     <div className="flex-1">{t('products.variants_label')}</div>
+                    <div className="w-16 text-center">{t('products.variant_image') || 'صورة'}</div>
                     <div className="w-24">{t('products.price_label')}</div>
                     <div className="w-16 text-center">{t('products.stock_label')}</div>
                     <div className="w-8"></div>
@@ -742,6 +754,39 @@ export default function ProductFormModal({
                               {getVariantLabel(variant)}
                             </div>
                           </div>
+
+                          {/* Image Selector */}
+                          <Select
+                            value={variant.imageIndex !== null && variant.imageIndex !== undefined ? variant.imageIndex.toString() : "default"}
+                            onValueChange={(val) => updateVariantImageIndex(index, val === "default" ? null : parseInt(val))}
+                          >
+                            <SelectTrigger className="w-16 h-8 text-xs rounded-xl">
+                              <SelectValue>
+                                {variant.imageIndex !== null && variant.imageIndex !== undefined && images[variant.imageIndex]?.status === 'completed' ? (
+                                  <img
+                                    src={images[variant.imageIndex]?.thumbnailUrl}
+                                    alt=""
+                                    className="w-5 h-5 rounded object-cover"
+                                  />
+                                ) : (
+                                  <ImageIcon className="w-4 h-4 text-gray-400" />
+                                )}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="default">
+                                <span className="text-gray-500">{t('products.default_image') || 'افتراضي'}</span>
+                              </SelectItem>
+                              {images.filter(img => img.status === 'completed').map((img, imgIdx) => (
+                                <SelectItem key={imgIdx} value={imgIdx.toString()}>
+                                  <div className="flex items-center gap-2">
+                                    <img src={img.thumbnailUrl} alt="" className="w-6 h-6 rounded object-cover" />
+                                    <span>{imgIdx + 1}</span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
 
                           <Input
                             type="number"

@@ -94,7 +94,8 @@ export async function createProduct(data: any) {
             price: v.price,
             quantity: v.quantity,
             unlimited_stock: data.unlimited_stock,
-            sku: v.sku
+            sku: v.sku,
+            image_index: v.image_index ?? null
         }))
 
         const { error: variantError } = await supabase
@@ -237,7 +238,8 @@ export async function updateProduct(productId: string, data: any) {
                 price: v.price,
                 quantity: v.quantity,
                 unlimited_stock: data.unlimited_stock,
-                sku: v.sku
+                sku: v.sku,
+                image_index: v.image_index ?? null
             }))
 
             const { error: varError } = await supabase

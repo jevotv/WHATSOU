@@ -11,8 +11,11 @@ import CartDrawer from './CartDrawer';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
-import { Globe, Facebook, Instagram, Twitter } from 'lucide-react';
+import { Globe, Facebook, Instagram, Twitter, Filter, ArrowUpDown, Tag } from 'lucide-react';
 import { useAuth } from '@/lib/contexts/AuthContext';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import ProductFilters from './ProductFilters';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 import AdminBar from './AdminBar';
 
@@ -32,36 +35,110 @@ const getTotalStock = (product: Product) => {
 
 export default function StorefrontClient({ store, products }: StorefrontClientProps) {
   const { t, language, setLanguage, direction } = useLanguage();
-  const [selectedCategory, setSelectedCategory] = useState<string>(t('storefront.all_categories'));
-  const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Initialize state from URL
+  const [selectedCategory, setSelectedCategory] = useState<string>(() => {
+    const param = searchParams.get('category');
+    // Normalize 'All' from URL or default to current language's 'All'
+    if (param === 'All' || param === 'الكل') return t('storefront.all_categories');
+    return param || t('storefront.all_categories');
+  });
+
+  // When language changes, update 'All' category text if currently selected
+  useEffect(() => {
+    if (['All', 'الكل'].includes(selectedCategory)) {
+      setSelectedCategory(t('storefront.all_categories'));
+    }
+  }, [language, t, selectedCategory]);
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [showCart, setShowCart] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [quantities, setQuantities] = useState<{ [productId: string]: number }>({});
   const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  // Filter State
+  const [selectedAttributes, setSelectedAttributes] = useState<{ [key: string]: string[] }>(() => {
+    const attrs: { [key: string]: string[] } = {};
+    searchParams.forEach((value, key) => {
+      if (['category', 'q', 'sort', 'min_price', 'max_price'].includes(key)) return;
+      // Assume attributes are passed as key=val1,val2
+      attrs[key] = value.split(',');
+    });
+    return attrs;
+  });
+
+  const [sortOption, setSortOption] = useState<string>(searchParams.get('sort') || 'newest'); // price_asc, price_desc, newest, best_selling
+
+  // Data Extraction
+  const { attributes, maxPrice, minPrice } = useMemo(() => {
+    // Map of DisplayName -> Set of Values
+    // We normalize keys (lowercase, trimmed) to find if they are the same attribute
+    // but we keep the "prettiest" display name (e.g. Title Case or first seen)
+    const attrsMap: { [normalizedKey: string]: { name: string; values: Set<string> } } = {};
+    let max = 0;
+    let min = Infinity;
+
+    // Helper to format/normalize keys
+    const normalize = (s: string) => s.trim().toLowerCase();
+    const toTitleCase = (s: string) => s.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+
+    products.forEach((p) => {
+      // Attributes
+      p.options?.forEach((opt) => {
+        const rawName = opt.name.trim();
+        const key = normalize(rawName);
+
+        if (!attrsMap[key]) {
+          attrsMap[key] = {
+            name: toTitleCase(rawName), // Default to Title Case for new attributes
+            values: new Set()
+          };
+        }
+
+        opt.values.forEach((v) => attrsMap[key].values.add(v.trim()));
+      });
+
+      // Price
+      if (p.current_price > max) max = p.current_price;
+      if (p.current_price < min) min = p.current_price;
+    });
+
+    if (min === Infinity) min = 0;
+
+    return {
+      attributes: Object.values(attrsMap).map((attr) => ({
+        name: attr.name,
+        values: Array.from(attr.values),
+      })),
+      maxPrice: max,
+      minPrice: min,
+    };
+  }, [products]);
+
+  // Map selected attributes using the normalized names matching the display names
+  // We need to ensure we filter using the same logic
+
+
+  const [priceRange, setPriceRange] = useState<[number, number]>(() => {
+    const min = searchParams.get('min_price') ? Number(searchParams.get('min_price')) : minPrice;
+    const max = searchParams.get('max_price') ? Number(searchParams.get('max_price')) : maxPrice;
+    return [Math.max(min, minPrice), Math.min(max, maxPrice)] as [number, number];
+  });
+
+  // Update price range when products change (e.g. initial load if default)
+  useEffect(() => {
+    if (!searchParams.get('min_price') && !searchParams.get('max_price')) {
+      setPriceRange([minPrice, maxPrice]);
+    }
+  }, [minPrice, maxPrice, searchParams]);
 
   // Set default view mode based on screen size
   useEffect(() => {
     const handleResize = () => {
-      // If width < 640px (sm breakpoint), default to list, else grid
-      // Only set if it hasn't been manually toggled? 
-      // User request: "Default way of display". 
-      // We'll set it on mount.
-      if (window.innerWidth < 640) {
-        setViewMode('list');
-      } else {
-        setViewMode('grid');
-      }
-    };
-
-    // Run on mount
-    handleResize();
-
-    // Optional: Add resize listener if we want it to adapt dynamically
-    // window.addEventListener('resize', handleResize);
-    // return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  useEffect(() => {
-    const handleResize = () => {
       if (window.innerWidth < 640) {
         setViewMode('list');
       } else {
@@ -70,6 +147,7 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
     };
     handleResize();
   }, []);
+
   const { addItem, totalItems, totalPrice } = useCart();
   const { toast } = useToast();
   const { user, loading } = useAuth();
@@ -90,12 +168,62 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
     return [t('storefront.all_categories'), ...Array.from(cats)] as string[];
   }, [availableProducts, t]);
 
-  // Filter products by category and search
+  // Sync state to URL
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    // Only set category param if it's NOT the default 'All' (in any language)
+    const allString = t('storefront.all_categories');
+    if (selectedCategory && selectedCategory !== allString && selectedCategory !== 'All' && selectedCategory !== 'الكل') {
+      params.set('category', selectedCategory);
+    }
+    if (searchQuery) params.set('q', searchQuery);
+    if (sortOption && sortOption !== 'newest') params.set('sort', sortOption);
+
+    if (priceRange[0] > minPrice) params.set('min_price', priceRange[0].toString());
+    if (priceRange[1] < maxPrice) params.set('max_price', priceRange[1].toString());
+
+    Object.entries(selectedAttributes).forEach(([key, values]) => {
+      if (values.length > 0) {
+        params.set(key, values.join(','));
+      }
+    });
+
+    const newUrl = `${pathname}?${params.toString()}`;
+    router.replace(newUrl, { scroll: false });
+  }, [selectedCategory, searchQuery, sortOption, priceRange, selectedAttributes, minPrice, maxPrice, pathname, router, t]);
+
+  // Handlers
+  const handleAttributeChange = (name: string, value: string) => {
+    setSelectedAttributes(prev => {
+      const current = prev[name] || [];
+      const updated = current.includes(value)
+        ? current.filter(v => v !== value)
+        : [...current, value];
+
+      // Cleanup empty keys
+      if (updated.length === 0) {
+        const { [name]: _, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [name]: updated };
+    });
+  };
+
+  const clearAllFilters = () => {
+    setPriceRange([minPrice, maxPrice]);
+    setSelectedAttributes({});
+    setSortOption('newest');
+    // Ensure URL is cleared via effect
+  };
+
+  // Filter products
   const filteredProducts = useMemo(() => {
-    let filtered = availableProducts;
+    let filtered = [...availableProducts];
 
     // Filter by category
-    if (selectedCategory !== t('storefront.all_categories')) {
+    const allString = t('storefront.all_categories');
+    if (selectedCategory && selectedCategory !== allString && selectedCategory !== 'All' && selectedCategory !== 'الكل') {
       filtered = filtered.filter((p) => p.category === selectedCategory);
     }
 
@@ -108,8 +236,41 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
       );
     }
 
+    // Filter by Price Range
+    filtered = filtered.filter(p => p.current_price >= priceRange[0] && p.current_price <= priceRange[1]);
+
+    // Filter by Attributes
+    Object.entries(selectedAttributes).forEach(([attrName, selectedValues]) => {
+      if (selectedValues.length === 0) return;
+
+      filtered = filtered.filter((p) => {
+        const normalize = (s: string) => s.trim().toLowerCase();
+
+        // Find product option variant that matches (case-insensitive)
+        const productOption = p.options?.find((o) => normalize(o.name) === normalize(attrName));
+
+        if (!productOption) return false;
+
+        // Also check values case-insensitive/trimmed just in case
+        return productOption.values.some((v) =>
+          selectedValues.some(sv => v.trim() === sv.trim())
+        );
+      });
+    });
+
+    // Sort
+    if (sortOption === 'price_asc') {
+      filtered.sort((a, b) => a.current_price - b.current_price);
+    } else if (sortOption === 'price_desc') {
+      filtered.sort((a, b) => b.current_price - a.current_price);
+    } else if (sortOption === 'newest') {
+      filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    } else if (sortOption === 'best_selling') {
+      filtered.sort((a, b) => (b.sales_count || 0) - (a.sales_count || 0));
+    }
+
     return filtered;
-  }, [availableProducts, selectedCategory, searchQuery]);
+  }, [availableProducts, selectedCategory, searchQuery, priceRange, selectedAttributes, sortOption, t]);
 
   // Handle quantity change with stock limit
   const updateQuantity = (productId: string, delta: number, maxStock: number) => {
@@ -329,33 +490,72 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
         <div className="flex justify-center w-full">
           <div className="max-w-[1200px] w-full px-4 sm:px-8 space-y-3">
             {/* Search Bar */}
-            {/* Search Bar & View Toggle */}
-            <div className="flex gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <Input
-                  type="text"
-                  placeholder={t('storefront.search_placeholder')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-12 h-11 rounded-full border-gray-200 focus:ring-2 focus:ring-[#19e65e] text-base"
-                />
+            {/* Search Bar & Actions */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex gap-2 w-full">
+                <div className="relative flex-1">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Input
+                    type="text"
+                    placeholder={t('storefront.search_placeholder')}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-12 h-11 rounded-xl border-gray-200 focus:ring-2 focus:ring-[#19e65e] text-base bg-white"
+                  />
+                </div>
+
+                {/* Filter Button */}
+                <button
+                  onClick={() => setIsFilterOpen(true)}
+                  className={`flex items-center justify-center gap-2 px-4 rounded-xl border transition-all h-11 shrink-0 ${Object.keys(selectedAttributes).length > 0 || priceRange[0] > minPrice || priceRange[1] < maxPrice
+                    ? 'border-[#19e65e] text-[#19e65e] bg-[#19e65e]/5'
+                    : 'border-gray-200 hover:border-[#19e65e] hover:text-[#19e65e] bg-white text-gray-700'
+                    }`}
+                >
+                  <Filter className="w-5 h-5" />
+                  <span className="hidden sm:inline font-bold">{t('storefront.filters')}</span>
+                </button>
               </div>
-              <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg shrink-0 h-11">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-[#111813]' : 'text-gray-400 hover:text-gray-600'
-                    }`}
-                >
-                  <LayoutGrid className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-[#111813]' : 'text-gray-400 hover:text-gray-600'
-                    }`}
-                >
-                  <List className="w-5 h-5" />
-                </button>
+
+              <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
+                {/* Sort Dropdown */}
+                <Select value={sortOption} onValueChange={setSortOption}>
+                  <SelectTrigger className="w-[160px] h-11 rounded-xl border-gray-200 bg-white shrink-0">
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <ArrowUpDown className="w-4 h-4" />
+                      <span className="truncate font-medium">
+                        {sortOption === 'price_asc' && t('storefront.sort_price_asc')}
+                        {sortOption === 'price_desc' && t('storefront.sort_price_desc')}
+                        {sortOption === 'newest' && t('storefront.sort_newest')}
+                        {sortOption === 'best_selling' && t('storefront.sort_best_selling')}
+                      </span>
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">{t('storefront.sort_newest')}</SelectItem>
+                    <SelectItem value="best_selling">{t('storefront.sort_best_selling')}</SelectItem>
+                    <SelectItem value="price_asc">{t('storefront.sort_price_asc')}</SelectItem>
+                    <SelectItem value="price_desc">{t('storefront.sort_price_desc')}</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {/* View Toggles */}
+                <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl shrink-0 h-11">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-[#111813]' : 'text-gray-400 hover:text-gray-600'
+                      }`}
+                  >
+                    <LayoutGrid className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-[#111813]' : 'text-gray-400 hover:text-gray-600'
+                      }`}
+                  >
+                    <List className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -388,9 +588,19 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
       <main className="flex-grow flex justify-center py-8">
         <div className="flex flex-col max-w-[1200px] w-full px-4 sm:px-8">
           {filteredProducts.length === 0 ? (
-            <div className="text-center py-16">
-              <Package className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-              <p className="text-gray-500 text-lg">{t('storefront.no_products')}</p>
+            <div className="text-center py-16 flex flex-col items-center">
+              <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6">
+                <Search className="w-10 h-10 text-gray-300" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">{t('storefront.no_products_found')}</h3>
+              <p className="text-gray-500 max-w-sm mb-8">{t('storefront.no_products_found_desc')}</p>
+
+              <Button
+                onClick={clearAllFilters}
+                className="bg-[#111813] hover:bg-black text-white h-11 px-6 rounded-full"
+              >
+                {t('storefront.clear_filters')}
+              </Button>
             </div>
           ) : (
             <div className={viewMode === 'grid'
@@ -700,6 +910,20 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
           )}
         </button>
       </div>
+
+      {/* Product Filters Drawer */}
+      <ProductFilters
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        maxPrice={maxPrice}
+        minPrice={minPrice}
+        priceRange={priceRange}
+        onPriceChange={setPriceRange}
+        attributes={attributes}
+        selectedAttributes={selectedAttributes}
+        onAttributeChange={handleAttributeChange}
+        onClearFilters={clearAllFilters}
+      />
 
       {/* Cart Drawer */}
       <CartDrawer

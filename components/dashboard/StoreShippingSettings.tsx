@@ -369,108 +369,30 @@ export function StoreShippingSettings({
 
                 {(shippingConfig.type === 'by_city' || shippingConfig.type === 'by_district') && (
                     <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <Label className="text-sm font-bold text-gray-700">
                                 {direction === 'rtl' ? 'أسعار المناطق' : 'Zone Rates'}
                             </Label>
-                            <Popover open={isAddOpen} onOpenChange={setIsAddOpen}>
-                                <PopoverTrigger asChild>
-                                    <Button size="sm" className="bg-[#008069] hover:bg-green-600">
-                                        <Plus className="w-4 h-4 mr-1 rtl:mr-0 rtl:ml-1" />
-                                        {direction === 'rtl' ? 'إضافة منطقة' : 'Add Zone'}
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-80 p-4" align={direction === 'rtl' ? 'start' : 'end'}>
-                                    <div className="space-y-4">
-                                        <h4 className="font-medium leading-none">
-                                            {direction === 'rtl' ? 'إضافة سعر جديد' : 'Add New Rate'}
-                                        </h4>
-                                        <div className="space-y-2">
-                                            <Label>{direction === 'rtl' ? 'المحافظة' : 'Governorate'}</Label>
-                                            <Select
-                                                value={selectedCityId?.toString()}
-                                                onValueChange={(val) => {
-                                                    setSelectedCityId(parseInt(val));
-                                                    setSelectedDistrictId(null);
-                                                }}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder={direction === 'rtl' ? 'اختر محافظة' : 'Select Governorate'} />
-                                                </SelectTrigger>
-                                                <SelectContent className='max-h-60'>
-                                                    {cities.map((city) => (
-                                                        <SelectItem key={city.id} value={city.id.toString()}>
-                                                            {direction === 'rtl' ? city.name_ar : city.name_en}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-
-                                        {shippingConfig.type === 'by_district' && (
-                                            <div className="space-y-2">
-                                                <Label>{direction === 'rtl' ? 'المنطقة' : 'District'}</Label>
-                                                <Select
-                                                    value={selectedDistrictId?.toString()}
-                                                    onValueChange={(val) => setSelectedDistrictId(parseInt(val))}
-                                                    disabled={!selectedCityId}
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder={direction === 'rtl' ? 'اختر منطقة' : 'Select District'} />
-                                                    </SelectTrigger>
-                                                    <SelectContent className='max-h-60'>
-                                                        {filteredDistricts.map((district) => (
-                                                            <SelectItem key={district.id} value={district.id.toString()}>
-                                                                {direction === 'rtl' ? district.name_ar : district.name_en}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        )}
-
-                                        <div className="space-y-2">
-                                            <Label>{direction === 'rtl' ? 'السعر' : 'Price'}</Label>
-                                            <Input
-                                                type="number"
-                                                min="0"
-                                                value={ratePrice}
-                                                onChange={(e) => setRatePrice(e.target.value)}
-                                                placeholder="0.00"
-                                            />
-                                        </div>
-
-                                        <Button onClick={handleAddRate} className="w-full bg-[#008069] hover:bg-green-600">
-                                            {direction === 'rtl' ? 'إضافة' : 'Add'}
+                            <div className="flex flex-wrap items-center gap-2">
+                                <Popover open={isAddOpen} onOpenChange={setIsAddOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button size="sm" className="bg-[#008069] hover:bg-green-600">
+                                            <Plus className="w-4 h-4 mr-1 rtl:mr-0 rtl:ml-1" />
+                                            {direction === 'rtl' ? 'إضافة منطقة' : 'Add Zone'}
                                         </Button>
-                                    </div>
-                                </PopoverContent>
-                            </Popover>
-                            <Popover open={isBulkOpen} onOpenChange={setIsBulkOpen}>
-                                <PopoverTrigger asChild>
-                                    <Button size="sm" variant="outline">
-                                        {direction === 'rtl' ? 'إضافة الكل' : 'Add All'}
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-80 p-4">
-                                    <div className="space-y-4">
-                                        <h4 className="font-medium leading-none">
-                                            {direction === 'rtl' ? 'تطبيق سعر موحد' : 'Apply Bulk Price'}
-                                        </h4>
-                                        <p className="text-xs text-gray-500">
-                                            {shippingConfig.type === 'by_city'
-                                                ? (direction === 'rtl' ? 'سيتم إضافة جميع المحافظات بهذا السعر' : 'All governorates will be added with this price')
-                                                : (direction === 'rtl' ? 'يجب اختيار محافظة أولاً لإضافة كل مناطقها' : 'Select a governorate first to add all its districts')
-                                            }
-                                        </p>
-
-                                        {shippingConfig.type === 'by_district' && (
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-80 p-4" align={direction === 'rtl' ? 'start' : 'end'}>
+                                        <div className="space-y-4">
+                                            <h4 className="font-medium leading-none">
+                                                {direction === 'rtl' ? 'إضافة سعر جديد' : 'Add New Rate'}
+                                            </h4>
                                             <div className="space-y-2">
                                                 <Label>{direction === 'rtl' ? 'المحافظة' : 'Governorate'}</Label>
                                                 <Select
                                                     value={selectedCityId?.toString()}
                                                     onValueChange={(val) => {
                                                         setSelectedCityId(parseInt(val));
+                                                        setSelectedDistrictId(null);
                                                     }}
                                                 >
                                                     <SelectTrigger>
@@ -485,68 +407,148 @@ export function StoreShippingSettings({
                                                     </SelectContent>
                                                 </Select>
                                             </div>
+
+                                            {shippingConfig.type === 'by_district' && (
+                                                <div className="space-y-2">
+                                                    <Label>{direction === 'rtl' ? 'المنطقة' : 'District'}</Label>
+                                                    <Select
+                                                        value={selectedDistrictId?.toString()}
+                                                        onValueChange={(val) => setSelectedDistrictId(parseInt(val))}
+                                                        disabled={!selectedCityId}
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder={direction === 'rtl' ? 'اختر منطقة' : 'Select District'} />
+                                                        </SelectTrigger>
+                                                        <SelectContent className='max-h-60'>
+                                                            {filteredDistricts.map((district) => (
+                                                                <SelectItem key={district.id} value={district.id.toString()}>
+                                                                    {direction === 'rtl' ? district.name_ar : district.name_en}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            )}
+
+                                            <div className="space-y-2">
+                                                <Label>{direction === 'rtl' ? 'السعر' : 'Price'}</Label>
+                                                <Input
+                                                    type="number"
+                                                    min="0"
+                                                    value={ratePrice}
+                                                    onChange={(e) => setRatePrice(e.target.value)}
+                                                    placeholder="0.00"
+                                                />
+                                            </div>
+
+                                            <Button onClick={handleAddRate} className="w-full bg-[#008069] hover:bg-green-600">
+                                                {direction === 'rtl' ? 'إضافة' : 'Add'}
+                                            </Button>
+                                        </div>
+                                    </PopoverContent>
+                                </Popover>
+                                <Popover open={isBulkOpen} onOpenChange={setIsBulkOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button size="sm" variant="outline">
+                                            {direction === 'rtl' ? 'إضافة الكل' : 'Add All'}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-80 p-4">
+                                        <div className="space-y-4">
+                                            <h4 className="font-medium leading-none">
+                                                {direction === 'rtl' ? 'تطبيق سعر موحد' : 'Apply Bulk Price'}
+                                            </h4>
+                                            <p className="text-xs text-gray-500">
+                                                {shippingConfig.type === 'by_city'
+                                                    ? (direction === 'rtl' ? 'سيتم إضافة جميع المحافظات بهذا السعر' : 'All governorates will be added with this price')
+                                                    : (direction === 'rtl' ? 'يجب اختيار محافظة أولاً لإضافة كل مناطقها' : 'Select a governorate first to add all its districts')
+                                                }
+                                            </p>
+
+                                            {shippingConfig.type === 'by_district' && (
+                                                <div className="space-y-2">
+                                                    <Label>{direction === 'rtl' ? 'المحافظة' : 'Governorate'}</Label>
+                                                    <Select
+                                                        value={selectedCityId?.toString()}
+                                                        onValueChange={(val) => {
+                                                            setSelectedCityId(parseInt(val));
+                                                        }}
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder={direction === 'rtl' ? 'اختر محافظة' : 'Select Governorate'} />
+                                                        </SelectTrigger>
+                                                        <SelectContent className='max-h-60'>
+                                                            {cities.map((city) => (
+                                                                <SelectItem key={city.id} value={city.id.toString()}>
+                                                                    {direction === 'rtl' ? city.name_ar : city.name_en}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            )}
+
+                                            <div className="space-y-2">
+                                                <Label>{direction === 'rtl' ? 'السعر' : 'Price'}</Label>
+                                                <Input
+                                                    type="number"
+                                                    min="0"
+                                                    value={bulkPrice}
+                                                    onChange={(e) => setBulkPrice(e.target.value)}
+                                                    placeholder="0.00"
+                                                />
+                                            </div>
+                                            <Button onClick={handleBulkAdd} className="w-full bg-[#008069] hover:bg-green-600">
+                                                {direction === 'rtl' ? 'تطبيق' : 'Apply'}
+                                            </Button>
+                                        </div>
+                                    </PopoverContent>
+                                </Popover>
+
+                                {(shippingConfig.type === 'by_city' || shippingConfig.type === 'by_district') && Object.keys(shippingConfig.rates).length > 0 && (
+                                    <div className="flex flex-wrap gap-2">
+                                        <Button size="sm" variant="ghost" onClick={handleSelectAll} className="text-gray-600">
+                                            {selectedRates.size === Object.keys(shippingConfig.rates).length
+                                                ? (direction === 'rtl' ? 'إلغاء تحديد الكل' : 'Deselect All')
+                                                : (direction === 'rtl' ? 'تحديد الكل' : 'Select All')}
+                                        </Button>
+
+                                        {selectedRates.size > 0 && (
+                                            <Popover open={isUpdateOpen} onOpenChange={setIsUpdateOpen}>
+                                                <PopoverTrigger asChild>
+                                                    <Button size="sm" variant="outline" className="border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100">
+                                                        {direction === 'rtl' ? `تحديث (${selectedRates.size})` : `Update (${selectedRates.size})`}
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-80 p-4">
+                                                    <div className="space-y-4">
+                                                        <h4 className="font-medium leading-none">
+                                                            {direction === 'rtl' ? 'تحديث السعر للمحدد' : 'Update Price for Selected'}
+                                                        </h4>
+                                                        <div className="space-y-2">
+                                                            <Label>{direction === 'rtl' ? 'السعر' : 'Price'}</Label>
+                                                            <Input
+                                                                type="number"
+                                                                min="0"
+                                                                value={updatePrice}
+                                                                onChange={(e) => setUpdatePrice(e.target.value)}
+                                                                placeholder="0.00"
+                                                            />
+                                                        </div>
+                                                        <Button onClick={handleUpdateSelected} className="w-full bg-blue-600 hover:bg-blue-700">
+                                                            {direction === 'rtl' ? 'تحديث' : 'Update'}
+                                                        </Button>
+                                                    </div>
+                                                </PopoverContent>
+                                            </Popover>
                                         )}
 
-                                        <div className="space-y-2">
-                                            <Label>{direction === 'rtl' ? 'السعر' : 'Price'}</Label>
-                                            <Input
-                                                type="number"
-                                                min="0"
-                                                value={bulkPrice}
-                                                onChange={(e) => setBulkPrice(e.target.value)}
-                                                placeholder="0.00"
-                                            />
-                                        </div>
-                                        <Button onClick={handleBulkAdd} className="w-full bg-[#008069] hover:bg-green-600">
-                                            {direction === 'rtl' ? 'تطبيق' : 'Apply'}
+                                        <Button size="sm" variant="ghost" onClick={handleClearAll} className="text-red-500 hover:text-red-600 hover:bg-red-50">
+                                            {direction === 'rtl' ? 'حذف الكل' : 'Clear All'}
                                         </Button>
                                     </div>
-                                </PopoverContent>
-                            </Popover>
-
-                            {(shippingConfig.type === 'by_city' || shippingConfig.type === 'by_district') && Object.keys(shippingConfig.rates).length > 0 && (
-                                <div className="flex gap-2">
-                                    <Button size="sm" variant="ghost" onClick={handleSelectAll} className="text-gray-600">
-                                        {selectedRates.size === Object.keys(shippingConfig.rates).length
-                                            ? (direction === 'rtl' ? 'إلغاء تحديد الكل' : 'Deselect All')
-                                            : (direction === 'rtl' ? 'تحديد الكل' : 'Select All')}
-                                    </Button>
-
-                                    {selectedRates.size > 0 && (
-                                        <Popover open={isUpdateOpen} onOpenChange={setIsUpdateOpen}>
-                                            <PopoverTrigger asChild>
-                                                <Button size="sm" variant="outline" className="border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100">
-                                                    {direction === 'rtl' ? `تحديث (${selectedRates.size})` : `Update (${selectedRates.size})`}
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-80 p-4">
-                                                <div className="space-y-4">
-                                                    <h4 className="font-medium leading-none">
-                                                        {direction === 'rtl' ? 'تحديث السعر للمحدد' : 'Update Price for Selected'}
-                                                    </h4>
-                                                    <div className="space-y-2">
-                                                        <Label>{direction === 'rtl' ? 'السعر' : 'Price'}</Label>
-                                                        <Input
-                                                            type="number"
-                                                            min="0"
-                                                            value={updatePrice}
-                                                            onChange={(e) => setUpdatePrice(e.target.value)}
-                                                            placeholder="0.00"
-                                                        />
-                                                    </div>
-                                                    <Button onClick={handleUpdateSelected} className="w-full bg-blue-600 hover:bg-blue-700">
-                                                        {direction === 'rtl' ? 'تحديث' : 'Update'}
-                                                    </Button>
-                                                </div>
-                                            </PopoverContent>
-                                        </Popover>
-                                    )}
-
-                                    <Button size="sm" variant="ghost" onClick={handleClearAll} className="text-red-500 hover:text-red-600 hover:bg-red-50">
-                                        {direction === 'rtl' ? 'حذف الكل' : 'Clear All'}
-                                    </Button>
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </div>
 
                         {/* Rates List */}

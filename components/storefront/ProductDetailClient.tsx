@@ -215,6 +215,16 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
     }
   }, []);
 
+  // Scroll to variant's linked image when variant is selected
+  useEffect(() => {
+    if (selectedVariant && selectedVariant.image_index !== null && selectedVariant.image_index !== undefined) {
+      const targetIndex = selectedVariant.image_index;
+      if (targetIndex >= 0 && targetIndex < productImages.length) {
+        scrollToImage(targetIndex);
+      }
+    }
+  }, [selectedVariant, productImages.length, scrollToImage]);
+
   const handleScroll = useCallback(() => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
