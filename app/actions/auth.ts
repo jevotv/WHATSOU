@@ -54,6 +54,20 @@ export async function signUp(formData: FormData) {
         return { error: 'Failed to create user' }
     }
 
+    // Create inactive subscription record for new user
+    const { error: subError } = await supabase
+        .from('subscriptions')
+        .insert({
+            user_id: newUser.id,
+            status: 'inactive',
+            is_first_subscription: true,
+        });
+
+    if (subError) {
+        console.error('Subscription creation error:', subError);
+        // Don't fail signup, just log the error
+    }
+
     // Send Telegram Notification (Fire and forget)
     sendNewUserAlert(newUser.phone, newUser.created_at).catch(console.error);
 

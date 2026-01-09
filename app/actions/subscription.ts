@@ -22,7 +22,7 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
             status: 'inactive',
             expiresAt: null,
             daysRemaining: null,
-            isReadOnly: false,
+            isReadOnly: true, // Block access until paid
             amount: 100, // First subscription price
             isFirstSubscription: true,
         };
@@ -45,7 +45,7 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
             status: 'inactive',
             expiresAt: null,
             daysRemaining: null,
-            isReadOnly: false,
+            isReadOnly: true, // Block access until paid
             amount: 100, // First subscription price
             isFirstSubscription: true,
         };
