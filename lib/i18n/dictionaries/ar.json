@@ -127,7 +127,8 @@
         "filter_all_types": "الكل",
         "filter_delivery": "توصيل",
         "filter_pickup": "استلام من الفرع",
-        "chat_support": "تحدث مع الدعم"
+        "chat_support": "تحدث مع الدعم",
+        "install_app": "تثبيت التطبيق"
     },
     "customers": {
         "orders": "طلبات",
@@ -299,6 +300,7 @@
     "pwa": {
         "install_title": "تثبيت تطبيق WhatSou",
         "install_subtitle": "للحصول على تجربة أفضل",
+        "not_install_subtitle": "تطبيق WhatSou مثبت بالفعل أو التثبيت غير متاح.",
         "install_button": "تثبيت",
         "guide_button": "شرح",
         "ios_guide_title": "التثبيت على الآيفون",

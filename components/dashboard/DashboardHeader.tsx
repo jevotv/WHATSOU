@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Package, LogOut, Copy, Settings, Globe, Share, QrCode, Download, MoreVertical, MessageCircle, CreditCard } from 'lucide-react';
+import { Package, LogOut, Copy, Settings, Globe, Share, QrCode, Download, MoreVertical, MessageCircle, CreditCard, Smartphone, PlusSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -33,6 +33,9 @@ interface DashboardHeaderProps {
 export default function DashboardHeader({ store }: DashboardHeaderProps) {
     const [showQrModal, setShowQrModal] = useState(false);
     const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+    const [platform, setPlatform] = useState<'native' | 'ios' | null>(null);
+    const [showIosInstructions, setShowIosInstructions] = useState(false);
     const { signOut } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
@@ -49,7 +52,52 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
                 QRCode.toDataURL(url).then(setQrCodeUrl).catch(console.error);
             }
         }
+
+        // PWA Install prompt detection
+        // Detect iOS
+        const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+
+        if (isIos && !isStandalone) {
+            setPlatform('ios');
+        }
+
+        // Capture install prompt for Android/Desktop
+        const handler = (e: any) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+            setPlatform('native');
+        };
+
+        window.addEventListener('beforeinstallprompt', handler);
+
+        return () => {
+            window.removeEventListener('beforeinstallprompt', handler);
+        };
     }, [store]);
+
+    const handleInstallClick = () => {
+        if (platform === 'native' && deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult: any) => {
+                if (choiceResult.outcome === 'accepted') {
+                    toast({
+                        title: t('pwa.install_title'),
+                        description: t('pwa.install_subtitle'),
+                    });
+                }
+                setDeferredPrompt(null);
+            });
+        } else if (platform === 'ios') {
+            setShowIosInstructions(true);
+        } else {
+            // App is already installed or not available
+            toast({
+                title: t('pwa.install_title'),
+                description: t('pwa.not_install_subtitle'),
+            });
+        }
+    };
 
     const handleCopyStoreLink = () => {
         if (!store) return;
@@ -179,6 +227,13 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
                                     {t('dashboard.chat_support')}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
+                                    onClick={handleInstallClick}
+                                    className="cursor-pointer"
+                                >
+                                    <Smartphone className="w-4 h-4 mr-2" />
+                                    {t('dashboard.install_app')}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
                                     onClick={signOut}
                                     className="cursor-pointer text-red-600 focus:text-red-600"
                                 >
@@ -255,6 +310,57 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
                                         </div>
                                     )}
                                 </div>
+                            </DialogContent>
+                        </Dialog>
+
+                        {/* iOS Instructions Dialog */}
+                        <Dialog open={showIosInstructions} onOpenChange={setShowIosInstructions}>
+                            <DialogContent className="max-w-xs sm:max-w-sm rounded-2xl" dir={direction}>
+                                <DialogHeader>
+                                    <DialogTitle className="text-center">{t('pwa.ios_guide_title')}</DialogTitle>
+                                </DialogHeader>
+
+                                <div className="flex flex-col gap-6 py-4">
+                                    {/* Step 1 */}
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex bg-gray-100 rounded-xl p-3 shrink-0">
+                                            <Share className="w-6 h-6 text-blue-500" />
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-sm">{t('pwa.step_1_label')}</div>
+                                            <p className="text-sm text-gray-500">{t('pwa.step_1_text')}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Step 2 */}
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex bg-gray-100 rounded-xl p-3 shrink-0">
+                                            <PlusSquare className="w-6 h-6 text-gray-600" />
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-sm">{t('pwa.step_2_label')}</div>
+                                            <p className="text-sm text-gray-500">{t('pwa.step_2_text')}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Step 3 */}
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex bg-gray-100 rounded-xl p-3 shrink-0 px-4">
+                                            <span className="font-bold text-blue-600">Add</span>
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-sm">{t('pwa.step_3_label')}</div>
+                                            <p className="text-sm text-gray-500">{t('pwa.step_3_text')}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <Button
+                                    className="w-full rounded-xl"
+                                    onClick={() => setShowIosInstructions(false)}
+                                >
+                                    {t('pwa.got_it')}
+                                </Button>
                             </DialogContent>
                         </Dialog>
 

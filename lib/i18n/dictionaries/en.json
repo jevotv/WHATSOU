@@ -127,7 +127,8 @@
         "filter_all_types": "All",
         "filter_delivery": "Delivery",
         "filter_pickup": "Pickup",
-        "chat_support": "Chat with Support"
+        "chat_support": "Chat with Support",
+        "install_app": "Install App"
     },
     "customers": {
         "orders": "Orders",
@@ -298,6 +299,7 @@
     },
     "pwa": {
         "install_title": "Install WhatSou App",
+        "not_install_subtitle": "App is already installed or installation is not available.",
         "install_subtitle": "For a better experience",
         "install_button": "Install",
         "guide_button": "Guide",
