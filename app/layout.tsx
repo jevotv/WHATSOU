@@ -6,6 +6,7 @@ import { AuthProvider } from '@/lib/contexts/AuthContext';
 import { CartProvider } from '@/lib/contexts/CartContext';
 import { Toaster } from '@/components/ui/toaster';
 import { CapacitorProvider } from '@/components/providers/CapacitorProvider';
+import { MetaPixelProvider } from '@/components/providers/MetaPixelProvider';
 
 // const inter = Inter({ subsets: ['latin'] });
 
@@ -72,7 +73,9 @@ export default function RootLayout({
           <CartProvider>
             <LanguageProvider>
               <CapacitorProvider>
-                {children}
+                <MetaPixelProvider>
+                  {children}
+                </MetaPixelProvider>
               </CapacitorProvider>
               <Toaster />
             </LanguageProvider>
