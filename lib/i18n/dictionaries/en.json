@@ -251,6 +251,8 @@
         "confirm_order": "Confirm Order",
         "processing": "Processing...",
         "free": "Free shipping",
+        "shipping": "Shipping",
+        "subtotal": "Sub Total",
         "back_to_cart": "Back to Cart",
         "missing_info": "Missing information",
         "missing_info_desc": "Please fill in all fields",
