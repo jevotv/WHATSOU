@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
 // R2 Client configuration
 const R2 = new S3Client({
@@ -43,6 +43,37 @@ export async function uploadToR2(
 }
 
 /**
+ * Delete a single file from Cloudflare R2
+ * @param key - The object key (path) to delete
+ */
+export async function deleteFromR2(key: string): Promise<void> {
+    const command = new DeleteObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: key,
+    });
+    await R2.send(command);
+}
+
+/**
+ * Delete multiple files from Cloudflare R2 by their public URLs
+ * Used for account deletion cleanup
+ * @param urls - Array of public URLs to delete
+ */
+export async function deleteMultipleFromR2(urls: string[]): Promise<void> {
+    for (const url of urls) {
+        if (!url || !PUBLIC_URL || !url.includes(PUBLIC_URL)) continue;
+        try {
+            const key = url.replace(`${PUBLIC_URL}/`, '');
+            await deleteFromR2(key);
+        } catch (error) {
+            console.error(`Failed to delete R2 object: ${url}`, error);
+            // Continue with other deletions even if one fails
+        }
+    }
+}
+
+/**
  * Get the R2 client for advanced operations
  */
 export { R2, BUCKET_NAME, PUBLIC_URL };
+

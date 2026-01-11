@@ -199,7 +199,20 @@
         "allow_delivery_desc": "Enable delivery to customers - address will be required",
         "allow_pickup": "Pick up / In-store",
         "allow_pickup_desc": "Allow customers to pick up from your store",
-        "delivery_required_error": "At least one delivery option must be enabled"
+        "delivery_required_error": "At least one delivery option must be enabled",
+        "danger_zone": "Danger Zone",
+        "delete_account": "Delete Account",
+        "delete_warning": "Once you delete your account, there is no going back. All your data will be permanently removed.",
+        "confirm_delete": "Delete Your Account?",
+        "delete_consequences": "This action is permanent and cannot be undone:",
+        "delete_store": "Your store will be deleted",
+        "delete_products": "All products will be removed",
+        "delete_orders": "Order history will be erased",
+        "delete_subscription": "Your subscription will be cancelled",
+        "delete_reason_label": "Why are you leaving?",
+        "delete_reason_placeholder": "Please tell us why you want to delete your account...",
+        "delete_reason_required": "Please provide a reason for deletion",
+        "delete_permanently": "Delete Permanently"
     },
     "storefront": {
         "search_placeholder": "Search products...",

@@ -229,3 +229,132 @@ export async function saveFcmToken(token: string) {
     return { success: true }
 }
 
+/**
+ * Delete user account and all associated data
+ * - Creates audit record in deleted_users table
+ * - Deletes all images from Cloudflare R2
+ * - Deletes user from database (cascades to stores, products, orders, subscriptions)
+ * - Clears session cookie
+ */
+export async function deleteAccount(reason: string) {
+    const session = await getSession()
+    if (!session?.id) {
+        return { error: 'Unauthorized' }
+    }
+
+    const supabase = getSupabaseAdmin()
+
+    try {
+        // 1. Get user phone for audit
+        const { data: user } = await supabase
+            .from('users')
+            .select('phone')
+            .eq('id', session.id)
+            .single()
+
+        // 2. Get user's store and related data for audit
+        const { data: store } = await supabase
+            .from('stores')
+            .select(`
+                id,
+                name,
+                slug,
+                logo_url
+            `)
+            .eq('user_id', session.id)
+            .single()
+
+        // 3. Get products with images
+        let products: { id: string; image_url: string | null; thumbnail_url: string | null }[] = []
+        let orderCount = 0
+
+        if (store) {
+            const { data: productData } = await supabase
+                .from('products')
+                .select('id, image_url, thumbnail_url')
+                .eq('store_id', store.id)
+
+            products = productData || []
+
+            const { count } = await supabase
+                .from('orders')
+                .select('id', { count: 'exact', head: true })
+                .eq('store_id', store.id)
+
+            orderCount = count || 0
+        }
+
+        // 4. Collect all image URLs for R2 deletion
+        const imagesToDelete: string[] = []
+
+        if (store?.logo_url) {
+            imagesToDelete.push(store.logo_url)
+        }
+
+        for (const product of products) {
+            if (product.image_url) imagesToDelete.push(product.image_url)
+            if (product.thumbnail_url) imagesToDelete.push(product.thumbnail_url)
+        }
+
+        // 5. Insert audit record BEFORE deletion
+        const { error: auditError } = await supabase.from('deleted_users').insert({
+            original_user_id: session.id,
+            phone: user?.phone || 'unknown',
+            store_name: store?.name || null,
+            store_slug: store?.slug || null,
+            deletion_reason: reason,
+            total_orders: orderCount,
+            total_products: products.length,
+        })
+
+        if (auditError) {
+            console.error('Audit insert error:', auditError)
+            // Don't fail deletion if audit fails, just log it
+        }
+
+        // 6. Delete images from R2
+        if (imagesToDelete.length > 0) {
+            try {
+                const { deleteMultipleFromR2 } = await import('@/lib/r2/client')
+                await deleteMultipleFromR2(imagesToDelete)
+            } catch (r2Error) {
+                console.error('R2 deletion error:', r2Error)
+                // Continue with deletion even if R2 cleanup fails
+            }
+        }
+
+        // 7. Delete store first (cascades to products, product_variants, orders)
+        // Note: stores.user_id references auth.users, not custom users table
+        // So we need to delete store manually before user
+        if (store) {
+            const { error: storeDeleteError } = await supabase
+                .from('stores')
+                .delete()
+                .eq('id', store.id)
+
+            if (storeDeleteError) {
+                console.error('Delete store error:', storeDeleteError)
+                return { error: 'Failed to delete store' }
+            }
+        }
+
+        // 8. Delete user (cascades to subscriptions, payment_transactions)
+        const { error: deleteError } = await supabase
+            .from('users')
+            .delete()
+            .eq('id', session.id)
+
+        if (deleteError) {
+            console.error('Delete user error:', deleteError)
+            return { error: 'Failed to delete account' }
+        }
+
+        // 9. Clear session cookie
+        cookies().delete(SESSION_COOKIE_NAME)
+
+        return { success: true }
+    } catch (error: any) {
+        console.error('Account deletion error:', error)
+        return { error: error.message || 'Failed to delete account' }
+    }
+}

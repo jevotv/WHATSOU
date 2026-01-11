@@ -177,28 +177,49 @@ export default function PrivacyPolicyPage() {
                         </ul>
                     </section>
 
-                    {/* Data Deletion */}
-                    <section className="mb-8">
-                        <h2 className="text-xl font-semibold text-gray-800 mb-4">Data Deletion</h2>
-                        <p className="text-gray-600 leading-relaxed">
-                            You have the right to request deletion of your personal data. To delete your account and
-                            associated data:
+                    {/* Account Deletion - Google Play Required Section */}
+                    <section id="delete-account" className="mb-8 bg-red-50 rounded-xl p-6 border border-red-100">
+                        <h2 className="text-xl font-semibold text-red-800 mb-4">Account Deletion</h2>
+                        <p className="text-gray-600 leading-relaxed mb-4">
+                            You have the right to delete your account and all associated data at any time.
                         </p>
-                        <ul className="list-disc list-inside text-gray-600 space-y-2 mt-4">
+
+                        <h3 className="text-lg font-medium text-gray-700 mt-4 mb-2">How to Delete Your Account</h3>
+                        <ul className="list-disc list-inside text-gray-600 space-y-2">
                             <li>
-                                <strong>In-App:</strong> Go to Settings → Delete Account.
+                                <strong>From the App:</strong> Open {appName} → Go to Settings → Tap &quot;Delete Account&quot;
                             </li>
                             <li>
-                                <strong>By Email:</strong> Send a request to{' '}
-                                <a href={`mailto:${contactEmail}`} className="text-green-600 hover:underline">
-                                    {contactEmail}
+                                <strong>From the Website:</strong> Visit{' '}
+                                <a href="https://www.whatsou.com/dashboard/settings" className="text-green-600 hover:underline">
+                                    www.whatsou.com/dashboard/settings
                                 </a>{' '}
-                                with subject "Account Deletion Request".
+                                → Log in → Click &quot;Delete Account&quot;
                             </li>
                         </ul>
-                        <p className="text-gray-600 leading-relaxed mt-4">
-                            Upon receiving your request, we will delete your personal data within 30 days, except for
-                            information we are required to retain for legal or business purposes.
+
+                        <h3 className="text-lg font-medium text-gray-700 mt-6 mb-2">What Gets Deleted</h3>
+                        <p className="text-gray-600 leading-relaxed mb-2">
+                            When you delete your account, the following data will be <strong>permanently removed</strong>:
+                        </p>
+                        <ul className="list-disc list-inside text-gray-600 space-y-1">
+                            <li>Your store and all its settings</li>
+                            <li>All products in your catalog</li>
+                            <li>Order history and customer data</li>
+                            <li>All uploaded photos (product images, store logo)</li>
+                            <li>Your login credentials and account information</li>
+                            <li>Subscription and payment history</li>
+                        </ul>
+
+                        <h3 className="text-lg font-medium text-gray-700 mt-6 mb-2">Alternative Method</h3>
+                        <p className="text-gray-600 leading-relaxed">
+                            If you are unable to access the app or website, you can request account deletion by email.
+                            Send an email to{' '}
+                            <a href={`mailto:${contactEmail}?subject=Account%20Deletion%20Request`} className="text-green-600 hover:underline">
+                                {contactEmail}
+                            </a>{' '}
+                            with the subject &quot;Account Deletion Request&quot; and include the phone number associated with your account.
+                            We will process your request within 30 days.
                         </p>
                     </section>
 

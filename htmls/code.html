@@ -1,420 +1,0 @@
-<!DOCTYPE html>
-<html class="scroll-smooth" dir="rtl" lang="ar"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>WhatSou - حول الواتساب لمتجر احترافي</title>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
-<script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        primary: "#1DA851", // WhatsApp-ish Green
-                        "primary-hover": "#15803d",
-                        "background-light": "#F0FDF4", // Very light mint/white
-                        "background-dark": "#0f172a", // Dark slate
-                        "surface-light": "#FFFFFF",
-                        "surface-dark": "#1e293b",
-                    },
-                    fontFamily: {
-                        display: ["Cairo", "sans-serif"],
-                        body: ["Cairo", "sans-serif"],
-                    },
-                    borderRadius: {
-                        DEFAULT: "1rem",
-                        'xl': '1rem',
-                        '2xl': '1.5rem',
-                        '3xl': '2rem',
-                    },
-                },
-            },
-        };
-    </script>
-<style>
-        body {
-            font-family: 'Cairo', sans-serif;
-        }::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1;
-            border-radius: 20px;
-        }
-        .dark ::-webkit-scrollbar-thumb {
-            background-color: #475569;
-        }
-    </style>
-</head>
-<body class="bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-100 transition-colors duration-300">
-<nav class="sticky top-0 z-50 bg-surface-light/90 dark:bg-surface-dark/90 backdrop-blur-md border-b border-gray-100 dark:border-gray-800">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex justify-between items-center h-20">
-<div class="flex-shrink-0 flex items-center gap-2 cursor-pointer">
-<span class="material-icons-outlined text-primary text-3xl">shopping_bag</span>
-<span class="font-bold text-2xl tracking-tight text-gray-900 dark:text-white">WhatSou</span>
-</div>
-<div class="hidden md:flex items-center space-x-reverse space-x-8">
-<a class="text-base font-medium text-gray-600 dark:text-gray-300 hover:text-primary transition-colors" href="#">تسجيل الدخول</a>
-<a class="bg-primary hover:bg-primary-hover text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-primary/30 transition-all transform hover:-translate-y-0.5" href="#">
-                        ابدأ الآن
-                    </a>
-</div>
-<div class="md:hidden flex items-center">
-<button class="text-gray-600 dark:text-gray-300 hover:text-gray-900 focus:outline-none" type="button">
-<span class="material-icons-outlined text-3xl">menu</span>
-</button>
-</div>
-</div>
-</div>
-</nav>
-<section class="relative overflow-hidden pt-12 pb-20 lg:pt-24 lg:pb-32">
-<div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-green-200 dark:bg-green-900/30 blur-3xl opacity-50"></div>
-<div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-emerald-200 dark:bg-emerald-900/30 blur-3xl opacity-50"></div>
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-<div class="text-center lg:text-right">
-<h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white leading-tight mb-6">
-                        حول دردشات الواتساب <br/>
-<span class="text-primary">لمتجر احترافي</span> في دقيقتين.
-                    </h1>
-<p class="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                        نظم طلباتك، ابنِ قاعدة عملائك، وزود مبيعاتك بكتالوج ذكي يرسل الطلبات مباشرة لواتسابك.. بدون تعقيد تقني.
-                    </p>
-<div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-<a class="bg-primary hover:bg-primary-hover text-white text-lg px-8 py-4 rounded-full font-bold shadow-xl shadow-primary/40 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2" href="#">
-<span>ابدأ متجرك المجاني الآن</span>
-<span class="material-icons-outlined text-sm rtl:rotate-180">arrow_forward</span>
-</a>
-<a class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 text-lg px-8 py-4 rounded-full font-bold transition-all flex items-center justify-center gap-2" href="#demo">
-<span>شاهد الفيديو</span>
-<span class="material-icons-outlined text-primary">play_circle</span>
-</a>
-</div>
-<div class="mt-6 flex items-center justify-center lg:justify-start gap-2 text-sm text-gray-500 dark:text-gray-400">
-<span class="material-icons-outlined text-primary text-base">check_circle</span>
-<span>لا يحتاج بطاقة ائتمان</span>
-<span class="mx-2">•</span>
-<span class="material-icons-outlined text-primary text-base">check_circle</span>
-<span>إعداد في 60 ثانية</span>
-</div>
-</div>
-<div class="relative mx-auto lg:mr-auto lg:ml-0 w-full max-w-sm lg:max-w-md">
-<div class="relative rounded-[2.5rem] border-8 border-gray-900 dark:border-gray-700 bg-gray-900 shadow-2xl overflow-hidden z-10">
-<div class="bg-white dark:bg-gray-800 h-[600px] w-full overflow-hidden flex flex-col">
-<div class="bg-primary p-4 flex justify-between items-center text-white">
-<span class="font-bold">متجر الأناقة</span>
-<span class="material-icons-outlined">shopping_cart</span>
-</div>
-<div class="p-4 grid grid-cols-2 gap-3 overflow-y-auto">
-<div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-2 pb-4">
-<div class="h-24 bg-gray-200 dark:bg-gray-600 rounded-lg mb-2"></div>
-<div class="h-4 w-3/4 bg-gray-200 dark:bg-gray-600 rounded mb-1"></div>
-<div class="h-4 w-1/2 bg-primary/20 rounded"></div>
-</div>
-<div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-2 pb-4">
-<div class="h-24 bg-gray-200 dark:bg-gray-600 rounded-lg mb-2"></div>
-<div class="h-4 w-3/4 bg-gray-200 dark:bg-gray-600 rounded mb-1"></div>
-<div class="h-4 w-1/2 bg-primary/20 rounded"></div>
-</div>
-<div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-2 pb-4">
-<div class="h-24 bg-gray-200 dark:bg-gray-600 rounded-lg mb-2"></div>
-<div class="h-4 w-3/4 bg-gray-200 dark:bg-gray-600 rounded mb-1"></div>
-<div class="h-4 w-1/2 bg-primary/20 rounded"></div>
-</div>
-<div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-2 pb-4">
-<div class="h-24 bg-gray-200 dark:bg-gray-600 rounded-lg mb-2"></div>
-<div class="h-4 w-3/4 bg-gray-200 dark:bg-gray-600 rounded mb-1"></div>
-<div class="h-4 w-1/2 bg-primary/20 rounded"></div>
-</div>
-</div>
-<div class="mt-auto p-4 border-t border-gray-100 dark:border-gray-700">
-<div class="w-full bg-primary h-12 rounded-xl flex items-center justify-center text-white font-bold">
-                                    إتمام الطلب عبر واتساب
-                                </div>
-</div>
-</div>
-</div>
-<div class="absolute -z-10 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[120%] h-[110%] bg-gradient-to-tr from-green-100 to-white dark:from-green-900/20 dark:to-gray-800 rounded-full blur-2xl opacity-70"></div>
-</div>
-</div>
-</div>
-</section>
-<section class="py-20 bg-white dark:bg-surface-dark relative">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="text-center mb-16">
-<h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">وداعاً للفوضى 👋</h2>
-<p class="text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">الفرق بين إدارة عملك عبر الدردشة العشوائية وبين استخدام نظام WhatSou المنظم.</p>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
-<div class="bg-red-50 dark:bg-red-900/10 rounded-3xl p-8 border border-red-100 dark:border-red-900/30">
-<div class="flex items-center gap-3 mb-6">
-<div class="p-2 bg-red-100 dark:bg-red-900/50 rounded-lg text-red-600 dark:text-red-400">
-<span class="material-icons-outlined">close</span>
-</div>
-<h3 class="text-xl font-bold text-gray-800 dark:text-gray-200">الطريقة التقليدية</h3>
-</div>
-<ul class="space-y-4 mb-8">
-<li class="flex items-start gap-3 text-gray-600 dark:text-gray-400">
-<span class="material-icons-outlined text-red-500 mt-1">sentiment_dissatisfied</span>
-<span>زهقت من ضياع الطلبات وسط الشات؟</span>
-</li>
-<li class="flex items-start gap-3 text-gray-600 dark:text-gray-400">
-<span class="material-icons-outlined text-red-500 mt-1">sentiment_dissatisfied</span>
-<span>العملاء بيسألوا كتير عن الأسعار والكتالوج مش منظم؟</span>
-</li>
-</ul>
-<div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 opacity-80">
-<div class="space-y-3">
-<div class="flex gap-2">
-<div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-600"></div>
-<div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg rounded-tr-none text-xs w-3/4">بكام ده لو سمحت؟</div>
-</div>
-<div class="flex gap-2">
-<div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-600"></div>
-<div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg rounded-tr-none text-xs w-2/3">ممكن صور أكتر؟</div>
-</div>
-<div class="flex gap-2">
-<div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-600"></div>
-<div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg rounded-tr-none text-xs w-3/4">لسه متاح مقاس لارج؟</div>
-</div>
-</div>
-</div>
-</div>
-<div class="bg-green-50 dark:bg-green-900/10 rounded-3xl p-8 border border-green-100 dark:border-green-900/30 relative overflow-hidden">
-<div class="flex items-center gap-3 mb-6 relative z-10">
-<div class="p-2 bg-green-100 dark:bg-green-900/50 rounded-lg text-primary">
-<span class="material-icons-outlined">check</span>
-</div>
-<h3 class="text-xl font-bold text-gray-800 dark:text-gray-200">مع WhatSou</h3>
-</div>
-<ul class="space-y-4 mb-8 relative z-10">
-<li class="flex items-start gap-3 text-gray-700 dark:text-gray-300 font-medium">
-<span class="material-icons-outlined text-primary mt-1">verified</span>
-<span>استقبل الطلبات منظمة بالكامل (المنتج، السعر، العنوان).</span>
-</li>
-<li class="flex items-start gap-3 text-gray-700 dark:text-gray-300 font-medium">
-<span class="material-icons-outlined text-primary mt-1">verified</span>
-<span>رابط واحد فيه كل منتجاتك بشكل احترافي.</span>
-</li>
-</ul>
-<div class="bg-white dark:bg-gray-800 rounded-xl p-0 shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden relative z-10">
-<div class="bg-gray-50 dark:bg-gray-900 p-3 border-b border-gray-100 dark:border-gray-700 flex justify-between">
-<span class="text-xs font-bold text-gray-500">طلب جديد #1024</span>
-<span class="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">مكتمل</span>
-</div>
-<div class="p-4 flex gap-4 items-center">
-<div class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-lg flex-shrink-0"></div>
-<div class="flex-1">
-<div class="h-3 w-1/2 bg-gray-800 dark:bg-gray-400 rounded mb-2"></div>
-<div class="h-2 w-1/3 bg-gray-400 dark:bg-gray-600 rounded"></div>
-</div>
-<div class="text-primary font-bold">300 ج.م</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section class="py-20 bg-background-light dark:bg-background-dark">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="text-center mb-16">
-<h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">كيف يعمل؟</h2>
-<p class="text-gray-600 dark:text-gray-400">ثلاث خطوات بسيطة لبدء البيع</p>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center relative">
-<div class="hidden md:block absolute top-12 left-10 right-10 h-0.5 bg-gray-200 dark:bg-gray-700 -z-10"></div>
-<div class="bg-white dark:bg-surface-dark p-8 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
-<div class="w-24 h-24 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-white dark:border-surface-dark text-primary">
-<span class="material-icons-outlined text-4xl">add_photo_alternate</span>
-</div>
-<div class="inline-block bg-primary text-white text-xs font-bold px-3 py-1 rounded-full mb-4">خطوة 1</div>
-<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">سجل وارفع منتجاتك</h3>
-<p class="text-gray-600 dark:text-gray-400">ضيف صورك وأسعارك وتفاصيل المنتج في ثوانٍ من هاتفك.</p>
-</div>
-<div class="bg-white dark:bg-surface-dark p-8 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
-<div class="w-24 h-24 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-white dark:border-surface-dark text-primary">
-<span class="material-icons-outlined text-4xl">share</span>
-</div>
-<div class="inline-block bg-primary text-white text-xs font-bold px-3 py-1 rounded-full mb-4">خطوة 2</div>
-<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">شارك الرابط</h3>
-<p class="text-gray-600 dark:text-gray-400">حط لينك متجرك في بايو الإنستجرام أو الفيسبوك أو أرسله لعملائك.</p>
-</div>
-<div class="bg-white dark:bg-surface-dark p-8 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
-<div class="w-24 h-24 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-white dark:border-surface-dark text-primary">
-<span class="material-icons-outlined text-4xl">whatsapp</span>
-</div>
-<div class="inline-block bg-primary text-white text-xs font-bold px-3 py-1 rounded-full mb-4">خطوة 3</div>
-<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">استقبل الطلبات</h3>
-<p class="text-gray-600 dark:text-gray-400">الأوردر هيجيلك منظم على الواتساب وهيتسجل تلقائياً في لوحة تحكمك.</p>
-</div>
-</div>
-</div>
-</section>
-<section class="py-20 bg-white dark:bg-surface-dark">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="text-center mb-16">
-<h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">المميزات الرئيسية</h2>
-<p class="text-gray-600 dark:text-gray-400">كل ما تحتاجه لتنمية تجارتك</p>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-<div class="flex items-start p-6 bg-gray-50 dark:bg-gray-800 rounded-2xl hover:bg-green-50 dark:hover:bg-gray-700/50 transition-colors group">
-<div class="flex-shrink-0 p-3 bg-white dark:bg-gray-700 rounded-xl shadow-sm text-primary group-hover:scale-110 transition-transform">
-<span class="material-icons-outlined text-3xl">bolt</span>
-</div>
-<div class="mr-6">
-<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">طلب بضغطة زر</h3>
-<p class="text-gray-600 dark:text-gray-400">تجربة شراء سريعة جداً للعميل بدون الحاجة لتسجيل حساب أو تنزيل تطبيق.</p>
-</div>
-</div>
-<div class="flex items-start p-6 bg-gray-50 dark:bg-gray-800 rounded-2xl hover:bg-green-50 dark:hover:bg-gray-700/50 transition-colors group">
-<div class="flex-shrink-0 p-3 bg-white dark:bg-gray-700 rounded-xl shadow-sm text-primary group-hover:scale-110 transition-transform">
-<span class="material-icons-outlined text-3xl">analytics</span>
-</div>
-<div class="mr-6">
-<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">لوحة تحكم ذكية</h3>
-<p class="text-gray-600 dark:text-gray-400">تابع مبيعاتك، مخزونك، وأداء متجرك من مكان واحد سهل الاستخدام.</p>
-</div>
-</div>
-<div class="flex items-start p-6 bg-gray-50 dark:bg-gray-800 rounded-2xl hover:bg-green-50 dark:hover:bg-gray-700/50 transition-colors group">
-<div class="flex-shrink-0 p-3 bg-white dark:bg-gray-700 rounded-xl shadow-sm text-primary group-hover:scale-110 transition-transform">
-<span class="material-icons-outlined text-3xl">groups</span>
-</div>
-<div class="mr-6">
-<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">متابعة العملاء</h3>
-<p class="text-gray-600 dark:text-gray-400">احتفظ ببيانات عملائك وأرقامهم لإعادة استهدافهم بعروض جديدة.</p>
-</div>
-</div>
-<div class="flex items-start p-6 bg-gray-50 dark:bg-gray-800 rounded-2xl hover:bg-green-50 dark:hover:bg-gray-700/50 transition-colors group">
-<div class="flex-shrink-0 p-3 bg-white dark:bg-gray-700 rounded-xl shadow-sm text-primary group-hover:scale-110 transition-transform">
-<span class="material-icons-outlined text-3xl">local_shipping</span>
-</div>
-<div class="mr-6">
-<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">تعدد طرق الاستلام</h3>
-<p class="text-gray-600 dark:text-gray-400">حدد خيارات الشحن أو الاستلام من الفرع ودع العميل يختار الأنسب.</p>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section class="py-20 bg-background-light dark:bg-background-dark">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="text-center mb-16">
-<h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">جدول الأسعار</h2>
-<p class="text-gray-600 dark:text-gray-400">ابدأ مجاناً، وادفع فقط عندما تنمو</p>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-<div class="bg-white dark:bg-surface-dark rounded-3xl p-8 border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col">
-<h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">الباقة المجانية</h3>
-<div class="text-4xl font-extrabold text-gray-900 dark:text-white mb-6">0 <span class="text-lg font-normal text-gray-500">ج.م / للأبد</span></div>
-<ul class="space-y-4 mb-8 flex-1">
-<li class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
-<span class="material-icons-outlined text-green-500">check</span>
-<span>حتى 20 منتج</span>
-</li>
-<li class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
-<span class="material-icons-outlined text-green-500">check</span>
-<span>طلبات عبر الواتساب فقط</span>
-</li>
-<li class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
-<span class="material-icons-outlined text-green-500">check</span>
-<span>مظهر WhatSou الأساسي</span>
-</li>
-</ul>
-<a class="block w-full text-center bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white py-3 rounded-full font-bold transition-colors" href="#">
-                        ابدأ مجاناً
-                    </a>
-</div>
-<div class="bg-white dark:bg-surface-dark rounded-3xl p-8 border-2 border-primary shadow-xl relative transform md:-translate-y-4 flex flex-col">
-<div class="absolute top-0 right-1/2 transform translate-x-1/2 -translate-y-1/2 bg-primary text-white px-4 py-1 rounded-full text-sm font-bold">الأكثر طلباً</div>
-<h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">الباقة الاحترافية</h3>
-<div class="text-4xl font-extrabold text-gray-900 dark:text-white mb-6">300 <span class="text-lg font-normal text-gray-500">ج.م / شهر</span></div>
-<ul class="space-y-4 mb-8 flex-1">
-<li class="flex items-center gap-3 text-gray-800 dark:text-gray-200 font-medium">
-<span class="material-icons-outlined text-primary">check_circle</span>
-<span>منتجات غير محدودة</span>
-</li>
-<li class="flex items-center gap-3 text-gray-800 dark:text-gray-200 font-medium">
-<span class="material-icons-outlined text-primary">check_circle</span>
-<span>أرشيف كامل للطلبات والعملاء</span>
-</li>
-<li class="flex items-center gap-3 text-gray-800 dark:text-gray-200 font-medium">
-<span class="material-icons-outlined text-primary">check_circle</span>
-<span>إزالة شعار WhatSou (Branding)</span>
-</li>
-<li class="flex items-center gap-3 text-gray-800 dark:text-gray-200 font-medium">
-<span class="material-icons-outlined text-primary">check_circle</span>
-<span>روابط السوشيال ميديا واللوكيشن</span>
-</li>
-</ul>
-<a class="block w-full text-center bg-primary hover:bg-primary-hover text-white py-3 rounded-full font-bold shadow-lg shadow-primary/30 transition-colors" href="#">
-                        اشترك الآن
-                    </a>
-</div>
-</div>
-</div>
-</section>
-<section class="py-16 bg-gradient-to-br from-green-50 to-white dark:from-gray-900 dark:to-gray-800 border-t border-gray-100 dark:border-gray-800">
-<div class="max-w-4xl mx-auto px-4 text-center">
-<h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                انضم لـ <span class="text-primary">+100 تاجر</span> بدأوا ينظموا مبيعاتهم مع WhatSou.
-            </h2>
-<div class="flex justify-center">
-<a class="group bg-white dark:bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-white px-8 py-3 rounded-full font-bold transition-all flex items-center gap-2" href="#">
-<span>شوف شكل متجرك هيكون عامل ازاي (Demo)</span>
-<span class="material-icons-outlined transform group-hover:-translate-x-1 transition-transform rtl:rotate-180">arrow_right_alt</span>
-</a>
-</div>
-</div>
-</section>
-<section class="py-20 bg-white dark:bg-surface-dark">
-<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="text-center mb-12">
-<h2 class="text-3xl font-bold text-gray-900 dark:text-white">الأسئلة الشائعة</h2>
-</div>
-<div class="space-y-4">
-<details class="group bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 [&amp;_summary::-webkit-details-marker]:hidden cursor-pointer">
-<summary class="flex items-center justify-between font-bold text-lg text-gray-900 dark:text-white">
-<span>هل يحتاج العميل لتنزيل تطبيق للشراء؟</span>
-<span class="transition group-open:rotate-180">
-<svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-</span>
-</summary>
-<p class="text-gray-600 dark:text-gray-300 mt-4 leading-relaxed">
-                        لا، العميل يتصفح متجرك عبر رابط ويب بسيط ويقوم بإرسال الطلب مباشرة عبر الواتساب الخاص به. لا توجد أي تطبيقات إضافية مطلوبة.
-                    </p>
-</details>
-<details class="group bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 [&amp;_summary::-webkit-details-marker]:hidden cursor-pointer">
-<summary class="flex items-center justify-between font-bold text-lg text-gray-900 dark:text-white">
-<span>هل يمكنني استخدام النطاق (Domain) الخاص بي؟</span>
-<span class="transition group-open:rotate-180">
-<svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-</span>
-</summary>
-<p class="text-gray-600 dark:text-gray-300 mt-4 leading-relaxed">
-                        حالياً نوفر نطاقات فرعية (subdomains) مجانية مثل storename.whatsou.com، ونعمل على إتاحة ربط النطاقات الخاصة في التحديثات القادمة للباقة الاحترافية.
-                    </p>
-</details>
-</div>
-</div>
-</section>
-<footer class="bg-gray-50 dark:bg-gray-900 py-12 border-t border-gray-200 dark:border-gray-800">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-<div class="flex items-center justify-center gap-2 mb-6 opacity-80">
-<span class="material-icons-outlined text-primary text-2xl">shopping_bag</span>
-<span class="font-bold text-xl text-gray-900 dark:text-white">WhatSou</span>
-</div>
-<p class="text-gray-500 dark:text-gray-400 text-sm">
-                WhatSou. Built for WhatsApp Commerce 2024 ©
-            </p>
-</div>
-</footer>
-
-</body></html>

@@ -9,14 +9,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Save, Store as StoreIcon, Phone, Share2, Upload, Truck, QrCode, Lock } from 'lucide-react';
+import { ArrowLeft, Save, Store as StoreIcon, Phone, Share2, Upload, Truck, QrCode, Lock, Trash2, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { regenerateStoreQR } from '@/app/actions/store';
 import { updateStore } from '@/app/actions/dashboard';
-import { changePassword } from '@/app/actions/auth';
+import { changePassword, deleteAccount } from '@/app/actions/auth';
 import { Geolocation } from '@capacitor/geolocation';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
@@ -60,6 +60,11 @@ export default function SettingsPage() {
     const [changingPassword, setChangingPassword] = useState(false);
     const [biometricEnabled, setBiometricEnabled] = useState(false);
     const [biometricAvailable, setBiometricAvailable] = useState(false);
+
+    // Delete Account
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteReason, setDeleteReason] = useState('');
+    const [deleting, setDeleting] = useState(false);
 
 
     const { user, loading: authLoading } = useAuth();
@@ -324,6 +329,34 @@ export default function SettingsPage() {
             });
         } finally {
             setChangingPassword(false);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        if (!deleteReason.trim()) {
+            toast({
+                title: t('common.error'),
+                description: t('settings.delete_reason_required'),
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        setDeleting(true);
+        try {
+            const result = await deleteAccount(deleteReason);
+            if (result.error) throw new Error(result.error);
+
+            // Redirect to login after successful deletion
+            router.push('/login');
+        } catch (error: any) {
+            toast({
+                title: t('common.error'),
+                description: error.message,
+                variant: 'destructive',
+            });
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -815,8 +848,87 @@ export default function SettingsPage() {
                             </Button>
                         </div>
                     </div>
+
+                    {/* Danger Zone - Delete Account */}
+                    <div className="bg-red-50 rounded-xl shadow-sm border border-red-200 p-6">
+                        <h3 className="text-lg font-bold mb-4 text-red-700 flex items-center gap-2">
+                            <Trash2 className="w-5 h-5" />
+                            {t('settings.danger_zone')}
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                            {t('settings.delete_warning')}
+                        </p>
+                        <Button
+                            variant="destructive"
+                            onClick={() => setShowDeleteModal(true)}
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            {t('settings.delete_account')}
+                        </Button>
+                    </div>
                 </div>
             </main >
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl" dir={direction}>
+                        <div className="flex items-center gap-3 text-red-600 mb-4">
+                            <AlertTriangle className="w-8 h-8" />
+                            <h2 className="text-xl font-bold">{t('settings.confirm_delete')}</h2>
+                        </div>
+
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                            <p className="text-sm text-red-800 font-medium">{t('settings.delete_consequences')}</p>
+                            <ul className="text-sm text-red-700 mt-2 list-disc list-inside space-y-1">
+                                <li>{t('settings.delete_store')}</li>
+                                <li>{t('settings.delete_products')}</li>
+                                <li>{t('settings.delete_orders')}</li>
+                                <li>{t('settings.delete_subscription')}</li>
+                            </ul>
+                        </div>
+
+                        <div className="space-y-2 mb-6">
+                            <Label className="text-sm font-medium">
+                                {t('settings.delete_reason_label')} <span className="text-red-500">*</span>
+                            </Label>
+                            <Textarea
+                                value={deleteReason}
+                                onChange={(e) => setDeleteReason(e.target.value)}
+                                placeholder={t('settings.delete_reason_placeholder')}
+                                className="resize-none border-red-200 focus:border-red-400 focus:ring-red-400"
+                                rows={3}
+                            />
+                        </div>
+
+                        <div className="flex gap-3">
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setShowDeleteModal(false);
+                                    setDeleteReason('');
+                                }}
+                                className="flex-1"
+                                disabled={deleting}
+                            >
+                                {direction === 'rtl' ? 'إلغاء' : 'Cancel'}
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={handleDeleteAccount}
+                                disabled={deleting || !deleteReason.trim()}
+                                className="flex-1 bg-red-600 hover:bg-red-700"
+                            >
+                                {deleting
+                                    ? (direction === 'rtl' ? 'جاري الحذف...' : 'Deleting...')
+                                    : t('settings.delete_permanently')
+                                }
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div >
     );
 }

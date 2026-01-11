@@ -199,7 +199,20 @@
         "allow_delivery_desc": "تفعيل التوصيل للعملاء - العنوان سيكون إجبارياً",
         "allow_pickup": "استلام من الفرع",
         "allow_pickup_desc": "السماح للعملاء بالاستلام من المحل مباشرة",
-        "delivery_required_error": "يجب تفعيل خيار استلام واحد على الأقل"
+        "delivery_required_error": "يجب تفعيل خيار استلام واحد على الأقل",
+        "danger_zone": "منطقة الخطر",
+        "delete_account": "حذف الحساب",
+        "delete_warning": "بمجرد حذف حسابك، لا يمكن التراجع. سيتم حذف جميع بياناتك نهائياً.",
+        "confirm_delete": "حذف حسابك؟",
+        "delete_consequences": "هذا الإجراء نهائي ولا يمكن التراجع عنه:",
+        "delete_store": "سيتم حذف متجرك",
+        "delete_products": "سيتم إزالة جميع المنتجات",
+        "delete_orders": "سيتم مسح سجل الطلبات",
+        "delete_subscription": "سيتم إلغاء اشتراكك",
+        "delete_reason_label": "لماذا تريد المغادرة؟",
+        "delete_reason_placeholder": "يرجى إخبارنا لماذا تريد حذف حسابك...",
+        "delete_reason_required": "يرجى تقديم سبب للحذف",
+        "delete_permanently": "حذف نهائياً"
     },
     "storefront": {
         "search_placeholder": "ابحث عن منتجات...",
