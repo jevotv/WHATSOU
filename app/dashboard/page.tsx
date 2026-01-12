@@ -4,8 +4,8 @@ import { Plus, Package, Search, Filter } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
-import { deleteProduct } from '@/app/actions/dashboard';
+
+import { deleteProduct, getProductsForStore } from '@/app/actions/dashboard';
 import { Store, Product, ProductVariant } from '@/lib/types/database';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,30 +51,14 @@ export default function DashboardPage() {
 
   const loadProducts = async (storeId: string) => {
     try {
-      const { data: productsData } = await supabase
-        .from('products')
-        .select('*, images:product_images(*)')
-        .eq('store_id', storeId)
-        .order('created_at', { ascending: false });
+      const result = await getProductsForStore(storeId);
 
-      // Load variants for all products
-      if (productsData && productsData.length > 0) {
-        const productIds = productsData.map((p: Product) => p.id);
-        const { data: variantsData } = await supabase
-          .from('product_variants')
-          .select('*')
-          .in('product_id', productIds);
-
-        // Attach variants to products
-        const productsWithVariants = productsData.map((p: Product) => ({
-          ...p,
-          variants: variantsData?.filter((v: ProductVariant) => v.product_id === p.id) || [],
-        }));
-
-        setProducts(productsWithVariants);
-      } else {
-        setProducts([]);
+      if (result.error) {
+        console.error('Error loading products:', result.error);
+        return;
       }
+
+      setProducts(result.products || []);
     } catch (error) {
       console.error('Error loading products:', error);
     } finally {

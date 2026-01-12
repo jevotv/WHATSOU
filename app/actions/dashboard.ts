@@ -442,3 +442,50 @@ export async function getOrdersCount() {
 
     return { count: count || 0 };
 }
+
+export async function getProductsForStore(storeId: string) {
+    const session = await getSession();
+    if (!session || !session.id) {
+        return { error: 'Unauthorized' };
+    }
+
+    // Verify ownership (or at least that the user belongs to the store if multi-user)
+    const isOwner = await verifyStoreOwnership(storeId, session.id);
+    if (!isOwner) {
+        return { error: 'Unauthorized' };
+    }
+
+    const supabase = getSupabaseAdmin();
+
+    try {
+        const { data: productsData, error } = await supabase
+            .from('products')
+            .select('*, images:product_images(*)')
+            .eq('store_id', storeId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Load variants for all products
+        if (productsData && productsData.length > 0) {
+            const productIds = productsData.map((p: Product) => p.id);
+            const { data: variantsData } = await supabase
+                .from('product_variants')
+                .select('*')
+                .in('product_id', productIds);
+
+            // Attach variants to products
+            const productsWithVariants = productsData.map((p: Product) => ({
+                ...p,
+                variants: variantsData?.filter((v: ProductVariant) => v.product_id === p.id) || [],
+            }));
+
+            return { success: true, products: productsWithVariants };
+        }
+
+        return { success: true, products: [] };
+    } catch (error: any) {
+        console.error('Error fetching products:', error);
+        return { error: error.message };
+    }
+}

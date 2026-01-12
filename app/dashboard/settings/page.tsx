@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
+
 import { Store } from '@/lib/types/database';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,8 +27,10 @@ import { NativeBiometric } from 'capacitor-native-biometric';
 import { StoreShippingSettings } from '@/components/dashboard/StoreShippingSettings';
 import { ShippingConfig } from '@/types/shipping';
 
+import { useStore } from '@/lib/contexts/StoreContext';
+
 export default function SettingsPage() {
-    const [store, setStore] = useState<Store | null>(null);
+    const { store, loading: storeLoading, refetchStore } = useStore();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
@@ -78,7 +80,7 @@ export default function SettingsPage() {
         }
 
         if (user) {
-            loadStore();
+            // Biometric check
             if (Capacitor.isNativePlatform()) {
                 NativeBiometric.isAvailable().then((result) => {
                     setBiometricAvailable(result.isAvailable);
@@ -90,41 +92,32 @@ export default function SettingsPage() {
         }
     }, [user, router, authLoading]);
 
-    const loadStore = async () => {
-        if (!user) return;
+    // Effect to populate form when store data is available from context
+    useEffect(() => {
+        if (store) {
+            setName(store.name);
+            setDescription(store.description || '');
+            setWhatsappNumber(store.whatsapp_number);
+            setDefaultLanguage(store.default_language || 'en');
+            setEmail(store.email || '');
+            setLogoUrl(store.logo_url || '');
+            setLogoPreview(store.logo_url || '');
+            setFacebookUrl(store.facebook_url || '');
+            setInstagramUrl(store.instagram_url || '');
+            setTwitterUrl(store.twitter_url || '');
+            setTiktokUrl(store.tiktok_url || '');
+            setLocationUrl(store.location_url || '');
+            setAllowDelivery(store.allow_delivery ?? true);
+            setAllowPickup(store.allow_pickup ?? false);
+            setShippingConfig((store.shipping_config as unknown as ShippingConfig) || { type: 'none' });
+            setFreeShippingThreshold(store.free_shipping_threshold ?? null);
 
-        try {
-            const { data } = await supabase
-                .from('stores')
-                .select('*')
-                .eq('user_id', user.id)
-                .maybeSingle();
-
-            if (data) {
-                setStore(data);
-                setName(data.name);
-                setDescription(data.description || '');
-                setWhatsappNumber(data.whatsapp_number);
-                setDefaultLanguage(data.default_language || 'en');
-                setEmail(data.email || '');
-                setLogoUrl(data.logo_url || '');
-                setLogoPreview(data.logo_url || '');
-                setFacebookUrl(data.facebook_url || '');
-                setInstagramUrl(data.instagram_url || '');
-                setTwitterUrl(data.twitter_url || '');
-                setTiktokUrl(data.tiktok_url || '');
-                setLocationUrl(data.location_url || '');
-                setAllowDelivery(data.allow_delivery ?? true);
-                setAllowPickup(data.allow_pickup ?? false);
-                setShippingConfig((data.shipping_config as unknown as ShippingConfig) || { type: 'none' });
-                setFreeShippingThreshold(data.free_shipping_threshold);
-            }
-        } catch (error) {
-            console.error('Error loading store:', error);
-        } finally {
+            setLoading(false);
+        } else if (!storeLoading) {
+            // If store loading finished but no store, loading should be false (layout handles redirect)
             setLoading(false);
         }
-    };
+    }, [store, storeLoading]);
 
     const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -202,6 +195,8 @@ export default function SettingsPage() {
             const result = await regenerateStoreQR(store.id);
             if (result.error) throw new Error(result.error);
 
+            await refetchStore();
+
             toast({
                 title: direction === 'rtl' ? 'تم تحديث رمز QR' : 'QR Code Regenerated',
                 description: direction === 'rtl' ? 'تم تحديث رمز الاستجابة السريعة بنجاح' : 'Your store QR code has been regenerated successfully.',
@@ -253,6 +248,8 @@ export default function SettingsPage() {
             if (result.error) {
                 throw new Error(result.error);
             }
+
+            await refetchStore();
 
             toast({
                 title: t('settings.saved'),
