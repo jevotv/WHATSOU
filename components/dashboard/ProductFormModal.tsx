@@ -6,6 +6,16 @@ import { supabase } from '@/lib/supabase/client';
 import { createProduct, updateProduct } from '@/app/actions/dashboard';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -73,13 +83,14 @@ export default function ProductFormModal({
   const [variants, setVariants] = useState<LocalVariant[]>([]);
   const [loading, setLoading] = useState(false);
   const [variantsOpen, setVariantsOpen] = useState(true);
+  const [showZeroStockDialog, setShowZeroStockDialog] = useState(false);
 
   // Image State
   const [images, setImages] = useState<ImageItem[]>([]);
   const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(null);
 
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load existing product data
@@ -388,24 +399,7 @@ export default function ProductFormModal({
     setVariants(newVariants);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (Capacitor.isNativePlatform()) await Haptics.impact({ style: ImpactStyle.Light });
-
-    // Validate images
-    if (images.length === 0) {
-      toast({ title: 'Image Required', description: 'Please add at least one image', variant: 'destructive' });
-      return;
-    }
-    if (images.some(i => i.status === 'uploading' || i.status === 'pending')) {
-      toast({ title: 'Upload in Progress', description: 'Please wait for images to finish uploading', variant: 'destructive' });
-      return;
-    }
-    if (images.some(i => i.status === 'error')) {
-      toast({ title: 'Upload Failed', description: 'Please remove or retry failed images', variant: 'destructive' });
-      return;
-    }
-
+  const executeSave = async () => {
     setLoading(true);
 
     try {
@@ -444,6 +438,7 @@ export default function ProductFormModal({
         title: product ? t('products.edit_product') : t('products.add_new'),
         description: product ? t('dashboard.product_updated_desc') : t('dashboard.product_added_desc'),
       });
+      setShowZeroStockDialog(false); // Close dialog if open
       onSaved();
     } catch (error: any) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
@@ -452,7 +447,38 @@ export default function ProductFormModal({
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (Capacitor.isNativePlatform()) await Haptics.impact({ style: ImpactStyle.Light });
+
+    // Validate images
+    if (images.length === 0) {
+      toast({ title: 'Image Required', description: 'Please add at least one image', variant: 'destructive' });
+      return;
+    }
+    if (images.some(i => i.status === 'uploading' || i.status === 'pending')) {
+      toast({ title: 'Upload in Progress', description: 'Please wait for images to finish uploading', variant: 'destructive' });
+      return;
+    }
+    if (images.some(i => i.status === 'error')) {
+      toast({ title: 'Upload Failed', description: 'Please remove or retry failed images', variant: 'destructive' });
+      return;
+    }
+
+    const hasVariants = variants.length > 0;
+    const allVariantsZeroStock = !unlimitedStock && hasVariants && variants.every(v => (parseInt(v.quantity) || 0) === 0);
+
+    if (allVariantsZeroStock) {
+      setShowZeroStockDialog(true);
+      return;
+    }
+
+    await executeSave();
+  };
+
   const hasVariants = variants.length > 0;
+  const allVariantsZeroStock = !unlimitedStock && hasVariants && variants.every(v => (parseInt(v.quantity) || 0) === 0);
+
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -734,6 +760,15 @@ export default function ProductFormModal({
                     </div>
                   )}
 
+                  {allVariantsZeroStock && (
+                    <div className="p-3 bg-amber-50 border-b text-sm text-amber-700 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span className="font-bold">
+                        {language === 'ar' ? 'تنبيه: يجب إضافة كمية للأنواع المتاحة' : 'Warning: You must add quantity for available variants'}
+                      </span>
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-3 p-3 bg-gray-50 border-b text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     <div className="flex-1">{t('products.variants_label')}</div>
                     <div className="w-16 text-center">{t('products.variant_image') || 'صورة'}</div>
@@ -849,6 +884,34 @@ export default function ProductFormModal({
           </div>
         </form>
       </DialogContent>
+
+      <AlertDialog open={showZeroStockDialog} onOpenChange={setShowZeroStockDialog}>
+        <AlertDialogContent className="rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-amber-600">
+              <AlertCircle className="w-5 h-5" />
+              {language === 'ar' ? 'تنبيه: الكميات صفر' : 'Warning: Zero Quantities'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {language === 'ar'
+                ? 'لم يتم تحديد كمية لأي من الأنواع. سيتم حفظ المنتج ولكن لن يظهر للعملاء حتى تتوفر كمية.'
+                : 'No quantities specified for variants. The product will be saved but will not be visible to customers until stock is added.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel asChild>
+              <Button variant="outline" className="rounded-xl" onClick={() => setShowZeroStockDialog(false)}>
+                {language === 'ar' ? 'تعديل' : 'Edit'}
+              </Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button onClick={(e) => { e.preventDefault(); executeSave(); }} className="rounded-xl bg-[#008069] hover:bg-[#017561]">
+                {language === 'ar' ? 'حفظ كمسودة' : 'Save as Draft'}
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
