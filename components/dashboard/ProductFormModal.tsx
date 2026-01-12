@@ -147,11 +147,31 @@ export default function ProductFormModal({
         };
       }));
 
-      loadVariants(product.id);
+      if (product.variants && product.variants.length > 0) {
+        setVariants(product.variants.map((v: ProductVariant) => {
+          const stringOptionValues: { [key: string]: string } = {};
+          if (v.option_values) {
+            Object.entries(v.option_values).forEach(([key, value]) => {
+              stringOptionValues[String(key)] = String(value);
+            });
+          }
+          return {
+            id: v.id,
+            option_values: stringOptionValues,
+            price: (v.price ?? 0).toString(),
+            quantity: (v.quantity ?? 0).toString(),
+            sku: v.sku || '',
+            imageIndex: v.image_index ?? null,
+          };
+        }));
+      } else {
+        loadVariants(product.id);
+      }
     }
   }, [product]);
 
   const loadVariants = async (productId: string) => {
+    // Fallback only - ideally we shouldn't hit this in the app
     const { data } = await supabase
       .from('product_variants')
       .select('*')
