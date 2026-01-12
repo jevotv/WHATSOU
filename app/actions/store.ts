@@ -129,11 +129,15 @@ export async function getStoreForCurrentUser() {
 
     const supabase = getSupabaseAdmin();
 
-    const { data: store } = await supabase
+    const { data: store, error: dbError } = await supabase
         .from('stores')
         .select('*')
         .eq('user_id', session.id)
         .maybeSingle();
+
+    if (dbError) {
+        return { error: `DB Error: ${dbError.message}`, debug_session: session };
+    }
 
     return { store, debug_session: session };
 }

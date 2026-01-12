@@ -14,9 +14,10 @@ import ProductCard from '@/components/dashboard/ProductCard';
 import ProductFormModal from '@/components/dashboard/ProductFormModal';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { useSubscription } from '@/lib/contexts/SubscriptionContext';
+import { useStore } from '@/lib/contexts/StoreContext';
 
 export default function DashboardPage() {
-  const [store, setStore] = useState<Store | null>(null);
+  const { store, loading: storeLoading } = useStore();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showProductForm, setShowProductForm] = useState(false);
@@ -33,36 +34,27 @@ export default function DashboardPage() {
 
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
+    // AuthGuard handles redirection if no user, but we double check
+    if (!authLoading && !user) return;
+
+    // Wait for store to be loaded by Layout
+    if (storeLoading) return;
+
+    if (store) {
+      loadProducts(store.id);
+    } else {
+      // If layout finished loading and NO store, Layout handles redirection to onboarding.
+      // We just stop loading here to allow the redirect to happen smoothly.
+      setLoading(false);
     }
+  }, [user, store, storeLoading, authLoading]);
 
-    if (user) {
-      loadStoreAndProducts();
-    }
-  }, [user, router, authLoading]);
-
-  const loadStoreAndProducts = async () => {
-    if (!user) return;
-
+  const loadProducts = async (storeId: string) => {
     try {
-      const { data: storeData } = await supabase
-        .from('stores')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (!storeData) {
-        router.push('/onboarding');
-        return;
-      }
-
-      setStore(storeData);
-
       const { data: productsData } = await supabase
         .from('products')
         .select('*, images:product_images(*)')
-        .eq('store_id', storeData.id)
+        .eq('store_id', storeId)
         .order('created_at', { ascending: false });
 
       // Load variants for all products
@@ -84,7 +76,7 @@ export default function DashboardPage() {
         setProducts([]);
       }
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('Error loading products:', error);
     } finally {
       setLoading(false);
     }
@@ -93,7 +85,7 @@ export default function DashboardPage() {
   const handleProductSaved = () => {
     setShowProductForm(false);
     setEditingProduct(null);
-    loadStoreAndProducts();
+    if (store) loadProducts(store.id);
   };
 
   const handleEditProduct = (product: Product) => {
@@ -132,7 +124,7 @@ export default function DashboardPage() {
         description: t('dashboard.delete_product_desc'),
       });
 
-      loadStoreAndProducts();
+      if (store) loadProducts(store.id);
     } catch (error: any) {
       toast({
         title: t('common.error'),

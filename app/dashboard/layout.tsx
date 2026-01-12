@@ -14,6 +14,7 @@ import { supabase } from '@/lib/supabase/client';
 import { Store } from '@/lib/types/database';
 import { getStoreForCurrentUser } from '@/app/actions/store';
 import { getSubscriptionStatus } from '@/app/actions/subscription';
+import { StoreProvider } from '@/lib/contexts/StoreContext';
 
 export default function DashboardLayout({
     children,
@@ -40,8 +41,8 @@ export default function DashboardLayout({
             try {
                 const { store, error, debug_session } = await getStoreForCurrentUser();
 
-                if (error === 'Unauthorized') {
-                    // DEBUG: Show why it is unauthorized
+                if (error) {
+                    // DEBUG: Show why it is unauthorized or other error
                     setDebugInfo({ error, session: debug_session });
                     return;
                 }
@@ -85,17 +86,19 @@ export default function DashboardLayout({
 
     return (
         <AuthGuard>
-            <SubscriptionProvider>
-                <div className="min-h-screen bg-[#f0f2f5] overflow-x-hidden" dir={direction}>
-                    <PwaInstallBanner />
-                    <DashboardHeader store={store} />
-                    <SubscriptionCountdown />
-                    <div className="pb-24">
-                        {children}
+            <StoreProvider value={{ store, loading, refetchStore: async () => { /* reloads are handled by state refresh for now */ } }}>
+                <SubscriptionProvider>
+                    <div className="min-h-screen bg-[#f0f2f5] overflow-x-hidden" dir={direction}>
+                        <PwaInstallBanner />
+                        <DashboardHeader store={store} />
+                        <SubscriptionCountdown />
+                        <div className="pb-24">
+                            {children}
+                        </div>
+                        <BottomNav />
                     </div>
-                    <BottomNav />
-                </div>
-            </SubscriptionProvider>
+                </SubscriptionProvider>
+            </StoreProvider>
         </AuthGuard>
     );
 }
