@@ -926,6 +926,27 @@ export default function SettingsPage() {
                     </div>
                 </div>
             )}
+            {/* DEBUG SECTION - REMOVE AFTER FIXING PERMISSIONS */}
+            <div className="mt-8 p-4 bg-gray-100 rounded-xl text-xs font-mono break-all space-y-2 max-w-3xl mx-auto mb-20 px-4 sm:px-6 lg:px-8">
+                <p className="font-bold text-red-500">DEBUG INFO</p>
+                <p>Platform: {Capacitor.getPlatform()}</p>
+                <p>Native: {Capacitor.isNativePlatform() ? 'YES' : 'NO'}</p>
+                <p>Url: {typeof window !== 'undefined' ? window.location.href : 'SSR'}</p>
+                <div className="flex gap-2 flex-wrap">
+                    <Button size="sm" variant="outline" onClick={() => NativeBiometric.isAvailable().then(r => alert('Bio: ' + JSON.stringify(r))).catch(e => alert('Bio Err: ' + e.message))}>
+                        Test Bio
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => Camera.checkPermissions().then(r => alert('Cam Check: ' + JSON.stringify(r))).catch(e => alert('Cam Check Err: ' + e.message))}>
+                        Check Cam
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => Camera.requestPermissions().then(r => alert('Cam Req: ' + JSON.stringify(r))).catch(e => alert('Cam Req Err: ' + e.message))}>
+                        Req Cam
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => alert('Agent: ' + navigator.userAgent)}>
+                        User Agent
+                    </Button>
+                </div>
+            </div>
         </div >
     );
 }
