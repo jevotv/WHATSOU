@@ -27,9 +27,9 @@
 
 # Keep Capacitor plugin classes
 -keep class com.getcapacitor.** { *; }
+-keep class com.capacitorjs.** { *; }
 -keep class com.whatsou.app.** { *; }
 
 # Firebase
 -keep class com.google.firebase.** { *; }
 -dontwarn com.google.firebase.**
-
