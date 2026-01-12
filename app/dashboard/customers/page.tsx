@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { getCustomers } from '@/app/actions/dashboard';
+import { useEffect, useState, useCallback } from 'react';
 import { Loader2, Phone, ShoppingBag, MessageCircle, Search, Lock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/lib/contexts/AuthContext';
@@ -9,6 +8,7 @@ import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { useSubscription } from '@/lib/contexts/SubscriptionContext';
 import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
 import Link from 'next/link';
+import { api } from '@/lib/api/client';
 
 type Customer = {
     name: string;
@@ -16,6 +16,15 @@ type Customer = {
     totalOrders: number;
     lastOrderDate: string;
 };
+
+interface CustomersResponse {
+    customers: Array<{
+        customer_name: string;
+        customer_phone: string;
+        created_at: string;
+    }>;
+    error?: string;
+}
 
 export default function CustomersPage() {
     const [customers, setCustomers] = useState<Customer[]>([]);
@@ -27,52 +36,49 @@ export default function CustomersPage() {
 
     const { user } = useAuth();
 
-    useEffect(() => {
-        async function fetchCustomers() {
-            if (!user) return;
+    const fetchCustomers = useCallback(async () => {
+        if (!user) return;
 
-            try {
-                const result = await getCustomers();
+        try {
+            const result = await api.get<CustomersResponse>('/api/dashboard/customers');
 
-                if (result.error) {
-                    console.error('Error fetching customers:', result.error);
-                    return;
+            if (result.error) {
+                console.error('Error fetching customers:', result.error);
+                return;
+            }
+
+            const orders = result.customers;
+
+            // Aggregate unique customers by phone number
+            const customerMap = new Map<string, Customer>();
+
+            orders?.forEach((order) => {
+                const phone = standardizePhoneNumber(order.customer_phone);
+                // Use phone as key
+                if (!customerMap.has(phone)) {
+                    customerMap.set(phone, {
+                        name: order.customer_name,
+                        phone: order.customer_phone, // Keep original display format or use standardized?
+                        totalOrders: 0,
+                        lastOrderDate: order.created_at,
+                    });
                 }
 
-                const orders = result.data;
+                const customer = customerMap.get(phone)!;
+                customer.totalOrders += 1;
+            });
 
-                // Aggregate unique customers by phone number
-                const customerMap = new Map<string, Customer>();
-
-                orders?.forEach((order: any) => {
-                    const phone = standardizePhoneNumber(order.customer_phone);
-                    // Use phone as key
-                    if (!customerMap.has(phone)) {
-                        customerMap.set(phone, {
-                            name: order.customer_name,
-                            phone: order.customer_phone, // Keep original display format or use standardized?
-                            totalOrders: 0,
-                            lastOrderDate: order.created_at,
-                        });
-                    } else {
-                        // Maybe update name if newer order has different name?
-                        // But for now, first found (latest) is kept as name source if we iterate desc.
-                    }
-
-                    const customer = customerMap.get(phone)!;
-                    customer.totalOrders += 1;
-                });
-
-                setCustomers(Array.from(customerMap.values()));
-            } catch (err) {
-                console.error('Unexpected error:', err);
-            } finally {
-                setLoading(false);
-            }
+            setCustomers(Array.from(customerMap.values()));
+        } catch (err) {
+            console.error('Unexpected error:', err);
+        } finally {
+            setLoading(false);
         }
-
-        fetchCustomers();
     }, [user]);
+
+    useEffect(() => {
+        fetchCustomers();
+    }, [fetchCustomers]);
 
     if (loading || subLoading) {
         return (

@@ -14,9 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
-import { regenerateStoreQR } from '@/app/actions/store';
-import { updateStore } from '@/app/actions/dashboard';
-import { changePassword, deleteAccount } from '@/app/actions/auth';
+import { api } from '@/lib/api/client';
 import { Geolocation } from '@capacitor/geolocation';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
@@ -192,7 +190,7 @@ export default function SettingsPage() {
 
         setSaving(true);
         try {
-            const result = await regenerateStoreQR(store.id);
+            const result = await api.post<{ success: boolean; qr_code?: string; error?: string }>('/api/store/qr');
             if (result.error) throw new Error(result.error);
 
             await refetchStore();
@@ -243,7 +241,7 @@ export default function SettingsPage() {
                 free_shipping_threshold: freeShippingThreshold,
             };
 
-            const result = await updateStore(store.id, storeData);
+            const result = await api.put<{ success: boolean; error?: string }>('/api/dashboard/store', storeData);
 
             if (result.error) {
                 throw new Error(result.error);
@@ -296,11 +294,10 @@ export default function SettingsPage() {
 
         setChangingPassword(true);
         try {
-            const formData = new FormData();
-            formData.append('currentPassword', currentPassword);
-            formData.append('newPassword', newPassword);
-
-            const result = await changePassword(formData);
+            const result = await api.post<{ success: boolean; error?: string }>('/api/auth/change-password', {
+                currentPassword,
+                newPassword,
+            });
 
             if (result.error) {
                 throw new Error(result.error);
@@ -341,7 +338,7 @@ export default function SettingsPage() {
 
         setDeleting(true);
         try {
-            const result = await deleteAccount(deleteReason);
+            const result = await api.post<{ success: boolean; error?: string }>('/api/auth/delete-account', { reason: deleteReason });
             if (result.error) throw new Error(result.error);
 
             // Redirect to login after successful deletion

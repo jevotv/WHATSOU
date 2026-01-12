@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { getOrders } from '@/app/actions/dashboard';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { Loader2, Package, Calendar, Phone, MapPin, Search, Filter, ChevronDown, ChevronUp, Home, Store as StoreIcon, Lock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -16,6 +15,7 @@ import { format, isToday, isYesterday, subDays, isAfter, startOfDay, parseISO } 
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { useSubscription } from '@/lib/contexts/SubscriptionContext';
 import Link from 'next/link';
+import { api } from '@/lib/api/client';
 
 type Order = {
     id: string;
@@ -32,6 +32,15 @@ type Order = {
     district?: string;
 };
 
+interface OrdersResponse {
+    orders: Order[];
+    storeSettings?: {
+        allow_delivery: boolean;
+        allow_pickup: boolean;
+    };
+    error?: string;
+}
+
 export default function OrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
@@ -46,34 +55,34 @@ export default function OrdersPage() {
 
     const { user } = useAuth();
 
-    useEffect(() => {
-        async function fetchOrders() {
-            if (!user) return;
+    const fetchOrders = useCallback(async () => {
+        if (!user) return;
 
-            try {
-                const result = await getOrders();
+        try {
+            const result = await api.get<OrdersResponse>('/api/dashboard/orders');
 
-                if (result.error) {
-                    console.error('Error fetching orders:', result.error);
-                    setLoading(false);
-                    return;
-                }
-
-                // Show filter only if both options are enabled
-                if (result.storeSettings) {
-                    setShowDeliveryFilter(result.storeSettings.allow_delivery === true && result.storeSettings.allow_pickup === true);
-                }
-
-                setOrders(result.orders || []);
-            } catch (err) {
-                console.error('Unexpected error:', err);
-            } finally {
+            if (result.error) {
+                console.error('Error fetching orders:', result.error);
                 setLoading(false);
+                return;
             }
-        }
 
-        fetchOrders();
+            // Show filter only if both options are enabled
+            if (result.storeSettings) {
+                setShowDeliveryFilter(result.storeSettings.allow_delivery === true && result.storeSettings.allow_pickup === true);
+            }
+
+            setOrders(result.orders || []);
+        } catch (err) {
+            console.error('Unexpected error:', err);
+        } finally {
+            setLoading(false);
+        }
     }, [user]);
+
+    useEffect(() => {
+        fetchOrders();
+    }, [fetchOrders]);
 
     const toggleExpand = (orderId: string) => {
         setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
