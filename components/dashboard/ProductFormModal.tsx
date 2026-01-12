@@ -783,78 +783,92 @@ export default function ProductFormModal({
                         key={index}
                         className="p-3 border-b last:border-b-0 hover:bg-gray-50 transition"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                          <div className="flex-1 min-w-0 flex items-center justify-between sm:justify-start gap-2">
                             <div className="inline-block bg-[#dcf8c6] px-3 py-1.5 rounded-2xl rounded-bl-sm text-sm font-medium">
                               {getVariantLabel(variant)}
                             </div>
+
+                            {/* Mobile Delete Button (visible only on small screens) */}
+                            <Button
+                              type="button"
+                              onClick={() => removeVariant(index)}
+                              variant="ghost"
+                              size="sm"
+                              className="sm:hidden h-8 w-8 p-0 rounded-full text-red-500"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </div>
 
-                          {/* Image Selector */}
-                          <Select
-                            value={variant.imageIndex !== null && variant.imageIndex !== undefined ? variant.imageIndex.toString() : "default"}
-                            onValueChange={(val) => updateVariantImageIndex(index, val === "default" ? null : parseInt(val))}
-                          >
-                            <SelectTrigger className="w-16 h-8 text-xs rounded-xl">
-                              <SelectValue>
-                                {variant.imageIndex !== null && variant.imageIndex !== undefined && images[variant.imageIndex]?.status === 'completed' ? (
-                                  <img
-                                    src={images[variant.imageIndex]?.thumbnailUrl}
-                                    alt=""
-                                    className="w-5 h-5 rounded object-cover"
-                                  />
-                                ) : (
-                                  <ImageIcon className="w-4 h-4 text-gray-400" />
-                                )}
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="default">
-                                <span className="text-gray-500">{t('products.default_image') || 'افتراضي'}</span>
-                              </SelectItem>
-                              {images.filter(img => img.status === 'completed').map((img, imgIdx) => (
-                                <SelectItem key={imgIdx} value={imgIdx.toString()}>
-                                  <div className="flex items-center gap-2">
-                                    <img src={img.thumbnailUrl} alt="" className="w-6 h-6 rounded object-cover" />
-                                    <span>{imgIdx + 1}</span>
-                                  </div>
+                          <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+                            {/* Image Selector */}
+                            <Select
+                              value={variant.imageIndex !== null && variant.imageIndex !== undefined ? variant.imageIndex.toString() : "default"}
+                              onValueChange={(val) => updateVariantImageIndex(index, val === "default" ? null : parseInt(val))}
+                            >
+                              <SelectTrigger className="w-16 h-10 sm:h-8 text-xs rounded-xl shrink-0">
+                                <SelectValue>
+                                  {variant.imageIndex !== null && variant.imageIndex !== undefined && images[variant.imageIndex]?.status === 'completed' ? (
+                                    <img
+                                      src={images[variant.imageIndex]?.thumbnailUrl}
+                                      alt=""
+                                      className="w-5 h-5 rounded object-cover"
+                                    />
+                                  ) : (
+                                    <ImageIcon className="w-4 h-4 text-gray-400" />
+                                  )}
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="default">
+                                  <span className="text-gray-500">{t('products.default_image') || 'افتراضي'}</span>
                                 </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                                {images.filter(img => img.status === 'completed').map((img, imgIdx) => (
+                                  <SelectItem key={imgIdx} value={imgIdx.toString()}>
+                                    <div className="flex items-center gap-2">
+                                      <img src={img.thumbnailUrl} alt="" className="w-6 h-6 rounded object-cover" />
+                                      <span>{imgIdx + 1}</span>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
 
-                          <Input
-                            type="number"
-                            step="1"
-                            value={String(variant.price ?? '')}
-                            onChange={(e) => updateVariant(index, 'price', e.target.value)}
-                            placeholder="Price"
-                            className="w-24 h-8 text-sm rounded-xl"
-                          />
-
-                          {!unlimitedStock ? (
                             <Input
                               type="number"
-                              value={String(variant.quantity ?? '')}
-                              onChange={(e) => updateVariant(index, 'quantity', e.target.value)}
-                              placeholder="Qty"
-                              className="w-16 h-8 text-sm rounded-xl"
+                              step="1"
+                              value={String(variant.price ?? '')}
+                              onChange={(e) => updateVariant(index, 'price', e.target.value)}
+                              placeholder="Price"
+                              className="w-24 h-10 sm:h-8 text-sm rounded-xl shrink-0"
                             />
-                          ) : (
-                            <div className="w-16 h-8 flex items-center justify-center text-gray-400">
-                              <InfinityIcon className="w-5 h-5" />
-                            </div>
-                          )}
 
-                          <Button
-                            type="button"
-                            onClick={() => removeVariant(index)}
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 rounded-full"
-                          >
-                            <Trash2 className="w-4 h-4 text-red-500" />
-                          </Button>
+                            {!unlimitedStock ? (
+                              <Input
+                                type="number"
+                                value={String(variant.quantity ?? '')}
+                                onChange={(e) => updateVariant(index, 'quantity', e.target.value)}
+                                placeholder="Qty"
+                                className="w-20 h-10 sm:h-8 text-sm rounded-xl shrink-0"
+                              />
+                            ) : (
+                              <div className="w-20 h-10 sm:h-8 flex items-center justify-center text-gray-400 bg-gray-50 rounded-xl shrink-0">
+                                <InfinityIcon className="w-5 h-5" />
+                              </div>
+                            )}
+
+                            {/* Desktop Delete Button */}
+                            <Button
+                              type="button"
+                              onClick={() => removeVariant(index)}
+                              variant="ghost"
+                              size="sm"
+                              className="hidden sm:flex h-8 w-8 p-0 rounded-full shrink-0"
+                            >
+                              <Trash2 className="w-4 h-4 text-red-500" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))}
