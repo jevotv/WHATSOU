@@ -1,11 +1,29 @@
 /**
  * API Client for making authenticated requests to the backend.
  * Used by dashboard pages to communicate with API routes.
+ *
+ * On Capacitor (native app), API calls go to the remote server.
+ * On web, API calls go to the same origin.
  */
 
-const API_BASE = typeof window !== 'undefined'
-    ? window.location.origin
-    : process.env.NEXT_PUBLIC_SITE_URL || '';
+import { Capacitor } from '@capacitor/core';
+
+// Use remote API for native apps (Capacitor), local for web
+const getApiBase = (): string => {
+    if (typeof window === 'undefined') {
+        return process.env.NEXT_PUBLIC_SITE_URL || 'https://whatsou.com';
+    }
+
+    // On native platform, always use the remote API
+    if (Capacitor.isNativePlatform()) {
+        return 'https://whatsou.com';
+    }
+
+    // On web, use same origin
+    return window.location.origin;
+};
+
+const API_BASE = getApiBase();
 
 class ApiClient {
     private token: string | null = null;
