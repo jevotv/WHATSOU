@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import BottomNav from '@/components/dashboard/BottomNav';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
@@ -10,11 +10,14 @@ import SubscriptionCountdown from '@/components/dashboard/SubscriptionCountdown'
 import { SubscriptionProvider } from '@/lib/contexts/SubscriptionContext';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
-import { supabase } from '@/lib/supabase/client';
 import { Store } from '@/lib/types/database';
-import { getStoreForCurrentUser } from '@/app/actions/store';
-import { getSubscriptionStatus } from '@/app/actions/subscription';
 import { StoreProvider } from '@/lib/contexts/StoreContext';
+import { api } from '@/lib/api/client';
+
+interface StoreResponse {
+    store: Store | null;
+    error?: string;
+}
 
 export default function DashboardLayout({
     children,
@@ -23,46 +26,60 @@ export default function DashboardLayout({
 }) {
     const [store, setStore] = useState<Store | null>(null);
     const [loading, setLoading] = useState(true);
-    const [debugInfo, setDebugInfo] = useState<any>(null); // DEBUG STATE
+    const [debugInfo, setDebugInfo] = useState<any>(null);
     const { user } = useAuth();
     const { direction } = useLanguage();
     const router = useRouter();
 
-    useEffect(() => {
-        async function loadStore() {
-            if (!user) {
-                // DEBUG: Let the AuthGuard handle the UI for missing user, or set debug info here too
-                // For now, we want to know if user is null HERE
-                console.log("DashboardLayout: User is null");
-                setLoading(false);
+    const loadStore = useCallback(async () => {
+        if (!user) {
+            console.log("DashboardLayout: User is null");
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const result = await api.get<StoreResponse>('/api/dashboard/store');
+
+            if (result.error) {
+                setDebugInfo({ error: result.error });
                 return;
             }
 
-            try {
-                const { store, error, debug_session } = await getStoreForCurrentUser();
-
-                if (error) {
-                    // DEBUG: Show why it is unauthorized or other error
-                    setDebugInfo({ error, session: debug_session });
-                    return;
-                }
-
-                if (!store) {
-                    router.push('/onboarding');
-                    return;
-                }
-
-                setStore(store);
-            } catch (error) {
-                console.error('Error loading store:', error);
-                setDebugInfo({ error: 'Exception', details: error });
-            } finally {
-                setLoading(false);
+            if (!result.store) {
+                router.push('/onboarding');
+                return;
             }
-        }
 
-        loadStore();
+            setStore(result.store);
+        } catch (error: any) {
+            console.error('Error loading store:', error);
+            // If unauthorized, don't show debug - just redirect to login
+            if (error.message?.includes('Unauthorized')) {
+                api.clearToken();
+                router.push('/login');
+                return;
+            }
+            setDebugInfo({ error: 'Exception', details: error.message });
+        } finally {
+            setLoading(false);
+        }
     }, [user, router]);
+
+    const refetchStore = useCallback(async () => {
+        try {
+            const result = await api.get<StoreResponse>('/api/dashboard/store');
+            if (result.store) {
+                setStore(result.store);
+            }
+        } catch (error) {
+            console.error('Error refetching store:', error);
+        }
+    }, []);
+
+    useEffect(() => {
+        loadStore();
+    }, [loadStore]);
 
     if (loading) {
         return (
@@ -86,7 +103,7 @@ export default function DashboardLayout({
 
     return (
         <AuthGuard>
-            <StoreProvider value={{ store, loading, refetchStore: async () => { /* reloads are handled by state refresh for now */ } }}>
+            <StoreProvider value={{ store, loading, refetchStore }}>
                 <SubscriptionProvider>
                     <div className="min-h-screen bg-[#f0f2f5] overflow-x-hidden" dir={direction}>
                         <PwaInstallBanner />

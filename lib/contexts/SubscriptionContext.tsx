@@ -1,7 +1,17 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
-import { getSubscriptionStatus, SubscriptionStatus } from '@/app/actions/subscription';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { api } from '@/lib/api/client';
+
+export interface SubscriptionStatus {
+    id: string | null;
+    status: 'inactive' | 'active' | 'grace' | 'expired';
+    expiresAt: string | null;
+    daysRemaining: number | null;
+    isReadOnly: boolean;
+    amount: number;
+    isFirstSubscription: boolean;
+}
 
 interface SubscriptionContextType {
     subscription: SubscriptionStatus | null;
@@ -19,20 +29,26 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
     const [loading, setLoading] = useState(true);
 
-    const refresh = async () => {
+    const refresh = useCallback(async () => {
         try {
-            const status = await getSubscriptionStatus();
+            // Only fetch if authenticated
+            if (!api.isAuthenticated()) {
+                setLoading(false);
+                return;
+            }
+
+            const status = await api.get<SubscriptionStatus>('/api/subscription/status');
             setSubscription(status);
         } catch (error) {
             console.error('Error fetching subscription status:', error);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         refresh();
-    }, []);
+    }, [refresh]);
 
     return (
         <SubscriptionContext.Provider value={{ subscription, loading, refresh }}>

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn as signInAction, signUp as signUpAction, signOut as signOutAction, getSession } from '@/app/actions/auth';
+import { api } from '@/lib/api/client';
 
 export interface UserSession {
   id: string;
@@ -13,7 +13,7 @@ interface AuthContextType {
   user: UserSession | null;
   loading: boolean;
   signIn: (phone: string, password: string) => Promise<void>;
-  signUp: (phone: string, password: string) => Promise<void>;
+  signUp: (phone: string, password: string, agreedToPrivacy?: boolean) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -25,6 +25,18 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => { },
 });
 
+interface LoginResponse {
+  success: boolean;
+  token: string;
+  user: UserSession;
+  error?: string;
+}
+
+interface SessionResponse {
+  authenticated: boolean;
+  user: UserSession | null;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserSession | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,8 +44,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const checkSession = async () => {
-      const sessionUser = await getSession();
-      setUser(sessionUser);
+      // Check if we have a token
+      if (!api.isAuthenticated()) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // Verify token with server
+        const session = await api.get<SessionResponse>('/api/auth/session');
+        if (session.authenticated && session.user) {
+          setUser(session.user);
+        } else {
+          // Invalid token, clear it
+          api.clearToken();
+        }
+      } catch (error) {
+        console.error('Session check failed:', error);
+        api.clearToken();
+      }
+
       setLoading(false);
     };
 
@@ -41,58 +71,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (phone: string, password: string) => {
-    const formData = new FormData();
-    formData.append('phone', phone);
-    formData.append('password', password);
-
-    // Server action returns object { success: true } or { error: string }
-    const result = await signInAction(formData);
+    const result = await api.post<LoginResponse>('/api/auth/login', {
+      phone,
+      password,
+    });
 
     if (result.error) {
       throw new Error(result.error);
     }
 
-    // FALLBACK: Set cookie manually if server header was dropped
-    if ((result as any).token) {
-      const cookieValue = encodeURIComponent((result as any).token);
-      document.cookie = `app-session=${cookieValue}; path=/; max-age=604800; samesite=lax`;
-
-      // DEBUG: Verify cookie was set
-      if (document.cookie.indexOf('app-session') === -1) {
-        throw new Error('Browser blocked cookie setting. Please enable cookies.');
-      }
+    if (result.token) {
+      api.setToken(result.token);
+      setUser(result.user);
     }
 
-    // Force hard reload to ensure headers are sent
-    window.location.href = '/dashboard';
+    // Navigate to dashboard
+    router.push('/dashboard');
+    router.refresh();
   };
 
-  const signUp = async (phone: string, password: string) => {
-    const formData = new FormData();
-    formData.append('phone', phone);
-    formData.append('password', password);
-
-    const result = await signUpAction(formData);
+  const signUp = async (phone: string, password: string, agreedToPrivacy: boolean = true) => {
+    const result = await api.post<LoginResponse>('/api/auth/signup', {
+      phone,
+      password,
+      agreedToPrivacy,
+    });
 
     if (result.error) {
       throw new Error(result.error);
     }
 
-    // FALLBACK: Set cookie manually if server header was dropped
-    if ((result as any).token) {
-      const cookieValue = encodeURIComponent((result as any).token);
-      document.cookie = `app-session=${cookieValue}; path=/; max-age=604800; samesite=lax`;
-
-      if (document.cookie.indexOf('app-session') === -1) {
-        throw new Error('Browser blocked cookie setting. Please enable cookies.');
-      }
+    if (result.token) {
+      api.setToken(result.token);
+      setUser(result.user);
     }
 
-    window.location.href = '/onboarding';
+    // Navigate to onboarding
+    router.push('/onboarding');
+    router.refresh();
   };
 
   const signOut = async () => {
-    await signOutAction();
+    try {
+      await api.post('/api/auth/logout');
+    } catch (error) {
+      // Ignore logout errors
+    }
+
+    api.clearToken();
     setUser(null);
     router.push('/login');
     router.refresh();

@@ -1,12 +1,11 @@
 'use client';
 
 import { Plus, Package, Search, Filter } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
-import { deleteProduct, getProductsForStore } from '@/app/actions/dashboard';
-import { Store, Product, ProductVariant } from '@/lib/types/database';
+import { Store, Product } from '@/lib/types/database';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -15,6 +14,12 @@ import ProductFormModal from '@/components/dashboard/ProductFormModal';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { useSubscription } from '@/lib/contexts/SubscriptionContext';
 import { useStore } from '@/lib/contexts/StoreContext';
+import { api } from '@/lib/api/client';
+
+interface ProductsResponse {
+  products: Product[];
+  error?: string;
+}
 
 export default function DashboardPage() {
   const { store, loading: storeLoading } = useStore();
@@ -31,27 +36,9 @@ export default function DashboardPage() {
   const { subscription } = useSubscription();
   const isReadOnly = subscription?.isReadOnly ?? false;
 
-
-
-  useEffect(() => {
-    // AuthGuard handles redirection if no user, but we double check
-    if (!authLoading && !user) return;
-
-    // Wait for store to be loaded by Layout
-    if (storeLoading) return;
-
-    if (store) {
-      loadProducts(store.id);
-    } else {
-      // If layout finished loading and NO store, Layout handles redirection to onboarding.
-      // We just stop loading here to allow the redirect to happen smoothly.
-      setLoading(false);
-    }
-  }, [user, store, storeLoading, authLoading]);
-
-  const loadProducts = async (storeId: string) => {
+  const loadProducts = useCallback(async () => {
     try {
-      const result = await getProductsForStore(storeId);
+      const result = await api.get<ProductsResponse>('/api/dashboard/products');
 
       if (result.error) {
         console.error('Error loading products:', result.error);
@@ -64,12 +51,28 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    // AuthGuard handles redirection if no user, but we double check
+    if (!authLoading && !user) return;
+
+    // Wait for store to be loaded by Layout
+    if (storeLoading) return;
+
+    if (store) {
+      loadProducts();
+    } else {
+      // If layout finished loading and NO store, Layout handles redirection to onboarding.
+      // We just stop loading here to allow the redirect to happen smoothly.
+      setLoading(false);
+    }
+  }, [user, store, storeLoading, authLoading, loadProducts]);
 
   const handleProductSaved = () => {
     setShowProductForm(false);
     setEditingProduct(null);
-    if (store) loadProducts(store.id);
+    loadProducts();
   };
 
   const handleEditProduct = (product: Product) => {
@@ -97,18 +100,14 @@ export default function DashboardPage() {
     if (!confirm(t('products.delete_confirm'))) return;
 
     try {
-      const result = await deleteProduct(productId);
-
-      if (result.error) {
-        throw new Error(result.error);
-      }
+      await api.delete(`/api/dashboard/products/${productId}`);
 
       toast({
         title: t('dashboard.delete_product_title'),
         description: t('dashboard.delete_product_desc'),
       });
 
-      if (store) loadProducts(store.id);
+      loadProducts();
     } catch (error: any) {
       toast({
         title: t('common.error'),
@@ -263,4 +262,3 @@ export default function DashboardPage() {
     </>
   );
 }
-
