@@ -801,7 +801,7 @@ export default function ProductFormModal({
                             </Button>
                           </div>
 
-                          <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+                          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
                             {/* Image Selector */}
                             <Select
                               value={variant.imageIndex !== null && variant.imageIndex !== undefined ? variant.imageIndex.toString() : "default"}
@@ -841,7 +841,7 @@ export default function ProductFormModal({
                               value={String(variant.price ?? '')}
                               onChange={(e) => updateVariant(index, 'price', e.target.value)}
                               placeholder="Price"
-                              className="w-24 h-10 sm:h-8 text-sm rounded-xl shrink-0"
+                              className="flex-1 min-w-[3rem] h-10 sm:h-8 text-sm rounded-xl"
                             />
 
                             {!unlimitedStock ? (
@@ -850,10 +850,10 @@ export default function ProductFormModal({
                                 value={String(variant.quantity ?? '')}
                                 onChange={(e) => updateVariant(index, 'quantity', e.target.value)}
                                 placeholder="Qty"
-                                className="w-20 h-10 sm:h-8 text-sm rounded-xl shrink-0"
+                                className="w-20 sm:w-16 h-10 sm:h-8 text-sm rounded-xl shrink-0"
                               />
                             ) : (
-                              <div className="w-20 h-10 sm:h-8 flex items-center justify-center text-gray-400 bg-gray-50 rounded-xl shrink-0">
+                              <div className="w-20 sm:w-16 h-10 sm:h-8 flex items-center justify-center text-gray-400 bg-gray-50 rounded-xl shrink-0">
                                 <InfinityIcon className="w-5 h-5" />
                               </div>
                             )}
