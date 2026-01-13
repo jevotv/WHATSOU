@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Product, ProductOption, ProductVariant, ProductImage } from '@/lib/types/database';
 import { supabase } from '@/lib/supabase/client';
-import { createProduct, updateProduct } from '@/app/actions/dashboard';
+import { api } from '@/lib/api/client';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
@@ -445,11 +445,17 @@ export default function ProductFormModal({
         }))
       };
 
-      let result;
+      let result: { success?: boolean; error?: string };
       if (product) {
-        result = await updateProduct(product.id, productData);
+        result = await api.put<{ success: boolean; error?: string }>(
+          `/api/dashboard/products/${product.id}`,
+          productData
+        );
       } else {
-        result = await createProduct(productData);
+        result = await api.post<{ success: boolean; error?: string }>(
+          '/api/dashboard/products',
+          productData
+        );
       }
 
       if (result.error) throw new Error(result.error);
