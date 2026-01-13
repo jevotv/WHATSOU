@@ -86,7 +86,9 @@ class ApiClient {
         if (!response.ok) {
             // If unauthorized, clear token
             if (response.status === 401) {
-                this.clearToken();
+                // TEMPORARY DEBUG: Don't clear token automatically to debug 401 loop
+                // this.clearToken();
+                console.error('API Unauthorized (401) - Token NOT cleared for debugging');
             }
             throw new Error(data.error || `API Error: ${response.status}`);
         }

@@ -50,6 +50,11 @@ export async function POST(request: NextRequest) {
         // Generate JWT token
         const token = await signToken(user.id, user.phone);
 
+        console.log('Login successful for:', user.phone);
+        // Safe check for secret status
+        const isUsingFallback = !process.env.JWT_SECRET;
+        console.log('JWT Secret Status:', isUsingFallback ? 'USING FALLBACK' : 'CUSTOM SECRET CONFIGURED');
+
         // Return user info (without password) and token
         return NextResponse.json({
             success: true,
