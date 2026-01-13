@@ -1,6 +1,6 @@
 1:HL["/_next/static/css/f2664c8eb4f67262.css","style",{"crossOrigin":""}]
-0:["EbsG4hUTcLWpvjxbDIuda",[[["",{"children":["__PAGE__",{}]},"$undefined","$undefined",true],"$L2",[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/f2664c8eb4f67262.css","precedence":"next","crossOrigin":""}]],"$L3"]]]]
-4:I[6803,["185","static/chunks/app/layout-6325ea7fcd136fc4.js"],"AuthProvider"]
+0:["umbxIpl9gN7vYrS2f5Bk0",[[["",{"children":["__PAGE__",{}]},"$undefined","$undefined",true],"$L2",[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/f2664c8eb4f67262.css","precedence":"next","crossOrigin":""}]],"$L3"]]]]
+4:I[6803,["185","static/chunks/app/layout-4b16106f5238c8bc.js"],"AuthProvider"]
 5:I[9305,[],""]
 6:I[5236,[],""]
 3:[["$","meta","0",{"charSet":"utf-8"}],["$","title","1",{"children":"WhatSou Dashboard"}],["$","meta","2",{"name":"description","content":"Manage your WhatsApp store"}],["$","meta","3",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]

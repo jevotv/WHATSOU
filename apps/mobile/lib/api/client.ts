@@ -36,26 +36,36 @@ class ApiClient {
 
     async fetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
         const token = this.getToken();
+        const url = `${API_BASE}${endpoint}`;
 
-        const response = await fetch(`${API_BASE}${endpoint}`, {
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                ...options.headers,
-            },
-        });
+        console.log(`API Request: ${options.method || 'GET'} ${url}`);
 
-        const data = await response.json();
+        try {
+            const response = await fetch(url, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                    ...options.headers,
+                },
+            });
 
-        if (!response.ok) {
-            if (response.status === 401) {
-                this.clearToken();
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error(`API Error Response: ${response.status}`, data);
+                if (response.status === 401) {
+                    this.clearToken();
+                }
+                throw new Error(data.error || `API Error: ${response.status}`);
             }
-            throw new Error(data.error || `API Error: ${response.status}`);
-        }
 
-        return data as T;
+            return data as T;
+        } catch (error: any) {
+            console.error('API Fetch Error Details:', error);
+            console.error('Request URL:', url);
+            throw error;
+        }
     }
 
     get<T>(endpoint: string): Promise<T> {
