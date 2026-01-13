@@ -77,9 +77,10 @@ export const config = {
          * - _next/static (static files)
          * - _next/image (image optimization files)
          * - favicon.ico (favicon file)
-         * - static files (images, icons, manifests)
-         * - api routes (handle auth separately)
+         * - manifest.webmanifest (PWA manifest)
+         * - public folder files (images, icons)
          */
-        '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|webmanifest|json)$).*)',
+        '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\.png$|.*\\.jpg$|.*\\.svg$|.*\\.ico$|.*\\.webp$).*)',
     ],
 }
+
