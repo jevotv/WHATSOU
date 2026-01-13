@@ -11,6 +11,11 @@ interface SignupRequest {
     agreedToPrivacy?: boolean;
 }
 
+
+export async function OPTIONS() {
+    return NextResponse.json({}, { status: 200 });
+}
+
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json() as SignupRequest;

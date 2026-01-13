@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/api/jwt';
 import { getSupabaseAdmin } from '@/lib/supabase/admin';
 
+
+export async function OPTIONS() {
+    return NextResponse.json({}, { status: 200 });
+}
+
 export async function GET(request: NextRequest) {
     try {
         const authHeader = request.headers.get('Authorization');
