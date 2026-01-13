@@ -27,13 +27,18 @@ export default function DashboardLayout({
     const [store, setStore] = useState<Store | null>(null);
     const [loading, setLoading] = useState(true);
     const [debugInfo, setDebugInfo] = useState<any>(null);
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const { direction } = useLanguage();
     const router = useRouter();
 
     const loadStore = useCallback(async () => {
+        // Wait for auth to finish loading before checking user
+        if (authLoading) {
+            return;
+        }
+
         if (!user) {
-            console.log("DashboardLayout: User is null");
+            console.log("DashboardLayout: User is null after auth loaded");
             setLoading(false);
             return;
         }
@@ -64,7 +69,7 @@ export default function DashboardLayout({
         } finally {
             setLoading(false);
         }
-    }, [user, router]);
+    }, [user, authLoading, router]);
 
     const refetchStore = useCallback(async () => {
         try {
