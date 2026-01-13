@@ -1,13 +1,20 @@
 {
-  "name": "nextjs",
+  "name": "whatsou-monorepo",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "dev": "turbo dev",
+    "dev:web": "turbo dev --filter=@whatsou/web",
+    "dev:mobile": "turbo dev --filter=@whatsou/mobile",
+    "build": "turbo build",
+    "build:web": "turbo build --filter=@whatsou/web",
+    "build:mobile": "turbo build --filter=@whatsou/mobile",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.956.0",
@@ -95,6 +102,7 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
-    "sharp": "^0.34.5"
+    "sharp": "^0.34.5",
+    "turbo": "^2.7.4"
   }
 }

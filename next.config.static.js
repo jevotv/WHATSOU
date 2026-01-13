@@ -18,6 +18,11 @@ const nextConfig = {
         ignoreBuildErrors: true, // Temporary for static build
     },
 
+    // Enable server actions for import compatibility
+    experimental: {
+        serverActions: true,
+    },
+
     // Trailing slash for proper file resolution in Capacitor
     trailingSlash: true,
 };

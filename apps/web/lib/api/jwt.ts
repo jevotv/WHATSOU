@@ -1,5 +1,3 @@
-'use server';
-
 import { SignJWT, jwtVerify } from 'jose';
 
 const JWT_SECRET = new TextEncoder().encode(
