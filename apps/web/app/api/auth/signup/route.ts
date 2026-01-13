@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Send Telegram alert (non-blocking)
-        sendNewUserAlert(standardizedPhone).catch(console.error);
+        sendNewUserAlert(standardizedPhone, newUser.created_at).catch(console.error);
 
         // Generate JWT token
         const token = await signToken(newUser.id, newUser.phone);
