@@ -1,7 +1,6 @@
 {
-  "/login/page": "app/login/page.js",
   "/onboarding/page": "app/onboarding/page.js",
-  "/api/auth/delete-account/route": "app/api/auth/delete-account/route.js",
+  "/login/page": "app/login/page.js",
   "/dashboard/page": "app/dashboard/page.js",
   "/dashboard/settings/page": "app/dashboard/settings/page.js",
   "/dashboard/subscription/page": "app/dashboard/subscription/page.js"

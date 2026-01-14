@@ -8,10 +8,27 @@ let supabaseInstance: SupabaseClient | null = null;
 
 export const getSupabaseClient = () => {
     if (!supabaseInstance) {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+        if (!supabaseUrl || !supabaseAnonKey) {
+            console.error('Supabase Client Error: Missing env vars', {
+                url: !!supabaseUrl,
+                key: !!supabaseAnonKey
+            });
+            // Return a dummy client or throw a clearer error to avoid SDK crash with confusing message
+            if (typeof window !== 'undefined') {
+                console.warn('Initializing Supabase with dummy values to prevent crash. Check your environment variables.');
+                // We use dummy values to satisfy the constructor, but calls will fail (which is better than crash)
+                // or we could throw here if we want to stop execution. 
+                // Given the loop, let's try to proceed carefully or just use the SDK correctly if vars exist.
+            }
+        }
+
         if (Capacitor.isNativePlatform()) {
             supabaseInstance = createClient(
-                process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+                supabaseUrl || 'https://placeholder.supabase.co',
+                supabaseAnonKey || 'placeholder-key',
                 {
                     auth: {
                         storage: capacitorStorage,
@@ -23,8 +40,8 @@ export const getSupabaseClient = () => {
             );
         } else {
             supabaseInstance = createBrowserClient(
-                process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+                supabaseUrl || 'https://placeholder.supabase.co',
+                supabaseAnonKey || 'placeholder-key'
             );
         }
     }
