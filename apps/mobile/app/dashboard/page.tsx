@@ -1,17 +1,20 @@
 'use client';
 
+import { Plus, Package, Search, Filter } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api/client';
 
-type Product = {
-    id: string;
-    name: string;
-    price: number;
-    image_url?: string;
-    stock?: number;
-};
+import { Store, Product } from '@/lib/types/database';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import ProductCard from '@/components/dashboard/ProductCard';
+import ProductFormModal from '@/components/dashboard/ProductFormModal';
+import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useSubscription } from '@/lib/contexts/SubscriptionContext';
+import { useStore } from '@/lib/contexts/StoreContext';
+import { api } from '@/lib/api/client';
 
 interface ProductsResponse {
     products: Product[];
@@ -19,17 +22,30 @@ interface ProductsResponse {
 }
 
 export default function DashboardPage() {
-    const { user, loading: authLoading, signOut } = useAuth();
-    const router = useRouter();
+    const { store, loading: storeLoading } = useStore();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showProductForm, setShowProductForm] = useState(false);
+    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showOutOfStock, setShowOutOfStock] = useState(false);
+    const { user, loading: authLoading } = useAuth();
+    const router = useRouter();
+    const { toast } = useToast();
+    const { t, direction, language } = useLanguage();
+    const { subscription } = useSubscription();
+    const isReadOnly = subscription?.isReadOnly ?? false;
 
     const loadProducts = useCallback(async () => {
         try {
             const result = await api.get<ProductsResponse>('/api/dashboard/products');
-            if (result.products) {
-                setProducts(result.products);
+
+            if (result.error) {
+                console.error('Error loading products:', result.error);
+                return;
             }
+
+            setProducts(result.products || []);
         } catch (error) {
             console.error('Error loading products:', error);
         } finally {
@@ -38,74 +54,211 @@ export default function DashboardPage() {
     }, []);
 
     useEffect(() => {
-        if (!authLoading && !user) {
-            router.push('/login');
+        // AuthGuard handles redirection if no user, but we double check
+        if (!authLoading && !user) return;
+
+        // Wait for store to be loaded by Layout
+        if (storeLoading) return;
+
+        if (store) {
+            loadProducts();
+        } else {
+            // If layout finished loading and NO store, Layout handles redirection to onboarding.
+            // We just stop loading here to allow the redirect to happen smoothly.
+            setLoading(false);
+        }
+    }, [user, store, storeLoading, authLoading, loadProducts]);
+
+    const handleProductSaved = () => {
+        setShowProductForm(false);
+        setEditingProduct(null);
+        loadProducts();
+    };
+
+    const handleEditProduct = (product: Product) => {
+        if (isReadOnly) {
+            toast({
+                title: language === 'ar' ? 'وضع القراءة فقط' : 'Read-Only Mode',
+                description: language === 'ar' ? 'جدد اشتراكك لتعديل المنتجات' : 'Renew your subscription to edit products',
+                variant: 'destructive',
+            });
             return;
         }
+        setEditingProduct(product);
+        setShowProductForm(true);
+    };
 
-        if (user) {
-            loadProducts();
+    const handleDeleteProduct = async (productId: string) => {
+        if (isReadOnly) {
+            toast({
+                title: language === 'ar' ? 'وضع القراءة فقط' : 'Read-Only Mode',
+                description: language === 'ar' ? 'جدد اشتراكك لحذف المنتجات' : 'Renew your subscription to delete products',
+                variant: 'destructive',
+            });
+            return;
         }
-    }, [user, authLoading, router, loadProducts]);
+        if (!confirm(t('products.delete_confirm'))) return;
 
-    if (authLoading || loading) {
+        try {
+            await api.delete(`/api/dashboard/products/${productId}`);
+
+            toast({
+                title: t('dashboard.delete_product_title'),
+                description: t('dashboard.delete_product_desc'),
+            });
+
+            loadProducts();
+        } catch (error: any) {
+            toast({
+                title: t('common.error'),
+                description: error.message,
+                variant: 'destructive',
+            });
+        }
+    };
+
+    if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[#f6f8f7]">
+            <div className="min-h-screen flex items-center justify-center bg-[#f0f2f5]">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#008069]"></div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[#f6f8f7]">
-            {/* Header */}
-            <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
-                <div className="px-4 py-4 flex items-center justify-between">
-                    <h1 className="text-xl font-bold text-gray-900">متجرك</h1>
-                    <button
-                        onClick={signOut}
-                        className="text-gray-600 hover:text-gray-900"
-                    >
-                        تسجيل خروج
-                    </button>
+        <>
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="mb-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                        <div>
+                            <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.products')}</h2>
+                            <p className="text-gray-600">
+                                {t('dashboard.products_count', { count: products.length })}
+                            </p>
+                        </div>
+                        <div className="flex flex-1 gap-2 w-full sm:w-auto">
+                            <div className="relative flex-1 sm:w-72">
+                                <Search className={`absolute ${direction === 'rtl' ? 'right-3' : 'left-3'} top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4`} />
+                                <Input
+                                    type="text"
+                                    placeholder={t('dashboard.search_products')}
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className={`${direction === 'rtl' ? 'pr-10' : 'pl-10'} h-10 rounded-2xl border-gray-200`}
+                                />
+                            </div>
+                            <Button
+                                variant={showOutOfStock ? "default" : "outline"}
+                                onClick={() => setShowOutOfStock(!showOutOfStock)}
+                                className={`h-10 rounded-2xl gap-2 px-3 sm:px-4 ${showOutOfStock ? 'bg-[#008069] hover:bg-[#017561]' : ''}`}
+                            >
+                                <Filter className="w-4 h-4" />
+                                <span className="whitespace-nowrap">{t('dashboard.filter_out_of_stock')}</span>
+                            </Button>
+                        </div>
+                    </div>
                 </div>
-            </header>
 
-            {/* Products */}
-            <main className="p-4">
-                <h2 className="text-lg font-bold mb-4">منتجاتك ({products.length})</h2>
+
 
                 {products.length === 0 ? (
-                    <div className="text-center py-12 text-gray-500">
-                        لا توجد منتجات بعد
+                    <div className="text-center py-16">
+                        <Package className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                            {t('dashboard.no_products')}
+                        </h3>
+                        <p className="text-gray-600 mb-6">
+                            {t('dashboard.start_selling')}
+                        </p>
+                        <Button
+                            onClick={() => {
+                                if (isReadOnly) {
+                                    toast({
+                                        title: language === 'ar' ? 'وضع القراءة فقط' : 'Read-Only Mode',
+                                        description: language === 'ar' ? 'جدد اشتراكك لإضافة منتجات' : 'Renew your subscription to add products',
+                                        variant: 'destructive',
+                                    });
+                                    return;
+                                }
+                                setShowProductForm(true);
+                            }}
+                            className={`rounded-3xl h-12 px-8 ${isReadOnly ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#008069] hover:bg-[#017561]'}`}
+                        >
+                            <Plus className={`w-5 h-5 ${direction === 'rtl' ? 'ml-2' : 'mr-2'}`} />
+                            {t('dashboard.add_first_product')}
+                        </Button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 gap-4">
-                        {products.map((product) => (
-                            <div
-                                key={product.id}
-                                className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100"
-                            >
-                                {product.image_url && (
-                                    <img
-                                        src={product.image_url}
-                                        alt={product.name}
-                                        className="w-full aspect-square object-cover"
-                                    />
-                                )}
-                                <div className="p-3">
-                                    <h3 className="font-medium text-gray-900 truncate">
-                                        {product.name}
-                                    </h3>
-                                    <p className="text-[#008069] font-bold">
-                                        {product.price} جنيه
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {products
+                            .filter((product) => {
+                                let matchesSearch = true;
+                                if (searchQuery.trim()) {
+                                    const query = searchQuery.toLowerCase();
+                                    matchesSearch = (
+                                        product.name.toLowerCase().includes(query) ||
+                                        (product.description?.toLowerCase().includes(query) ?? false) ||
+                                        (product.category?.toLowerCase().includes(query) ?? false)
+                                    );
+                                }
+
+                                let matchesStock = true;
+                                if (showOutOfStock) {
+                                    const hasVariants = product.variants && product.variants.length > 0;
+                                    const totalStock = hasVariants
+                                        ? product.variants!.reduce((sum, v) => sum + v.quantity, 0)
+                                        : product.quantity;
+                                    const isUnlimited = product.unlimited_stock;
+
+                                    if (isUnlimited || totalStock > 0) matchesStock = false;
+                                }
+
+                                return matchesSearch && matchesStock;
+                            })
+                            .map((product) => (
+                                <ProductCard
+                                    key={product.id}
+                                    product={product}
+                                    onEdit={handleEditProduct}
+                                    onDelete={handleDeleteProduct}
+                                />
+                            ))}
                     </div>
                 )}
             </main>
-        </div>
+
+            {showProductForm && store && (
+                <ProductFormModal
+                    storeId={store.id}
+                    storeSlug={store.slug}
+                    product={editingProduct}
+                    onClose={() => {
+                        setShowProductForm(false);
+                        setEditingProduct(null);
+                    }}
+                    onSaved={handleProductSaved}
+                />
+            )}
+
+            {products.length > 0 && !showProductForm && (
+                <button
+                    onClick={() => {
+                        if (isReadOnly) {
+                            toast({
+                                title: language === 'ar' ? 'وضع القراءة فقط' : 'Read-Only Mode',
+                                description: language === 'ar' ? 'جدد اشتراكك لإضافة منتجات' : 'Renew your subscription to add products',
+                                variant: 'destructive',
+                            });
+                            return;
+                        }
+                        setShowProductForm(true);
+                    }}
+                    className={`fixed bottom-28 ${direction === 'rtl' ? 'left-8' : 'right-8'} z-[60] ${isReadOnly ? 'bg-gray-400' : 'bg-[#008069] hover:bg-[#017561] hover:scale-110'} text-white rounded-full p-5 shadow-2xl transition-all`}
+                    aria-label={t('dashboard.add_product')}
+                >
+                    <Plus className="w-8 h-8" />
+                </button>
+            )}
+        </>
     );
 }

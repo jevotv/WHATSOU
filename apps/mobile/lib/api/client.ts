@@ -40,14 +40,19 @@ class ApiClient {
 
         console.log(`API Request: ${options.method || 'GET'} ${url}`);
 
+        const headers: Record<string, string> = {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...(options.headers as Record<string, string>),
+        };
+
+        if (!(options.body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+        }
+
         try {
             const response = await fetch(url, {
                 ...options,
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                    ...options.headers,
-                },
+                headers,
             });
 
             const data = await response.json();
