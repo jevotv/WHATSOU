@@ -1,6 +1,11 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/api/auth-middleware';
 import { getSupabaseAdmin } from '@/lib/supabase/admin';
+
+export async function OPTIONS() {
+    return NextResponse.json({}, { status: 200 });
+}
 
 // GET: Get customers (aggregated from orders)
 export async function GET(request: NextRequest) {

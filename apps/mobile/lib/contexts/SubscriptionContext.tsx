@@ -37,7 +37,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
                 return;
             }
 
-            const status = await api.get<SubscriptionStatus>('/api/subscription/status');
+            const status = await api.get<SubscriptionStatus>('/api/dashboard/subscription/status');
             setSubscription(status);
         } catch (error) {
             console.error('Error fetching subscription status:', error);
