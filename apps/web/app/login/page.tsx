@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Link from 'next/link';
 import { ShoppingBag, Globe } from 'lucide-react';
 import Image from 'next/image';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
 
 export default function LoginPage() {

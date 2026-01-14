@@ -1,6 +1,6 @@
 'use client';
 
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 import MockBottomNav from '@/components/demo/MockBottomNav';
 import MockDashboardHeader from '@/components/demo/MockDashboardHeader';
 import { useMockDashboard } from '@/lib/contexts/MockDashboardContext';

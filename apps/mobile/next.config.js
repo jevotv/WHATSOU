@@ -3,6 +3,7 @@
 const nextConfig = {
     output: 'export',
     distDir: 'out',
+    transpilePackages: ['@whatsou/shared'],
 
     images: { unoptimized: true },
 

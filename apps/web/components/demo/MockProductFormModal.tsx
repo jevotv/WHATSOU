@@ -12,7 +12,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Upload, Plus, Trash2, ChevronDown, Sparkles, DollarSign, Infinity as InfinityIcon, Info } from 'lucide-react';
 import Image from 'next/image';
 import { Switch } from '@/components/ui/switch';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 import { useMockDashboard } from '@/lib/contexts/MockDashboardContext';
 
 interface MockProductFormModalProps {

@@ -60,8 +60,8 @@ export async function POST(request: NextRequest) {
         const isUsingFallback = !process.env.JWT_SECRET;
         console.log('JWT Secret Status:', isUsingFallback ? 'USING FALLBACK' : 'CUSTOM SECRET CONFIGURED');
 
-        // Return user info (without password) and token
-        return NextResponse.json({
+        // Set session cookie for Server Actions / Middleware support
+        const response = NextResponse.json({
             success: true,
             token,
             user: {
@@ -70,6 +70,16 @@ export async function POST(request: NextRequest) {
                 created_at: user.created_at,
             },
         });
+
+        response.cookies.set('app-session', token, {
+            httpOnly: false,
+            secure: false,
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 7, // 1 week
+            path: '/',
+        });
+
+        return response;
     } catch (error: any) {
         console.error('Login error:', error);
         return NextResponse.json(

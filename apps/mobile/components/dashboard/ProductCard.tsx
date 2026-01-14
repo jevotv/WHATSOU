@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Edit, Trash2, Package } from 'lucide-react';
 import Image from 'next/image';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 
 interface ProductCardProps {
   product: Product;

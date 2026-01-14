@@ -1,7 +1,7 @@
 'use client';
 
 import { MessageCircle, AlertTriangle } from 'lucide-react';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 
 interface StorePausedPageProps {
     whatsappNumber: string;

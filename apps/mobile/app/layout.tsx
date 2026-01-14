@@ -1,7 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { AuthProvider } from '@/lib/contexts/AuthContext';
-import { LanguageProvider } from '@/lib/contexts/LanguageContext';
+import { LanguageProvider } from '@whatsou/shared';
 
 export const metadata: Metadata = {
     title: 'WhatSou Dashboard',

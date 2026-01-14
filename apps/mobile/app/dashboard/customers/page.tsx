@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Loader2, Phone, ShoppingBag, MessageCircle, Search, Lock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/lib/contexts/AuthContext';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 import { useSubscription } from '@/lib/contexts/SubscriptionContext';
 import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
 import Link from 'next/link';

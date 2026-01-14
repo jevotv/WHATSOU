@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import ProductCard from '@/components/dashboard/ProductCard';
 import MockProductFormModal from '@/components/demo/MockProductFormModal';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 
 export default function MockDashboardPage() {
     const { store, products, loading, deleteProduct } = useMockDashboard();

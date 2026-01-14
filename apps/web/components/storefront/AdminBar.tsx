@@ -1,6 +1,6 @@
 'use client';
 
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 import Link from 'next/link';
 import { LayoutDashboard } from 'lucide-react';
 

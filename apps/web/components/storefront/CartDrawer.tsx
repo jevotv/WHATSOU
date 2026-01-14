@@ -12,7 +12,7 @@ import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase/client';
 import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 import { ShippingConfig, City, District, calculateShippingPrice } from '@/types/shipping';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';

@@ -145,7 +145,20 @@ export async function signOut() {
 export async function getSession() {
     const sessionCookie = cookies().get(SESSION_COOKIE_NAME)
     if (!sessionCookie) return null
+
     try {
+        // 1. Try to verify as JWT first (New Standard)
+        const { verifyToken } = await import('@/lib/api/jwt');
+        const jwtPayload = await verifyToken(sessionCookie.value);
+
+        if (jwtPayload) {
+            return {
+                id: jwtPayload.userId, // Map userId to id for consistency
+                phone: jwtPayload.phone
+            };
+        }
+
+        // 2. Fallback to Legacy Base64 JSON (Old Format)
         // Decode Base64 value
         const jsonString = Buffer.from(sessionCookie.value, 'base64').toString('utf-8')
         const session = JSON.parse(jsonString)
@@ -156,7 +169,6 @@ export async function getSession() {
             cookies().delete(SESSION_COOKIE_NAME)
             return null
         }
-
 
         return session
     } catch (e) {

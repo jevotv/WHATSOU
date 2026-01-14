@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import ProductCard from '@/components/dashboard/ProductCard';
 import ProductFormModal from '@/components/dashboard/ProductFormModal';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 import { useSubscription } from '@/lib/contexts/SubscriptionContext';
 import { useStore } from '@/lib/contexts/StoreContext';
 import { api } from '@/lib/api/client';

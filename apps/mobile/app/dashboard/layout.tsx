@@ -8,7 +8,7 @@ import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import SubscriptionCountdown from '@/components/dashboard/SubscriptionCountdown';
 import { SubscriptionProvider } from '@/lib/contexts/SubscriptionContext';
 import { useAuth } from '@/lib/contexts/AuthContext';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 import { Store } from '@/lib/types/database';
 import { StoreProvider } from '@/lib/contexts/StoreContext';
 import { api } from '@/lib/api/client';
@@ -92,7 +92,7 @@ export default function DashboardLayout({
                     <div className="min-h-screen bg-[#f0f2f5] overflow-x-hidden" dir={direction}>
                         <DashboardHeader store={store} />
                         <SubscriptionCountdown />
-                        <div className="pb-24">
+                        <div className="pb-32">
                             {children}
                         </div>
                         <BottomNav />

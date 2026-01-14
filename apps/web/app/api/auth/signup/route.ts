@@ -12,8 +12,16 @@ interface SignupRequest {
 }
 
 
+// OPTIONS: Handle CORS preflight explicitly
 export async function OPTIONS() {
-    return NextResponse.json({}, { status: 200 });
+    return new NextResponse(null, {
+        status: 200,
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Date, X-Api-Version',
+        },
+    });
 }
 
 export async function POST(request: NextRequest) {
@@ -69,7 +77,7 @@ export async function POST(request: NextRequest) {
         if (insertError) {
             console.error('Signup error:', insertError);
             return NextResponse.json(
-                { error: 'Failed to create account' },
+                { error: `Failed to create account: ${insertError.message}` },
                 { status: 500 }
             );
         }
@@ -80,7 +88,8 @@ export async function POST(request: NextRequest) {
         // Generate JWT token
         const token = await signToken(newUser.id, newUser.phone);
 
-        return NextResponse.json({
+        // Set session cookie for Server Actions / Middleware support
+        const response = NextResponse.json({
             success: true,
             token,
             user: {
@@ -89,6 +98,16 @@ export async function POST(request: NextRequest) {
                 created_at: newUser.created_at,
             },
         });
+
+        response.cookies.set('app-session', token, {
+            httpOnly: false, // Allow client access if needed (debugging)
+            secure: false, // For easier dev/debugging
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 7, // 1 week
+            path: '/',
+        });
+
+        return response;
     } catch (error: any) {
         console.error('Signup error:', error);
         return NextResponse.json(

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, ShoppingBag, Users } from 'lucide-react';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 
 export default function BottomNav() {
     const pathname = usePathname();
@@ -12,7 +12,7 @@ export default function BottomNav() {
     const isActive = (path: string) => pathname === path;
 
     return (
-        <div className="fixed bottom-[calc(1.5rem+var(--sab))] left-1/2 transform -translate-x-1/2 z-50 w-full px-4 sm:w-auto">
+        <div className="fixed bottom-[calc(1.5rem+var(--sab))] left-1/2 transform -translate-x-1/2 z-50 w-full px-4 sm:w-auto safe-area-bottom">
             <nav className="flex items-center justify-center gap-2 px-2 py-2 bg-white/80 backdrop-blur-lg border border-white/20 shadow-2xl rounded-full mx-auto max-w-fit">
                 {/* Orders */}
                 <Link

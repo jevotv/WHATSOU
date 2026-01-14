@@ -24,6 +24,12 @@
         --input: 214.3 31.8% 91.4%;
         --ring: 160 100% 25%;
         --radius: 0.5rem;
+
+        /* Safe Area Variables */
+        --sat: env(safe-area-inset-top);
+        --sab: env(safe-area-inset-bottom);
+        --sal: env(safe-area-inset-left);
+        --sar: env(safe-area-inset-right);
     }
 }
 
@@ -34,5 +40,6 @@
 
     body {
         @apply bg-background text-foreground;
+        padding-top: env(safe-area-inset-top);
     }
 }

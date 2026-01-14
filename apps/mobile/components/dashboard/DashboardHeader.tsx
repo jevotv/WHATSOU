@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import QRCode from 'qrcode';
 import { useAuth } from '@/lib/contexts/AuthContext';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 import { useToast } from '@/hooks/use-toast';
 import { Store } from '@/lib/types/database';
 import { AppLauncher } from '@capacitor/app-launcher';

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 import { useSubscription, SubscriptionStatus } from '@/lib/contexts/SubscriptionContext';
 import { api } from '@/lib/api/client';
 import { CreditCard, Wallet, CheckCircle, XCircle, Clock, AlertTriangle, RefreshCw, Smartphone, ExternalLink, MessageCircle, Home } from 'lucide-react';

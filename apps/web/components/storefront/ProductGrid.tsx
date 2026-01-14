@@ -5,7 +5,7 @@ import { Product } from '@/lib/types/database';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Package, Loader2 } from 'lucide-react';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 
 interface ProductGridProps {
   products: Product[];

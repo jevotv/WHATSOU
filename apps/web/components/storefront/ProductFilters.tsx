@@ -5,7 +5,7 @@ import { X, Filter, ChevronDown, Check } from 'lucide-react';
 import * as Slider from '@radix-ui/react-slider';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 
 interface ProductFiltersProps {
     isOpen: boolean;

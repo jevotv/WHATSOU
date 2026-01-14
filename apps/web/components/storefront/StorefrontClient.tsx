@@ -9,7 +9,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import CartDrawer from './CartDrawer';
 import { useToast } from '@/hooks/use-toast';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 import { Button } from '@/components/ui/button';
 import { Globe, Facebook, Instagram, Twitter, Filter, ArrowUpDown, Tag } from 'lucide-react';
 import { useAuth } from '@/lib/contexts/AuthContext';

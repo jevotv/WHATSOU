@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useMockDashboard } from '@/lib/contexts/MockDashboardContext';
 import { Loader2, Phone, ShoppingBag, MessageCircle, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
 
 type Customer = {

@@ -27,7 +27,7 @@ import Image from 'next/image';
 import { Switch } from '@/components/ui/switch';
 import { processProductImage } from '@/lib/utils/imageProcessor';
 import { slugify } from '@/lib/utils/slug';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';

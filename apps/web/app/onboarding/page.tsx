@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
 import Image from 'next/image';
 import { Label } from '@/components/ui/label';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 import { slugify } from '@/lib/utils/slug';
 import { Geolocation } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';

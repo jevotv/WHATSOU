@@ -10,7 +10,7 @@ import { ArrowLeft, ShoppingCart, Package, Minus, Plus, Zap, Check, ChevronLeft,
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import CartDrawer from './CartDrawer';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import AdminBar from './AdminBar';
 

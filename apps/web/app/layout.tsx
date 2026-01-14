@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   },
 };
 
-import { LanguageProvider } from '@/lib/contexts/LanguageContext';
+import { LanguageProvider } from '@whatsou/shared';
 
 export default function RootLayout({
   children,

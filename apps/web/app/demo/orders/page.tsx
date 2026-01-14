@@ -13,7 +13,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { format, isToday, isYesterday, subDays, isAfter, startOfDay, parseISO } from 'date-fns';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 import CreateOrderModal from '@/components/demo/CreateOrderModal';
 
 export default function MockOrdersPage() {

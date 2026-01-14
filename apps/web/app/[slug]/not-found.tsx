@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 import { usePathname } from 'next/navigation';
 import { Package, ArrowLeft, Zap, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';

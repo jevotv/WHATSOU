@@ -9,7 +9,7 @@ import PwaInstallBanner from '@/components/dashboard/PwaInstallBanner';
 import SubscriptionCountdown from '@/components/dashboard/SubscriptionCountdown';
 import { SubscriptionProvider } from '@/lib/contexts/SubscriptionContext';
 import { useAuth } from '@/lib/contexts/AuthContext';
-import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useLanguage } from '@whatsou/shared';
 import { Store } from '@/lib/types/database';
 import { StoreProvider } from '@/lib/contexts/StoreContext';
 import { api } from '@/lib/api/client';
