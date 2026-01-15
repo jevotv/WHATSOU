@@ -1,0 +1,8 @@
+.next
+.git
+node_modules
+apps/web/.next
+apps/mobile/.next
+apps/mobile/out
+.env
+.env.local
