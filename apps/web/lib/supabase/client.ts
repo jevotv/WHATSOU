@@ -12,16 +12,20 @@ export const getSupabaseClient = () => {
         const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
         if (!supabaseUrl || !supabaseAnonKey) {
-            console.error('Supabase Client Error: Missing env vars', {
-                url: !!supabaseUrl,
-                key: !!supabaseAnonKey
-            });
-            // Return a dummy client or throw a clearer error to avoid SDK crash with confusing message
+            console.error('Supabase Client Error: Missing env vars');
+
+            // Safe debugging: Log keys present
             if (typeof window !== 'undefined') {
+                const availableKeys = Object.keys(process.env).filter(k => k.startsWith('NEXT_PUBLIC_SUPABASE'));
+                console.error('Available SUPABASE env vars:', availableKeys);
+                console.error('Expected: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY');
+                console.error('Current values status:', {
+                    url: !!supabaseUrl,
+                    key: !!supabaseAnonKey,
+                    keyLength: supabaseAnonKey ? supabaseAnonKey.length : 0
+                });
+
                 console.warn('Initializing Supabase with dummy values to prevent crash. Check your environment variables.');
-                // We use dummy values to satisfy the constructor, but calls will fail (which is better than crash)
-                // or we could throw here if we want to stop execution. 
-                // Given the loop, let's try to proceed carefully or just use the SDK correctly if vars exist.
             }
         }
 

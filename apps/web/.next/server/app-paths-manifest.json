@@ -1,14 +1,7 @@
 {
-  "/not-found": "app/not-found.js",
-  "/login/page": "app/login/page.js",
   "/[slug]/page": "app/[slug]/page.js",
   "/[slug]/p/[id]/page": "app/[slug]/p/[id]/page.js",
-  "/api/locations/route": "app/api/locations/route.js",
-  "/api/dashboard/store/route": "app/api/dashboard/store/route.js",
-  "/icon.png/route": "app/icon.png/route.js",
-  "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js",
-  "/api/auth/session/route": "app/api/auth/session/route.js",
-  "/api/subscription/status/route": "app/api/subscription/status/route.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/dashboard/settings/page": "app/dashboard/settings/page.js"
+  "/login/page": "app/login/page.js",
+  "/dashboard/settings/page": "app/dashboard/settings/page.js",
+  "/dashboard/page": "app/dashboard/page.js"
 }
