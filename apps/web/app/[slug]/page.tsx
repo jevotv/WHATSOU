@@ -50,14 +50,18 @@ export async function generateMetadata({ params }: StorefrontPageProps): Promise
 }
 
 // Cached function to check subscription status (revalidates every 5 minutes)
+import { getSupabaseAdmin } from '@/lib/supabase/admin';
+
+// Cached function to check subscription status (revalidates every 5 minutes)
 const getCachedSubscriptionStatus = unstable_cache(
   async (userId: string) => {
-    const supabase = await createServerClient();
+    // Use Admin client to bypass RLS and avoid connection to request cookies (which fails in cache)
+    const supabase = getSupabaseAdmin();
     const { data: subscription } = await supabase
       .from('subscriptions')
       .select('status, storefront_paused_at')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
     if (!subscription) {
       return { isPaused: false }; // No subscription = allow access (new stores)
