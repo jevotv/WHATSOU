@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
-import { createServerClient } from '@/lib/supabase/server';
+// import { createServerClient } from '@/lib/supabase/server'; // REMOVED
+import { getSupabaseAdmin } from '@/lib/supabase/admin'; // ADDED
 import type { Metadata } from 'next';
 import ProductDetailClient from '@/components/storefront/ProductDetailClient';
 
@@ -14,7 +15,8 @@ interface ProductPageProps {
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const supabase = await createServerClient();
+  // Use Admin client for public data to avoid cookie dependencies in metadata generation
+  const supabase = getSupabaseAdmin();
   const { data: product } = await supabase
     .from('products')
     .select('name, description, image_url')
@@ -53,7 +55,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
 
 async function getProductData(slug: string, productId: string) {
-  const supabase = await createServerClient();
+  // Use Admin client for consistent server-side fetching of public data
+  const supabase = getSupabaseAdmin();
   const { data: store } = await supabase
     .from('stores')
     .select('*')
