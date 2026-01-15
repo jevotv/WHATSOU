@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { ShippingConfig, City, District } from '@/types/shipping';
-import { supabase } from '@/lib/supabase/client';
+import { api } from '@/lib/api/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -67,19 +67,21 @@ export function StoreShippingSettings({
     const [updatePrice, setUpdatePrice] = useState<string>('');
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
 
+
+
     useEffect(() => {
         fetchLocations();
     }, []);
 
     const fetchLocations = async () => {
         try {
-            const [citiesRes, districtsRes] = await Promise.all([
-                supabase.from('cities').select('*').order('name_ar'),
-                supabase.from('districts').select('*').order('name_ar')
-            ]);
+            // Use API to fetch all locations (handles pagination for >1000 districts)
+            const result = await api.get<{ success: boolean; cities: City[]; districts: District[] }>('/api/locations');
 
-            if (citiesRes.data) setCities(citiesRes.data);
-            if (districtsRes.data) setDistricts(districtsRes.data);
+            if (result.success) {
+                if (result.cities) setCities(result.cities);
+                if (result.districts) setDistricts(result.districts);
+            }
         } catch (error) {
             console.error('Error fetching locations:', error);
         } finally {
