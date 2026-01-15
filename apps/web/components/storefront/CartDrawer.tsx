@@ -59,38 +59,38 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
           if (result.success) {
             // Process Cities
             if (result.cities) {
-              let filteredCities = result.cities;
-              if (shippingConfig.type === 'by_city' && 'rates' in shippingConfig) {
-                const allowed = Object.keys(shippingConfig.rates);
-                filteredCities = result.cities.filter(c => allowed.includes(c.id.toString()));
-              }
-
-              // Wait, to minimize changes and since 3500 objects is small (~500KB), 
-              // let's stick to the existing pattern but filter FROM the API result.
-
-              // Actually, the original code had two effects: one for cities, one for districts (dependent on selectedCityId).
-              // The districts effect ran whenever selectedCityId changed.
-              // With the new API, we get EVERYTHING at once. 
-              // So we should fetch once, store ALL data, and then derive displayed lists.
-              // However, to be least invasive, I will introduce a `allDistricts` state.
+              setCities(filteredCities);
             }
-          })
+
+            // Process Districts (Store all, then filter in the other effect)
+            if (result.districts) {
+              setAllDistricts(result.districts);
+            }
+          }
+        })
         .catch(err => console.error('Error fetching locations', err));
     }
   }, [open, cities.length, shippingConfig]);
 
-  // We need to introduce a state to hold all districts if we want to filter locally without refetching.
-  // But since I cannot easily add a new state variable without using multi_replace (and I want to keep this simple),
-  // I will check if I can add the state variable in the same edit? No, state is defined above.
+  // Load Districts when City changes (Filter from local full list)
+  useEffect(() => {
+    if (selectedCityId && allDistricts.length > 0) {
+      // Filter districts by city
+      let filteredDistricts = allDistricts.filter(d => d.city_id.toString() === selectedCityId);
 
-  // Strategy adjustment:
-  // 1. Fetch all data in the first effect.
-  // 2. Set 'cities' immediately.
-  // 3. Store 'allDistricts' in a new state variable I will add.
-  // 4. Update the second effect to filter from 'allDistricts' instead of calling Supabase.
+      // Apply shipping config filters if needed
+      if (shippingConfig.type === 'by_district' && 'rates' in shippingConfig) {
+        const allowed = Object.keys(shippingConfig.rates);
+        filteredDistricts = filteredDistricts.filter(d => allowed.includes(d.id.toString()));
+      }
 
-  // Wait, I should use multi_replace to add the state variable AND update the effects.
-  // This replace_call is just for the logic. I will cancel this and use multi_replace.
+      setDistricts(filteredDistricts);
+      setSelectedDistrictId(''); // Reset district selection
+    } else {
+      setDistricts([]);
+      setSelectedDistrictId('');
+    }
+  }, [selectedCityId, shippingConfig, allDistricts]);
 
 
   // Calculate Shipping Cost
