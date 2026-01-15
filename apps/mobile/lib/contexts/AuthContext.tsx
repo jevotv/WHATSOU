@@ -1,6 +1,32 @@
-'use client';
+import { NotificationService } from '@/lib/services/notifications';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+// ... (in AuthProvider)
+
+useEffect(() => {
+    const checkSession = async () => {
+        if (!api.isAuthenticated()) {
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const session = await api.get<SessionResponse>('/api/auth/session');
+            if (session.authenticated && session.user) {
+                setUser(session.user);
+                NotificationService.init(); // Initialize notifications
+            } else {
+                api.clearToken();
+            }
+        } catch (error) {
+            console.error('Session check failed:', error);
+            api.clearToken();
+        }
+
+        setLoading(false);
+    };
+
+    checkSession();
+}, []);
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api/client';
 
