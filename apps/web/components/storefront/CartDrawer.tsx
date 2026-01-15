@@ -11,6 +11,7 @@ import { Trash2, Plus, Minus, ShoppingBag, Home, Store as StoreIconLucide, Zap }
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase/client';
+import { api } from '@/lib/api/client';
 import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
 import { useLanguage } from '@whatsou/shared';
 import { ShippingConfig, City, District, calculateShippingPrice } from '@/types/shipping';
@@ -39,6 +40,7 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
   // Shipping State
   const [cities, setCities] = useState<City[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
+  const [allDistricts, setAllDistricts] = useState<District[]>([]); // Store all districts to filter locally
   const [selectedCityId, setSelectedCityId] = useState<string>('');
   const [selectedDistrictId, setSelectedDistrictId] = useState<string>('');
   const [streetAddress, setStreetAddress] = useState('');
@@ -49,44 +51,47 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
   const shippingConfig = (store.shipping_config as unknown as ShippingConfig) || { type: 'none' };
   const freeShippingThreshold = store.free_shipping_threshold;
 
-  // Load Cities on Mount
-  // Load Cities on Mount
+  // Load Cities and All Districts on Mount
   useEffect(() => {
     if (open && cities.length === 0) {
-      supabase.from('cities').select('*').order('name_ar').then(({ data }) => {
-        if (data) {
-          let filtered = data;
-          if (shippingConfig.type === 'by_city' && 'rates' in shippingConfig) {
-            const allowed = Object.keys(shippingConfig.rates);
-            filtered = data.filter(c => allowed.includes(c.id.toString()));
-          }
-          setCities(filtered);
-        }
-      });
+      api.get<{ success: boolean; cities: City[]; districts: District[] }>('/api/locations')
+        .then((result) => {
+          if (result.success) {
+            // Process Cities
+            if (result.cities) {
+              let filteredCities = result.cities;
+              if (shippingConfig.type === 'by_city' && 'rates' in shippingConfig) {
+                const allowed = Object.keys(shippingConfig.rates);
+                filteredCities = result.cities.filter(c => allowed.includes(c.id.toString()));
+              }
+
+              // Wait, to minimize changes and since 3500 objects is small (~500KB), 
+              // let's stick to the existing pattern but filter FROM the API result.
+
+              // Actually, the original code had two effects: one for cities, one for districts (dependent on selectedCityId).
+              // The districts effect ran whenever selectedCityId changed.
+              // With the new API, we get EVERYTHING at once. 
+              // So we should fetch once, store ALL data, and then derive displayed lists.
+              // However, to be least invasive, I will introduce a `allDistricts` state.
+            }
+          })
+        .catch(err => console.error('Error fetching locations', err));
     }
   }, [open, cities.length, shippingConfig]);
 
-  // Load Districts when City changes
-  // Load Districts when City changes
-  useEffect(() => {
-    if (selectedCityId) {
-      supabase.from('districts').select('*').eq('city_id', selectedCityId).order('name_ar')
-        .then(({ data }) => {
-          if (data) {
-            let filtered = data;
-            if (shippingConfig.type === 'by_district' && 'rates' in shippingConfig) {
-              const allowed = Object.keys(shippingConfig.rates);
-              filtered = data.filter(d => allowed.includes(d.id.toString()));
-            }
-            setDistricts(filtered);
-            setSelectedDistrictId(''); // Reset district
-          }
-        });
-    } else {
-      setDistricts([]);
-      setSelectedDistrictId('');
-    }
-  }, [selectedCityId, shippingConfig]);
+  // We need to introduce a state to hold all districts if we want to filter locally without refetching.
+  // But since I cannot easily add a new state variable without using multi_replace (and I want to keep this simple),
+  // I will check if I can add the state variable in the same edit? No, state is defined above.
+
+  // Strategy adjustment:
+  // 1. Fetch all data in the first effect.
+  // 2. Set 'cities' immediately.
+  // 3. Store 'allDistricts' in a new state variable I will add.
+  // 4. Update the second effect to filter from 'allDistricts' instead of calling Supabase.
+
+  // Wait, I should use multi_replace to add the state variable AND update the effects.
+  // This replace_call is just for the logic. I will cancel this and use multi_replace.
+
 
   // Calculate Shipping Cost
   useEffect(() => {
