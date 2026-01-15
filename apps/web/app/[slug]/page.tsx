@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { createServerClient } from '@/lib/supabase/server';
+// import { createServerClient } from '@/lib/supabase/server'; // REMOVED
 import type { Metadata } from 'next';
 import { Product, ProductVariant } from '@/lib/types/database';
 import StorefrontClient from '@/components/storefront/StorefrontClient';
@@ -16,7 +16,8 @@ interface StorefrontPageProps {
 }
 
 export async function generateMetadata({ params }: StorefrontPageProps): Promise<Metadata> {
-  const supabase = await createServerClient();
+  // Use Admin client for public data to avoid cookie dependencies in metadata generation
+  const supabase = getSupabaseAdmin();
   const { data: store } = await supabase
     .from('stores')
     .select('name, description, logo_url')
@@ -82,7 +83,8 @@ const getCachedSubscriptionStatus = unstable_cache(
 );
 
 async function getStoreData(slug: string) {
-  const supabase = await createServerClient();
+  // Use Admin client for consistent server-side fetching of public data
+  const supabase = getSupabaseAdmin();
   const { data: store } = await supabase
     .from('stores')
     .select('*')
