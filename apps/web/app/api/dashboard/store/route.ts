@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/api/auth-middleware';
-import { NextRequest, NextResponse } from 'next/server';
-import { withAuth } from '@/lib/api/auth-middleware';
 import { getSupabaseAdmin } from '@/lib/supabase/admin';
 import QRCode from 'qrcode';
 
