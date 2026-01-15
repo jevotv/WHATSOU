@@ -9,7 +9,7 @@ let supabaseInstance: SupabaseClient | null = null;
 export const getSupabaseClient = () => {
     if (!supabaseInstance) {
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_KEY;
 
         if (!supabaseUrl || !supabaseAnonKey) {
             console.error('Supabase Client Error: Missing env vars');
