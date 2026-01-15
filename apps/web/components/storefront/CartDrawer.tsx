@@ -59,6 +59,11 @@ export default function CartDrawer({ open, onClose, store }: CartDrawerProps) {
           if (result.success) {
             // Process Cities
             if (result.cities) {
+              let filteredCities = result.cities;
+              if (shippingConfig.type === 'by_city' && 'rates' in shippingConfig) {
+                const allowed = Object.keys(shippingConfig.rates);
+                filteredCities = result.cities.filter(c => allowed.includes(c.id.toString()));
+              }
               setCities(filteredCities);
             }
 
