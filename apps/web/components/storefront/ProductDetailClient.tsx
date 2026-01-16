@@ -406,7 +406,13 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
 
                 {product.description && (
                   <div className="prose prose-sm sm:prose-base text-gray-600 leading-relaxed border-t border-gray-100 pt-6">
-                    <p>{product.description}</p>
+                    {product.description.split('\n').filter(line => line.trim()).map((line, index) => (
+                      index === 0 ? (
+                        <h2 key={index} className="text-xl font-extrabold text-[#111813] !mt-0 !mb-4 leading-tight">{line}</h2>
+                      ) : (
+                        <h3 key={index} className="text-lg font-bold text-gray-800 !mt-4 !mb-2 leading-snug">{line}</h3>
+                      )
+                    ))}
                   </div>
                 )}
 
