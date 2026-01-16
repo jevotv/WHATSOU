@@ -4,7 +4,6 @@ const config: CapacitorConfig = {
     appId: 'com.whatsou.app',
     appName: 'WhatSou',
     webDir: 'out',
-    bundledWebRuntime: false,
     server: {
         // No server.url - we're using static HTML files
         androidScheme: 'https'
@@ -23,6 +22,9 @@ const config: CapacitorConfig = {
         },
         PushNotifications: {
             presentationOptions: ["badge", "sound", "alert"]
+        },
+        CapacitorHttp: {
+            enabled: false
         }
     }
 };
