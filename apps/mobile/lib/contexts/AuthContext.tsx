@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api/client';
 import { NotificationService } from '@/lib/services/notifications';
+import { Capacitor } from '@capacitor/core';
 
 type User = {
     id: string;
@@ -44,8 +45,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
+    const [verifying, setVerifying] = useState(false);
+
+    const verifyBiometric = async (): Promise<boolean> => {
+        if (!Capacitor.isNativePlatform()) return true;
+        try {
+            const { Preferences } = await import('@capacitor/preferences');
+            const { value } = await Preferences.get({ key: 'biometric_enabled' });
+            if (value !== 'true') return true;
+
+            const { NativeBiometric } = await import('capacitor-native-biometric');
+            const result = await NativeBiometric.isAvailable();
+            if (!result.isAvailable) return true;
+
+            setVerifying(true);
+            await NativeBiometric.verifyIdentity({
+                reason: 'المصادقة مطلوبة للدخول',
+                title: 'تسجيل الدخول',
+                subtitle: 'استخدم بصمتك للمتابعة',
+                description: ' ',
+            });
+            return true;
+        } catch (error) {
+            console.error('Biometric verification failed:', error);
+            return false;
+        } finally {
+            setVerifying(false);
+        }
+    };
+
     useEffect(() => {
-        const checkSession = async () => {
+        const initAuth = async () => {
             if (!api.isAuthenticated()) {
                 setLoading(false);
                 return;
@@ -54,9 +84,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             try {
                 const session = await api.get<SessionResponse>('/api/auth/session');
                 if (session.authenticated && session.user) {
+                    // Check biometric before setting user
+                    const bioSuccess = await verifyBiometric();
+                    if (!bioSuccess) {
+                        api.clearToken();
+                        setLoading(false);
+                        return;
+                    }
+
                     setUser(session.user);
                     // Initialize Notification Service (Push & Badge)
                     NotificationService.init();
+
+                    // Setup Resume Listener for Biometric
+                    if (Capacitor.isNativePlatform()) {
+                        const { App } = await import('@capacitor/app');
+                        App.addListener('appStateChange', async ({ isActive }) => {
+                            if (isActive && api.isAuthenticated() && !verifying) {
+                                // Small delay to ensure app is fully active
+                                setTimeout(async () => {
+                                    const success = await verifyBiometric();
+                                    if (!success) {
+                                        signOut();
+                                    }
+                                }, 100);
+                            }
+                        });
+                    }
+
                 } else {
                     api.clearToken();
                 }
@@ -64,11 +119,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 console.error('Session check failed:', error);
                 api.clearToken();
             }
-
             setLoading(false);
         };
 
-        checkSession();
+        initAuth();
     }, []);
 
     const signIn = async (phone: string, password: string) => {

@@ -19,22 +19,22 @@ Browserslist: caniuse-lite is outdated. Please run:
    Collecting build traces ...
 
 Route (app)                              Size     First Load JS
-┌ ○ /                                    1.96 kB        86.7 kB
+┌ ○ /                                    2.36 kB        87.2 kB
 ├ ○ /_not-found                          877 B          81.9 kB
-├ ○ /dashboard                           37.1 kB         231 kB
-├ ○ /dashboard/customers                 3.98 kB         113 kB
-├ ○ /dashboard/orders                    12.8 kB         149 kB
+├ ○ /dashboard                           37.1 kB         232 kB
+├ ○ /dashboard/customers                 4.36 kB         113 kB
+├ ○ /dashboard/orders                    13.2 kB         149 kB
 ├ ○ /dashboard/settings                  16.5 kB         211 kB
 ├ ○ /dashboard/subscription              5.75 kB        96.1 kB
-├ ○ /login                               2.77 kB        94.5 kB
-├ ○ /onboarding                          8.8 kB          174 kB
+├ ○ /login                               3.12 kB        94.9 kB
+├ ○ /onboarding                          9.17 kB         174 kB
 ├ ○ /privacy                             141 B          81.2 kB
-└ ○ /signup                              4.43 kB         105 kB
-+ First Load JS shared by all            81 kB
+└ ○ /signup                              4.78 kB         106 kB
++ First Load JS shared by all            81.1 kB
   ├ chunks/1053-f8be50a319562445.js      27.6 kB
   ├ chunks/1dd3208c-b6638105bd4644a4.js  51.1 kB
   ├ chunks/main-app-58e66d8dd22651fa.js  233 B
-  └ chunks/webpack-54944053052d411e.js   2.12 kB
+  └ chunks/webpack-311ebc5a80928601.js   2.15 kB
 
 
 ○  (Static)  automatically rendered as static HTML (uses no initial props)
