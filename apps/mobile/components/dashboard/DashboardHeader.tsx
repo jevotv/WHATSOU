@@ -46,7 +46,7 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
             } else {
                 // Generate client-side if missing
                 // Use dynamic redirect URL: /go/[store_id]
-                const url = `${window.location.origin}/go/${store.id}`;
+                const url = `https://whatsou.vercel.app/go/${store.id}`;
                 QRCode.toDataURL(url).then(setQrCodeUrl).catch(console.error);
             }
         }
@@ -99,7 +99,7 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
 
     const handleCopyStoreLink = () => {
         if (!store) return;
-        const url = `${window.location.origin}/${store.slug}`;
+        const url = `https://whatsou.vercel.app/${store.slug}`;
         navigator.clipboard.writeText(url);
         toast({
             title: t('dashboard.link_copied'),
@@ -137,7 +137,7 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
                                 <DropdownMenuItem
                                     onClick={async () => {
                                         if (!store) return;
-                                        const url = `${window.location.origin}/${store.slug}`;
+                                        const url = `https://whatsou.vercel.app/${store.slug}`;
 
                                         if (Capacitor.isNativePlatform()) {
                                             try {
