@@ -55,6 +55,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 const session = await api.get<SessionResponse>('/api/auth/session');
                 if (session.authenticated && session.user) {
                     setUser(session.user);
+                    // Initialize Notification Service (Push & Badge)
+                    NotificationService.init();
                 } else {
                     api.clearToken();
                 }
@@ -82,6 +84,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             api.setToken(response.token);
             setUser(response.user);
+            // Initialize Notification Service
+            NotificationService.init();
             router.push('/dashboard');
             return {};
         } catch (error: any) {
@@ -102,6 +106,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             api.setToken(response.token);
             setUser(response.user);
+            // Initialize Notification Service
+            NotificationService.init();
             router.push('/onboarding');
             return {};
         } catch (error: any) {
