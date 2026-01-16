@@ -19,22 +19,22 @@ Browserslist: caniuse-lite is outdated. Please run:
    Collecting build traces ...
 
 Route (app)                              Size     First Load JS
-┌ ○ /                                    1.88 kB        82.8 kB
-├ ○ /_not-found                          874 B          81.8 kB
-├ ○ /dashboard                           37 kB           230 kB
-├ ○ /dashboard/customers                 3.44 kB         109 kB
-├ ○ /dashboard/orders                    12.2 kB         145 kB
-├ ○ /dashboard/settings                  16.5 kB         210 kB
-├ ○ /dashboard/subscription              5.74 kB        95.9 kB
-├ ○ /login                               2.69 kB        90.6 kB
-├ ○ /onboarding                          8.32 kB         173 kB
-├ ○ /privacy                             137 B          81.1 kB
-└ ○ /signup                              4.32 kB         101 kB
-+ First Load JS shared by all            80.9 kB
-  ├ chunks/1dd3208c-0f86ea89a1dfd52f.js  51.1 kB
-  ├ chunks/53-f75102b3b8e6cf92.js        27.6 kB
-  ├ chunks/main-app-5275edef1f2b910e.js  230 B
-  └ chunks/webpack-3a5243f5d8265f7e.js   2.06 kB
+┌ ○ /                                    1.95 kB        86.7 kB
+├ ○ /_not-found                          877 B          81.9 kB
+├ ○ /dashboard                           37 kB           231 kB
+├ ○ /dashboard/customers                 3.98 kB         113 kB
+├ ○ /dashboard/orders                    12.8 kB         149 kB
+├ ○ /dashboard/settings                  16.5 kB         211 kB
+├ ○ /dashboard/subscription              5.75 kB          96 kB
+├ ○ /login                               2.77 kB        94.5 kB
+├ ○ /onboarding                          8.8 kB          174 kB
+├ ○ /privacy                             141 B          81.2 kB
+└ ○ /signup                              4.43 kB         105 kB
++ First Load JS shared by all            81 kB
+  ├ chunks/1053-f8be50a319562445.js      27.6 kB
+  ├ chunks/1dd3208c-b6638105bd4644a4.js  51.1 kB
+  ├ chunks/main-app-58e66d8dd22651fa.js  233 B
+  └ chunks/webpack-54944053052d411e.js   2.12 kB
 
 
 ○  (Static)  automatically rendered as static HTML (uses no initial props)
