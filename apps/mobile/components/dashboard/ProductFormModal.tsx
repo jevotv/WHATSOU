@@ -273,8 +273,9 @@ export default function ProductFormModal({
       if (!storeSlug) throw new Error("Store information missing");
 
       const formData = new FormData();
-      formData.append('thumbnail', thumbnail);
-      formData.append('full', full);
+      // Explicitly append with filename to ensure WebView handles it correctly
+      formData.append('thumbnail', thumbnail, thumbnail.name);
+      formData.append('full', full, full.name);
       formData.append('storeSlug', storeSlug);
       formData.append('productPath', basePath);
 
@@ -284,12 +285,6 @@ export default function ProductFormModal({
         body: formData
       });
 
-      // const response = await fetch('/api/upload', { method: 'POST', body: formData });
-      // const data = await response.json();
-
-      // if (!response.ok) throw new Error(data.error || 'Upload failed');
-
-
       setImages(prev => prev.map(img => img.id === item.id ? {
         ...img,
         url: data.fullUrl,
@@ -298,10 +293,14 @@ export default function ProductFormModal({
         progress: 100
       } : img));
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Upload error", error);
       setImages(prev => prev.map(img => img.id === item.id ? { ...img, status: 'error' } : img));
-      toast({ title: 'Upload Failed', description: 'Failed to upload image.', variant: 'destructive' });
+      toast({
+        title: 'Upload Failed',
+        description: error.message || 'Failed to upload image.',
+        variant: 'destructive'
+      });
     }
   };
 
