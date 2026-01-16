@@ -15,13 +15,9 @@ import Image from 'next/image';
 import { standardizePhoneNumber } from '@/lib/utils/phoneNumber';
 import { useLanguage } from '@whatsou/shared';
 import { api } from '@/lib/api/client';
-import { Geolocation } from '@capacitor/geolocation';
-import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
-import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import type { CameraResultType, CameraSource } from '@capacitor/camera';
 import { Switch } from "@/components/ui/switch";
-import { Preferences } from '@capacitor/preferences';
-import { NativeBiometric } from 'capacitor-native-biometric';
 import { StoreShippingSettings } from '@/components/dashboard/StoreShippingSettings';
 import { ShippingConfig } from '@/types/shipping';
 
@@ -80,12 +76,16 @@ export default function SettingsPage() {
         if (user) {
             // Biometric check
             if (Capacitor.isNativePlatform()) {
-                NativeBiometric.isAvailable().then((result) => {
-                    setBiometricAvailable(result.isAvailable);
-                    Preferences.get({ key: 'biometric_enabled' }).then(({ value }) => {
-                        setBiometricEnabled(value === 'true');
-                    });
-                }).catch(() => { });
+                import('capacitor-native-biometric').then(({ NativeBiometric }) => {
+                    NativeBiometric.isAvailable().then((result) => {
+                        setBiometricAvailable(result.isAvailable);
+                        import('@capacitor/preferences').then(({ Preferences }) => {
+                            Preferences.get({ key: 'biometric_enabled' }).then(({ value }) => {
+                                setBiometricEnabled(value === 'true');
+                            });
+                        });
+                    }).catch(() => { });
+                });
             }
         }
     }, [user, router, authLoading]);
@@ -131,6 +131,7 @@ export default function SettingsPage() {
 
     const handleNativeLogoCamera = async () => {
         try {
+            const { Camera, CameraResultType, CameraSource } = await import('@capacitor/camera');
             const image = await Camera.getPhoto({
                 quality: 90,
                 allowEditing: true,
@@ -179,6 +180,7 @@ export default function SettingsPage() {
         if (!store) return;
 
         if (Capacitor.isNativePlatform()) {
+            const { Haptics, ImpactStyle } = await import('@capacitor/haptics');
             await Haptics.impact({ style: ImpactStyle.Heavy });
         }
 
@@ -208,6 +210,7 @@ export default function SettingsPage() {
         if (!store) return;
 
         if (Capacitor.isNativePlatform()) {
+            const { Haptics, ImpactStyle } = await import('@capacitor/haptics');
             await Haptics.impact({ style: ImpactStyle.Medium });
         }
 
@@ -639,6 +642,7 @@ export default function SettingsPage() {
                                                         description: t('onboarding.getting_location'),
                                                     });
 
+                                                    const { Geolocation } = await import('@capacitor/geolocation');
                                                     const permission = await Geolocation.checkPermissions();
                                                     if (permission.location !== 'granted') {
                                                         const request = await Geolocation.requestPermissions();
@@ -786,12 +790,14 @@ export default function SettingsPage() {
                                     checked={biometricEnabled}
                                     onCheckedChange={async (checked) => {
                                         setBiometricEnabled(checked);
+                                        const { Preferences } = await import('@capacitor/preferences');
                                         await Preferences.set({
                                             key: 'biometric_enabled',
                                             value: String(checked),
                                         });
                                         if (checked) {
                                             try {
+                                                const { NativeBiometric } = await import('capacitor-native-biometric');
                                                 const result = await NativeBiometric.verifyIdentity({
                                                     reason: 'Enable biometric login',
                                                     title: 'Authenticate',

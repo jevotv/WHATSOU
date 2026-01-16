@@ -1,8 +1,6 @@
-
-import { PushNotifications, Token, ActionPerformed } from '@capacitor/push-notifications';
-import { Badge } from '@capawesome/capacitor-badge';
 import { Capacitor } from '@capacitor/core';
 import { api } from '@/lib/api/client';
+import type { Token, ActionPerformed } from '@capacitor/push-notifications';
 
 export class NotificationService {
     private static initialized = false;
@@ -11,6 +9,8 @@ export class NotificationService {
         if (!Capacitor.isNativePlatform() || this.initialized) return;
 
         try {
+            const { PushNotifications } = await import('@capacitor/push-notifications');
+
             // Request permission to use push notifications
             const result = await PushNotifications.requestPermissions();
 
@@ -21,14 +21,16 @@ export class NotificationService {
                 console.warn('Push notification permission denied');
             }
 
-            this.setupListeners();
+            await this.setupListeners();
             this.initialized = true;
         } catch (e) {
             console.error('Error initializing notifications:', e);
         }
     }
 
-    private static setupListeners() {
+    private static async setupListeners() {
+        const { PushNotifications } = await import('@capacitor/push-notifications');
+
         // On success, we should be able to receive notifications
         PushNotifications.addListener('registration', (token: Token) => {
             console.log('Push registration success, token: ' + token.value);
@@ -69,6 +71,7 @@ export class NotificationService {
     static async incrementBadge() {
         if (!Capacitor.isNativePlatform()) return;
         try {
+            const { Badge } = await import('@capawesome/capacitor-badge');
             const { count } = await Badge.get();
             await Badge.set({ count: count + 1 });
         } catch (e) {
@@ -79,6 +82,7 @@ export class NotificationService {
     static async setBadge(count: number) {
         if (!Capacitor.isNativePlatform()) return;
         try {
+            const { Badge } = await import('@capawesome/capacitor-badge');
             await Badge.set({ count });
         } catch (e) {
             console.error('Error setting badge', e);
@@ -88,6 +92,7 @@ export class NotificationService {
     static async clearBadge() {
         if (!Capacitor.isNativePlatform()) return;
         try {
+            const { Badge } = await import('@capawesome/capacitor-badge');
             await Badge.clear();
         } catch (e) {
             console.error('Error clearing badge', e);

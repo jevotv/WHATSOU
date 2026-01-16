@@ -22,9 +22,7 @@ import { useAuth } from '@/lib/contexts/AuthContext';
 import { useLanguage } from '@whatsou/shared';
 import { useToast } from '@/hooks/use-toast';
 import { Store } from '@/lib/types/database';
-import { AppLauncher } from '@capacitor/app-launcher';
 import { Capacitor } from '@capacitor/core';
-import { Share as CapacitorShare } from '@capacitor/share';
 
 interface DashboardHeaderProps {
     store: Store | null;
@@ -143,6 +141,7 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
 
                                         if (Capacitor.isNativePlatform()) {
                                             try {
+                                                const { Share: CapacitorShare } = await import('@capacitor/share');
                                                 await CapacitorShare.share({
                                                     title: store.name,
                                                     text: store.description || '',
@@ -210,6 +209,7 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
                                         const phone = '201000499431';
                                         if (Capacitor.isNativePlatform()) {
                                             try {
+                                                const { AppLauncher } = await import('@capacitor/app-launcher');
                                                 const canOpen = await AppLauncher.canOpenUrl({ url: 'whatsapp://' });
                                                 if (canOpen.value) {
                                                     await AppLauncher.openUrl({ url: `whatsapp://send?phone=${phone}` });

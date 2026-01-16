@@ -28,9 +28,8 @@ import { Switch } from '@/components/ui/switch';
 import { processProductImage } from '@/lib/utils/imageProcessor';
 import { slugify } from '@/lib/utils/slug';
 import { useLanguage } from '@whatsou/shared';
-import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
-import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import type { CameraResultType, CameraSource } from '@capacitor/camera';
 
 interface ProductFormModalProps {
   storeId: string;
@@ -205,6 +204,8 @@ export default function ProductFormModal({
         toast({ title: 'Limit Reached', description: 'Maximum 5 images allowed.', variant: 'destructive' });
         return;
       }
+
+      const { Camera, CameraResultType, CameraSource } = await import('@capacitor/camera');
 
       const image = await Camera.getPhoto({
         quality: 90,
@@ -481,7 +482,10 @@ export default function ProductFormModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (Capacitor.isNativePlatform()) await Haptics.impact({ style: ImpactStyle.Light });
+    if (Capacitor.isNativePlatform()) {
+      const { Haptics, ImpactStyle } = await import('@capacitor/haptics');
+      await Haptics.impact({ style: ImpactStyle.Light });
+    }
 
     // Validate images
     if (images.length === 0) {

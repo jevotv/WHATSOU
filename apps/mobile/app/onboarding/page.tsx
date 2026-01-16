@@ -17,7 +17,6 @@ import Image from 'next/image';
 import { Label } from '@/components/ui/label';
 import { useLanguage } from '@whatsou/shared';
 import { slugify } from '@/lib/utils/slug';
-import { Geolocation } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';
 import { createBrowserClient } from '@supabase/ssr';
 
@@ -112,6 +111,7 @@ export default function OnboardingPage() {
                     description: t('onboarding.getting_location'),
                 });
 
+                const { Geolocation } = await import('@capacitor/geolocation');
                 const permission = await Geolocation.checkPermissions();
                 if (permission.location !== 'granted') {
                     const request = await Geolocation.requestPermissions();
