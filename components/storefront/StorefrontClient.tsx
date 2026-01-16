@@ -63,8 +63,16 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
   // Filter State
   const [selectedAttributes, setSelectedAttributes] = useState<{ [key: string]: string[] }>(() => {
     const attrs: { [key: string]: string[] } = {};
+    // Blacklist of parameters to ignore (tracking, analytics, etc.)
+    const ignoredParams = ['fbclid', 'gclid', 'ref', 'source'];
+
     searchParams.forEach((value, key) => {
       if (['category', 'q', 'sort', 'min_price', 'max_price'].includes(key)) return;
+
+      // Skip blacklisted parameters
+      if (ignoredParams.includes(key)) return;
+      if (key.startsWith('utm_')) return;
+
       // Assume attributes are passed as key=val1,val2
       attrs[key] = value.split(',');
     });
