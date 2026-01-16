@@ -60,11 +60,41 @@ export default function StorefrontClient({ store, products }: StorefrontClientPr
   const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+  // List of tracking/analytics parameters to ignore (not product filters)
+  const IGNORED_PARAMS = [
+    // Facebook
+    'fbclid', 'fb_action_ids', 'fb_action_types', 'fb_source', 'fb_ref',
+    // Google Analytics / Ads
+    'gclid', 'dclid', 'gclsrc', 'gad_source', 'gbraid', 'wbraid',
+    // UTM parameters
+    'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_id',
+    // Microsoft/Bing
+    'msclkid',
+    // Twitter
+    'twclid',
+    // TikTok
+    'ttclid',
+    // LinkedIn
+    'li_fat_id',
+    // Pinterest
+    'epik',
+    // Email marketing
+    'mc_cid', 'mc_eid',
+    // Other common tracking params
+    '_ga', '_gl', 'ref', 'source', 'campaign', 'affiliate', 'partner'
+  ];
+
   // Filter State
   const [selectedAttributes, setSelectedAttributes] = useState<{ [key: string]: string[] }>(() => {
     const attrs: { [key: string]: string[] } = {};
+    const knownParams = ['category', 'q', 'sort', 'min_price', 'max_price'];
     searchParams.forEach((value, key) => {
-      if (['category', 'q', 'sort', 'min_price', 'max_price'].includes(key)) return;
+      // Skip known filter params
+      if (knownParams.includes(key)) return;
+      // Skip tracking/analytics params
+      if (IGNORED_PARAMS.includes(key.toLowerCase())) return;
+      // Skip params that start with common tracking prefixes
+      if (key.startsWith('_') || key.startsWith('fb') || key.startsWith('utm_')) return;
       // Assume attributes are passed as key=val1,val2
       attrs[key] = value.split(',');
     });

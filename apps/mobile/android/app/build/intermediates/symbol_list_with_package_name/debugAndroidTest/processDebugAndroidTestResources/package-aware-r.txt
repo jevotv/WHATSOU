@@ -1,0 +1,3 @@
+com.whatsou.app.test
+style WhiteBackgroundDialogTheme
+style WhiteBackgroundTheme

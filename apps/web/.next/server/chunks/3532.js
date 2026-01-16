@@ -1,0 +1,1 @@
+"use strict";exports.id=3532,exports.ids=[3532],exports.modules={53696:(e,r,t)=>{Object.defineProperty(r,"$",{enumerable:!0,get:function(){return createServerReference}});let c=t(11538);function createServerReference(e){let{createServerReference:r}=t(14554);return r(e,c.callServer)}},94574:(e,r)=>{Symbol.for("react.server.reference")}};
