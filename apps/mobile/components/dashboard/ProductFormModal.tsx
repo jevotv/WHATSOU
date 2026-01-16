@@ -61,6 +61,7 @@ interface ImageItem {
   altText: string;
   file?: File; // validation/upload
   status: 'pending' | 'uploading' | 'completed' | 'error';
+  errorMessage?: string;
   progress: number;
 }
 
@@ -295,10 +296,11 @@ export default function ProductFormModal({
 
     } catch (error: any) {
       console.error("Upload error", error);
-      setImages(prev => prev.map(img => img.id === item.id ? { ...img, status: 'error' } : img));
+      const errorMessage = error.message || 'Unknown error';
+      setImages(prev => prev.map(img => img.id === item.id ? { ...img, status: 'error', errorMessage } : img));
       toast({
         title: 'Upload Failed',
-        description: error.message || 'Failed to upload image.',
+        description: errorMessage,
         variant: 'destructive'
       });
     }
@@ -591,7 +593,7 @@ export default function ProductFormModal({
                       onChange={(e) => updateAltText(img.id, e.target.value)}
                       className="h-8 text-sm"
                     />
-                    {img.status === 'error' && <p className="text-xs text-red-500 mt-1">Upload failed</p>}
+                    {img.status === 'error' && <p className="text-xs text-red-500 mt-1">{img.errorMessage || 'Upload failed'}</p>}
                   </div>
 
                   {/* Actions */}
