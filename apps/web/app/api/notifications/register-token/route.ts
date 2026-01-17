@@ -1,5 +1,7 @@
+
 import { createServerClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyToken } from '@/lib/api/jwt';
 
 export async function POST(request: NextRequest) {
     try {
@@ -23,10 +25,14 @@ export async function POST(request: NextRequest) {
             const authHeader = request.headers.get('Authorization');
             if (authHeader && authHeader.startsWith('Bearer ')) {
                 const authToken = authHeader.split(' ')[1];
-                // Supabase getUser can verify the JWT token
-                const { data: { user: mobileUser }, error: mobileError } = await supabase.auth.getUser(authToken);
-                if (!mobileError && mobileUser) {
-                    userId = mobileUser.id;
+
+                // Decode custom JWT using our shared secret
+                const payload = await verifyToken(authToken);
+                if (payload) {
+                    userId = payload.userId;
+                    console.log('Mobile auth success:', userId);
+                } else {
+                    console.error('Mobile auth failed: Invalid custom JWT');
                 }
             }
         }
