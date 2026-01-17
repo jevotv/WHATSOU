@@ -41,12 +41,12 @@ export async function POST(request: NextRequest) {
         }
 
         // Update existing user with new FCM token
-        // Ignoring platform since users table only has fcm_token column (based on search)
+        // Ignoring platform since users table only has fcm_token column
+        // REMOVED updated_at as it does not exist in the users table
         const { error } = await supabase
             .from('users')
             .update({
-                fcm_token: token,
-                updated_at: new Date().toISOString()
+                fcm_token: token
             })
             .eq('id', userId);
 
