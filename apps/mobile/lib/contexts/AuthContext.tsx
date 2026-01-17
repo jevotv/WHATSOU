@@ -48,23 +48,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [verifying, setVerifying] = useState(false);
 
     const verifyBiometric = async (): Promise<boolean> => {
-        if (!Capacitor.isNativePlatform()) return true;
+        if (!Capacitor.isNativePlatform()) {
+            console.log('Biometric: Not native platform');
+            return true;
+        }
         try {
             const { Preferences } = await import('@capacitor/preferences');
             const { value } = await Preferences.get({ key: 'biometric_enabled' });
+            console.log('Biometric: Preference value is', value);
+
             if (value !== 'true') return true;
 
             const { NativeBiometric } = await import('capacitor-native-biometric');
             const result = await NativeBiometric.isAvailable();
+            console.log('Biometric: Availability result:', result);
+
             if (!result.isAvailable) return true;
 
             setVerifying(true);
             await NativeBiometric.verifyIdentity({
                 reason: 'المصادقة مطلوبة للدخول',
                 title: 'تسجيل الدخول',
-                subtitle: 'استخدم بصمتك للمتابعة',
+                subtitle: 'استخدم بصمتك أو رمز القفل للمتابعة',
                 description: ' ',
+                useFallback: true, // Enable PIN/Pattern fallback
             });
+            console.log('Biometric: Verified successfully');
             return true;
         } catch (error) {
             console.error('Biometric verification failed:', error);
