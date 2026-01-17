@@ -48,8 +48,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [verifying, setVerifying] = useState(false);
 
     const verifyBiometric = async (): Promise<boolean> => {
+        // Dynamic import for Toast to ensure it's available
+        const { Toast } = await import('@capacitor/toast');
+
+        // DEBUG: Proof of Life - Entry
+        // await Toast.show({ text: 'Bio Check Starting...', duration: 'short' });
+
         if (!Capacitor.isNativePlatform()) {
             console.log('Biometric: Not native platform');
+            // DEBUG: Show if we think we are not native
+            // await Toast.show({ text: 'Bio Check: Not Native Platform', duration: 'long' });
             return true;
         }
         try {
@@ -59,8 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             if (value !== 'true') {
                 // DEBUG: Remove this after fixing
-                // const { Toast } = await import('@capacitor/toast');
-                // await Toast.show({ text: 'Biometric disabled in settings' });
+                // await Toast.show({ text: `Bio Disabled. Pref: ${value}`, duration: 'short' });
                 return true;
             }
 
@@ -69,11 +76,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.log('Biometric: Availability result:', result);
 
             if (!result.isAvailable) {
-                const { Toast } = await import('@capacitor/toast');
-                await Toast.show({ text: 'Biometric not available on device' });
+                await Toast.show({ text: 'Bio Not Available on Device' });
                 return true;
             }
 
+            // await Toast.show({ text: 'Starting Verification Prompt...' });
             setVerifying(true);
             const verificationResult = await NativeBiometric.verifyIdentity({
                 reason: 'المصادقة مطلوبة للدخول',
@@ -85,19 +92,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             if (verificationResult) {
                 console.log('Biometric: Verified successfully');
+                // await Toast.show({ text: 'Bio Verified OK' });
                 return true;
             } else {
                 console.log('Biometric: Verification failed or cancelled');
-                const { Toast } = await import('@capacitor/toast');
-                await Toast.show({ text: 'Biometric verification failed or cancelled' });
+                await Toast.show({ text: 'Bio Verification FAILED/Cancelled' });
                 return false;
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Biometric verification failed:', error);
-            const { Toast } = await import('@capacitor/toast');
-            await Toast.show({ text: 'Biometric verification failed' });
-            // If error is "Canceled", return false (logout/don't proceed)
-            // But verifyIdentity usually throws on cancel/failure.
+            await Toast.show({ text: `Bio Error: ${error?.message || error}` });
             return false;
         } finally {
             setVerifying(false);
