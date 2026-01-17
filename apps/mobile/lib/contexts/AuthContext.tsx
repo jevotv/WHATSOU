@@ -57,26 +57,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const { value } = await Preferences.get({ key: 'biometric_enabled' });
             console.log('Biometric: Preference value is', value);
 
-            if (value !== 'true') return true;
+            if (value !== 'true') {
+                // DEBUG: Remove this after fixing
+                // const { Toast } = await import('@capacitor/toast');
+                // await Toast.show({ text: 'Biometric disabled in settings' });
+                return true;
+            }
 
             const { NativeBiometric } = await import('capacitor-native-biometric');
             const result = await NativeBiometric.isAvailable();
             console.log('Biometric: Availability result:', result);
 
-            if (!result.isAvailable) return true;
+            if (!result.isAvailable) {
+                const { Toast } = await import('@capacitor/toast');
+                await Toast.show({ text: 'Biometric not available on device' });
+                return true;
+            }
 
             setVerifying(true);
-            await NativeBiometric.verifyIdentity({
+            const verificationResult = await NativeBiometric.verifyIdentity({
                 reason: 'المصادقة مطلوبة للدخول',
                 title: 'تسجيل الدخول',
                 subtitle: 'استخدم بصمتك أو رمز القفل للمتابعة',
                 description: ' ',
                 useFallback: true, // Enable PIN/Pattern fallback
-            });
-            console.log('Biometric: Verified successfully');
-            return true;
+            }).then(() => true).catch(() => false);
+
+            if (verificationResult) {
+                console.log('Biometric: Verified successfully');
+                return true;
+            } else {
+                console.log('Biometric: Verification failed or cancelled');
+                const { Toast } = await import('@capacitor/toast');
+                await Toast.show({ text: 'Biometric verification failed or cancelled' });
+                return false;
+            }
         } catch (error) {
             console.error('Biometric verification failed:', error);
+            const { Toast } = await import('@capacitor/toast');
+            await Toast.show({ text: 'Biometric verification failed' });
+            // If error is "Canceled", return false (logout/don't proceed)
+            // But verifyIdentity usually throws on cancel/failure.
             return false;
         } finally {
             setVerifying(false);
