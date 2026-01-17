@@ -1,4 +1,3 @@
-
 import { createServerClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/api/jwt';
@@ -7,8 +6,8 @@ export async function POST(request: NextRequest) {
     try {
         const { token, platform } = await request.json();
 
-        if (!token || !platform) {
-            return NextResponse.json({ error: 'Missing token or platform' }, { status: 400 });
+        if (!token) {
+            return NextResponse.json({ error: 'Missing token' }, { status: 400 });
         }
 
         const supabase = await createServerClient();
@@ -41,21 +40,18 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        // Update existing user with new FCM token
+        // Ignoring platform since users table only has fcm_token column (based on search)
         const { error } = await supabase
-            .from('notification_tokens')
-            .upsert({
-                user_id: userId,
-                token,
-                platform,
+            .from('users')
+            .update({
+                fcm_token: token,
                 updated_at: new Date().toISOString()
-            }, { onConflict: 'token' });
+            })
+            .eq('id', userId);
 
         if (error) {
-            console.error('Error saving token', error);
-            // Verify if table exists
-            if (error.code === '42P01') { // undefined_table
-                return NextResponse.json({ error: 'Database table missing. Please run migrations.' }, { status: 500 });
-            }
+            console.error('Error saving fcm_token', error);
             return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
