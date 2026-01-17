@@ -6,25 +6,35 @@ export class NotificationService {
     private static initialized = false;
 
     static async init() {
-        if (!Capacitor.isNativePlatform() || this.initialized) return;
+        if (!Capacitor.isNativePlatform()) return;
+
+        console.log('NotificationService: Starting init');
+        if (this.initialized) {
+            console.log('NotificationService: Already initialized');
+            return;
+        }
 
         try {
             const { PushNotifications } = await import('@capacitor/push-notifications');
 
             // Request permission to use push notifications
+            console.log('NotificationService: Requesting permissions');
             const result = await PushNotifications.requestPermissions();
+            console.log('NotificationService: Permission result:', result);
 
             if (result.receive === 'granted') {
                 // Register with Apple / Google to receive push via APNS/FCM
+                console.log('NotificationService: Registering for push');
                 await PushNotifications.register();
             } else {
-                console.warn('Push notification permission denied');
+                console.warn('NotificationService: Permission denied');
             }
 
             await this.setupListeners();
             this.initialized = true;
+            console.log('NotificationService: Init complete');
         } catch (e) {
-            console.error('Error initializing notifications:', e);
+            console.error('NotificationService: Error initializing:', e);
         }
     }
 

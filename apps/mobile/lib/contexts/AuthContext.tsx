@@ -103,6 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
                     setUser(session.user);
                     // Initialize Notification Service (Push & Badge)
+                    console.log('AuthContext: Initializing NotificationService');
                     NotificationService.init();
 
                     // Setup Resume Listener for Biometric
