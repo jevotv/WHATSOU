@@ -1,3 +1,5 @@
+
+import { getSupabaseAdmin } from '@/lib/supabase/admin';
 import { createServerClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/api/jwt';
@@ -40,10 +42,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        // Use Admin Client to bypass RLS for updating the user
+        const adminSupabase = getSupabaseAdmin();
+
         // Update existing user with new FCM token
         // Ignoring platform since users table only has fcm_token column
-        // REMOVED updated_at as it does not exist in the users table
-        const { error } = await supabase
+        const { error } = await adminSupabase
             .from('users')
             .update({
                 fcm_token: token
