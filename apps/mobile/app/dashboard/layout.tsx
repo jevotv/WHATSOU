@@ -12,6 +12,7 @@ import { useLanguage } from '@whatsou/shared';
 import { Store } from '@/lib/types/database';
 import { StoreProvider } from '@/lib/contexts/StoreContext';
 import { api } from '@/lib/api/client';
+import { supabase } from '@/lib/supabase/client';
 
 interface StoreResponse {
     store: Store | null;
@@ -29,6 +30,8 @@ export default function DashboardLayout({
     const { direction } = useLanguage();
     const router = useRouter();
 
+
+
     const loadStore = useCallback(async () => {
         if (authLoading) return;
 
@@ -38,25 +41,26 @@ export default function DashboardLayout({
         }
 
         try {
-            const result = await api.get<StoreResponse>('/api/dashboard/store');
+            // Use Supabase client directly to avoid API network issues/inconsistencies
+            const { data: store, error } = await supabase
+                .from('stores')
+                .select('*')
+                .eq('user_id', user.id)
+                .maybeSingle();
 
-            if (result.error) {
-                console.error("Store load error:", result.error);
+            if (error) {
+                console.error("Store load error:", error);
                 return;
             }
 
-            if (!result.store) {
+            if (!store) {
                 router.push('/onboarding');
                 return;
             }
 
-            setStore(result.store);
+            setStore(store);
         } catch (error: any) {
             console.error('Error loading store:', error);
-            if (error.message?.includes('Unauthorized')) {
-                api.clearToken();
-                router.push('/login');
-            }
         } finally {
             setLoading(false);
         }
