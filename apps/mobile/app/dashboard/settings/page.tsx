@@ -134,9 +134,9 @@ export default function SettingsPage() {
             const { Camera, CameraResultType, CameraSource } = await import('@capacitor/camera');
             const image = await Camera.getPhoto({
                 quality: 90,
-                allowEditing: true,
+                allowEditing: false,
                 resultType: CameraResultType.DataUrl,
-                source: CameraSource.Prompt,
+                source: CameraSource.Photos, // Use Photos to avoid "Open With" dialog
             });
 
             if (image.dataUrl) {

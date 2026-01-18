@@ -103,6 +103,29 @@ export default function OnboardingPage() {
         }
     };
 
+    const handleNativeLogoCamera = async () => {
+        try {
+            const { Camera, CameraResultType, CameraSource } = await import('@capacitor/camera');
+            const image = await Camera.getPhoto({
+                quality: 90,
+                allowEditing: false,
+                resultType: CameraResultType.DataUrl,
+                source: CameraSource.Photos, // Use Photos to avoid "Open With" dialog
+            });
+
+            if (image.dataUrl) {
+                setLogoPreview(image.dataUrl);
+                // Convert Base64 DataURL to File
+                const res = await fetch(image.dataUrl);
+                const blob = await res.blob();
+                const file = new File([blob], 'logo.jpg', { type: blob.type });
+                setLogoFile(file);
+            }
+        } catch (error) {
+            console.error('Camera error', error);
+        }
+    };
+
     const handleGetLocation = async () => {
         if (Capacitor.isNativePlatform()) {
             try {
@@ -512,12 +535,20 @@ export default function OnboardingPage() {
                         <div className="space-y-6 animate-in slide-in-from-right-8 fade-in-0 duration-300">
 
                             {/* Logo Upload */}
-                            <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50 hover:bg-gray-100 transition-all cursor-pointer group">
+                            <label
+                                className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50 hover:bg-gray-100 transition-all cursor-pointer group"
+                                onClick={(e) => {
+                                    if (Capacitor.isNativePlatform()) {
+                                        e.preventDefault();
+                                        handleNativeLogoCamera();
+                                    }
+                                }}
+                            >
                                 <input
                                     type="file"
                                     accept="image/*"
                                     onChange={handleLogoChange}
-                                    className="hidden"
+                                    className={Capacitor.isNativePlatform() ? "hidden" : "hidden"}
                                 />
                                 <div className="relative w-24 h-24 mb-4">
                                     {logoPreview ? (
