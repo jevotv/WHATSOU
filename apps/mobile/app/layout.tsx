@@ -7,6 +7,15 @@ export const metadata: Metadata = {
     description: 'Manage your WhatsApp store',
 };
 
+// Viewport configuration for safe-area support
+export const viewport = {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: 'cover', // Required for safe-area-inset to work
+};
+
 export default function RootLayout({
     children,
 }: {
@@ -22,4 +31,3 @@ export default function RootLayout({
         </html>
     );
 }
-
