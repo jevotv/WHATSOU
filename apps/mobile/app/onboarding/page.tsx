@@ -108,7 +108,7 @@ export default function OnboardingPage() {
             const { Camera, CameraResultType, CameraSource } = await import('@capacitor/camera');
             const image = await Camera.getPhoto({
                 quality: 90,
-                allowEditing: false,
+                allowEditing: false, // Disabled to prevent "Edit with" dialog
                 resultType: CameraResultType.DataUrl,
                 source: CameraSource.Photos, // Use Photos to avoid "Open With" dialog
             });
