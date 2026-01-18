@@ -299,16 +299,21 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
                                                                 const base64Data = qrCodeUrl.split(',')[1];
                                                                 const fileName = `${store?.slug || 'store'}-qr-${Date.now()}.png`;
 
-                                                                // Save to Downloads folder
+                                                                // Save to Documents folder
                                                                 await Filesystem.writeFile({
                                                                     path: fileName,
                                                                     data: base64Data,
                                                                     directory: Directory.Documents,
                                                                 });
 
-                                                                toast({
-                                                                    title: t('common.download'),
-                                                                    description: language === 'ar' ? 'تم حفظ الصورة بنجاح' : 'Image saved successfully',
+                                                                const { Toast } = await import('@capacitor/toast');
+                                                                const { Haptics, NotificationType } = await import('@capacitor/haptics');
+
+                                                                await Haptics.notification({ type: NotificationType.Success });
+                                                                await Toast.show({
+                                                                    text: language === 'ar' ? 'تم حفظ رمز QR في المستندات' : 'QR Code saved to Documents',
+                                                                    duration: 'long',
+                                                                    position: 'bottom',
                                                                 });
                                                             } else {
                                                                 // Web: Use traditional download
@@ -321,11 +326,19 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
                                                             }
                                                         } catch (error) {
                                                             console.error('Download error:', error);
-                                                            toast({
-                                                                title: t('common.error'),
-                                                                description: String(error),
-                                                                variant: 'destructive',
-                                                            });
+                                                            if (Capacitor.isNativePlatform()) {
+                                                                const { Toast } = await import('@capacitor/toast');
+                                                                await Toast.show({
+                                                                    text: language === 'ar' ? 'حدث خطأ أثناء الحفظ' : 'Error saving file',
+                                                                    duration: 'long'
+                                                                });
+                                                            } else {
+                                                                toast({
+                                                                    title: t('common.error'),
+                                                                    description: String(error),
+                                                                    variant: 'destructive',
+                                                                });
+                                                            }
                                                         }
                                                     }}
                                                 >
