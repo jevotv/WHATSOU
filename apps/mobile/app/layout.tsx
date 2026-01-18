@@ -1,7 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { AuthProvider } from '@/lib/contexts/AuthContext';
-import { LanguageProvider } from '@whatsou/shared';
+import { ClientLayout } from '@/components/ClientLayout';
 
 export const metadata: Metadata = {
     title: 'WhatSou Dashboard',
@@ -16,12 +15,11 @@ export default function RootLayout({
     return (
         <html lang="ar" dir="rtl">
             <body>
-                <LanguageProvider>
-                    <AuthProvider>
-                        {children}
-                    </AuthProvider>
-                </LanguageProvider>
+                <ClientLayout>
+                    {children}
+                </ClientLayout>
             </body>
         </html>
     );
 }
+
