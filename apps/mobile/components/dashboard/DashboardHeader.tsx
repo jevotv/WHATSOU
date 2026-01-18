@@ -289,13 +289,44 @@ export default function DashboardHeader({ store }: DashboardHeaderProps) {
                                                 <Button
                                                     variant="outline"
                                                     className="flex-1"
-                                                    onClick={() => {
-                                                        const link = document.createElement('a');
-                                                        link.href = qrCodeUrl;
-                                                        link.download = `${store?.slug}-qr.png`;
-                                                        document.body.appendChild(link);
-                                                        link.click();
-                                                        document.body.removeChild(link);
+                                                    onClick={async () => {
+                                                        try {
+                                                            if (Capacitor.isNativePlatform()) {
+                                                                // Native: Use Capacitor Filesystem
+                                                                const { Filesystem, Directory } = await import('@capacitor/filesystem');
+
+                                                                // Convert data URL to base64
+                                                                const base64Data = qrCodeUrl.split(',')[1];
+                                                                const fileName = `${store?.slug || 'store'}-qr-${Date.now()}.png`;
+
+                                                                // Save to Downloads folder
+                                                                await Filesystem.writeFile({
+                                                                    path: fileName,
+                                                                    data: base64Data,
+                                                                    directory: Directory.Documents,
+                                                                });
+
+                                                                toast({
+                                                                    title: t('common.download'),
+                                                                    description: language === 'ar' ? 'تم حفظ الصورة بنجاح' : 'Image saved successfully',
+                                                                });
+                                                            } else {
+                                                                // Web: Use traditional download
+                                                                const link = document.createElement('a');
+                                                                link.href = qrCodeUrl;
+                                                                link.download = `${store?.slug}-qr.png`;
+                                                                document.body.appendChild(link);
+                                                                link.click();
+                                                                document.body.removeChild(link);
+                                                            }
+                                                        } catch (error) {
+                                                            console.error('Download error:', error);
+                                                            toast({
+                                                                title: t('common.error'),
+                                                                description: String(error),
+                                                                variant: 'destructive',
+                                                            });
+                                                        }
                                                     }}
                                                 >
                                                     <Download className="w-4 h-4 mr-2" />
