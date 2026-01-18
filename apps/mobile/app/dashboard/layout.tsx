@@ -12,6 +12,8 @@ import { useLanguage } from '@whatsou/shared';
 import { Store } from '@/lib/types/database';
 import { StoreProvider } from '@/lib/contexts/StoreContext';
 import { api } from '@/lib/api/client';
+import { Store as StoreIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase/client';
 
 interface StoreResponse {
@@ -54,7 +56,8 @@ export default function DashboardLayout({
             }
 
             if (!store) {
-                router.push('/onboarding');
+                // Don't auto-redirect to avoid loops. Show setup screen instead.
+                setLoading(false);
                 return;
             }
 
@@ -64,7 +67,7 @@ export default function DashboardLayout({
         } finally {
             setLoading(false);
         }
-    }, [user, authLoading, router]);
+    }, [user, authLoading]); // Removed router from deps
 
     const refetchStore = useCallback(async () => {
         try {
