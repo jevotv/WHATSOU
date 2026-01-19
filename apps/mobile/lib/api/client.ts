@@ -3,7 +3,7 @@
  * All API calls go to the remote server (whatsou.com).
  */
 
-const API_BASE = 'https://whatsou-git-feature-monorepo-jevotv-3403s-projects.vercel.app'; // Production URL
+const API_BASE = 'https://whatsou.vercel.app'; // Production URL
 
 class ApiClient {
     private token: string | null = null;
