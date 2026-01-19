@@ -1,0 +1,113 @@
+
+> @whatsou/web@0.1.0 build
+> next build
+
+   Creating an optimized production build ...
+Browserslist: caniuse-lite is outdated. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+ ✓ Compiled successfully
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/42) ...
+   Generating static pages (10/42) 
+   Generating static pages (20/42) 
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⚠ Entire page /404 deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /404
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⚠ Entire page /signup deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /signup
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⚠ Entire page /privacy deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /privacy
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⚠ Entire page /login deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /login
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⚠ Entire page /onboarding deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /onboarding
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⚠ Entire page /dashboard/customers deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /dashboard/customers
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⚠ Entire page / deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⚠ Entire page /dashboard/subscription deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /dashboard/subscription
+   Generating static pages (31/42) 
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⚠ Entire page /dashboard/orders deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /dashboard/orders
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⚠ Entire page /dashboard/settings deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /dashboard/settings
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⚠ Entire page /dashboard deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /dashboard
+ ✓ Generating static pages (42/42) 
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size     First Load JS
+┌ ○ /                                       11.6 kB         125 kB
+├ ○ /_not-found                             878 B            85 kB
+├ λ /[slug]                                 13.7 kB         226 kB
+├ λ /[slug]/p/[id]                          6.52 kB         219 kB
+├ λ /[slug]/sitemap.xml                     0 B                0 B
+├ λ /api/auth/change-password               0 B                0 B
+├ λ /api/auth/delete-account                0 B                0 B
+├ λ /api/auth/login                         0 B                0 B
+├ λ /api/auth/logout                        0 B                0 B
+├ λ /api/auth/session                       0 B                0 B
+├ λ /api/auth/signup                        0 B                0 B
+├ λ /api/dashboard/customers                0 B                0 B
+├ λ /api/dashboard/orders                   0 B                0 B
+├ λ /api/dashboard/products                 0 B                0 B
+├ λ /api/dashboard/products/[id]            0 B                0 B
+├ λ /api/dashboard/store                    0 B                0 B
+├ λ /api/dashboard/subscription/history     0 B                0 B
+├ λ /api/dashboard/subscription/manual-pay  0 B                0 B
+├ λ /api/dashboard/subscription/pay         0 B                0 B
+├ λ /api/dashboard/subscription/status      0 B                0 B
+├ λ /api/locations                          0 B                0 B
+├ λ /api/notifications/register-token       0 B                0 B
+├ λ /api/store/create                       0 B                0 B
+├ λ /api/store/qr                           0 B                0 B
+├ λ /api/subscription/pay                   0 B                0 B
+├ λ /api/subscription/status                0 B                0 B
+├ λ /api/upload                             0 B                0 B
+├ ○ /apple-icon.png                         0 B                0 B
+├ ○ /dashboard                              35.4 kB         237 kB
+├ ○ /dashboard/customers                    4.02 kB         115 kB
+├ ○ /dashboard/orders                       5.5 kB          152 kB
+├ ○ /dashboard/settings                     21.4 kB         163 kB
+├ ○ /dashboard/subscription                 5.62 kB        98.5 kB
+├ λ /demo                                   6.76 kB         131 kB
+├ λ /demo/customers                         3.56 kB         105 kB
+├ λ /demo/orders                            7.11 kB         147 kB
+├ λ /demo/settings                          7.21 kB         124 kB
+├ λ /go/[id]                                0 B                0 B
+├ ○ /icon.png                               0 B                0 B
+├ ○ /login                                  3.92 kB         121 kB
+├ ○ /manifest.webmanifest                   0 B                0 B
+├ ○ /onboarding                             10.3 kB         176 kB
+├ ○ /opengraph-image.png                    0 B                0 B
+├ ○ /privacy                                140 B          84.3 kB
+├ ○ /robots.txt                             0 B                0 B
+├ ○ /signup                                 4.75 kB         122 kB
+└ λ /sitemap.xml                            0 B                0 B
++ First Load JS shared by all               84.2 kB
+  ├ chunks/8593596e-871dff2a41482847.js     53.8 kB
+  ├ chunks/9619-2c055103ee00a6ba.js         28.1 kB
+  ├ chunks/main-app-a36096489534cb6c.js     232 B
+  └ chunks/webpack-2ee0e15b3dd11235.js      2.04 kB
+
+
+ƒ Middleware                                26 kB
+
+λ  (Server)  server-side renders at runtime (uses getInitialProps or getServerSideProps)
+○  (Static)  automatically rendered as static HTML (uses no initial props)
+

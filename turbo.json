@@ -1,0 +1,53 @@
+{
+    "$schema": "https://turbo.build/schema.json",
+    "globalDependencies": [
+        "**/.env.*local"
+    ],
+    "globalEnv": [
+        "NEXT_PUBLIC_SITE_URL",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "JWT_SECRET",
+        "R2_ACCESS_KEY_ID",
+        "R2_SECRET_ACCESS_KEY",
+        "R2_ENDPOINT",
+        "R2_BUCKET_NAME",
+        "R2_PUBLIC_URL"
+    ],
+    "tasks": {
+        "build": {
+            "dependsOn": [
+                "^build"
+            ],
+            "outputs": [
+                ".next/**",
+                "!.next/cache/**",
+                "out/**",
+                "dist/**"
+            ]
+        },
+        "build:static": {
+            "dependsOn": [
+                "^build"
+            ],
+            "outputs": [
+                "out/**"
+            ]
+        },
+        "dev": {
+            "cache": false,
+            "persistent": true
+        },
+        "lint": {
+            "dependsOn": [
+                "^build"
+            ]
+        },
+        "typecheck": {
+            "dependsOn": [
+                "^build"
+            ]
+        }
+    }
+}

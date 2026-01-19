@@ -1,0 +1,121 @@
+import { ShippingConfig } from '@/types/shipping';
+
+export type { ShippingConfig };
+
+export interface Store {
+  id: string;
+  user_id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  whatsapp_number: string;
+  email?: string | null;
+  logo_url?: string | null;
+  facebook_url?: string | null;
+  instagram_url?: string | null;
+  twitter_url?: string | null;
+  tiktok_url?: string | null;
+  default_language?: string | null;
+  location_url?: string | null;
+  qr_code?: string | null;
+  allow_delivery?: boolean;
+  allow_pickup?: boolean;
+  shipping_config?: ShippingConfig | null;
+  free_shipping_threshold?: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductOption {
+  name: string;
+  values: string[];  // Simple string values
+}
+
+export interface ProductVariant {
+  id: string;
+  product_id: string;
+  option_values: { [key: string]: string };  // e.g., {"Size": "XL", "Color": "Red"}
+  price: number;
+  quantity: number;
+  sku?: string;
+  unlimited_stock?: boolean;
+  image_index?: number | null;  // Index of product image to show when variant selected (0-based). NULL = default image
+  created_at?: string;
+}
+
+export interface Product {
+  id: string;
+  store_id: string;
+  name: string;
+  description?: string;
+  current_price: number;  // Base price / "Starting from" price
+  original_price?: number;
+  image_url?: string;      // Full size (1200x1200)
+  thumbnail_url?: string;  // Thumbnail (200x200)
+  category?: string;
+  quantity: number;  // Used for simple products without variants
+  unlimited_stock?: boolean;
+  options: ProductOption[];
+  variants?: ProductVariant[];  // Loaded when needed
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrderItem {
+  product_id: string;
+  variant_id?: string;  // For products with variants
+  product_name: string;
+  quantity: number;
+  price: number;
+  selected_options: { [key: string]: string };
+}
+
+export interface Order {
+  id: string;
+  store_id: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_address?: string;
+  delivery_type: 'delivery' | 'pickup';
+  order_items: OrderItem[];
+  total_price: number;
+  created_at: string;
+  notes?: string;
+  shipping_cost?: number;
+  city?: string;
+  district?: string;
+}
+
+export interface CartItem extends OrderItem {
+  image_url?: string;
+}
+
+export interface ProductImage {
+  id: string;
+  product_id: string;
+  image_url: string;
+  thumbnail_url?: string;
+  display_order: number;
+  alt_text?: string;
+  created_at: string;
+}
+
+export interface Product {
+  id: string;
+  store_id: string;
+  name: string;
+  description?: string;
+  current_price: number;  // Base price / "Starting from" price
+  original_price?: number;
+  image_url?: string;      // Full size (1200x1200) - Main Image
+  thumbnail_url?: string;  // Thumbnail (200x200)
+  images?: ProductImage[]; // All images including main
+  category?: string;
+  quantity: number;  // Used for simple products without variants
+  unlimited_stock?: boolean;
+  options: ProductOption[];
+  variants?: ProductVariant[];  // Loaded when needed
+  sales_count?: number;
+  created_at: string;
+  updated_at: string;
+}
