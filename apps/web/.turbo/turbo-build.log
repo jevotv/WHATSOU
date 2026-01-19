@@ -18,16 +18,26 @@ Browserslist: caniuse-lite is outdated. Please run:
  ⚠ Entire page /404 deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /404
 
  ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⚠ Entire page /signup deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /signup
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
  ⚠ Entire page /privacy deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /privacy
 
  ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
  ⚠ Entire page /login deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /login
 
  ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⚠ Entire page /onboarding deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /onboarding
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⚠ Entire page /dashboard/customers deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /dashboard/customers
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
  ⚠ Entire page / deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /
 
  ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
- ⚠ Entire page /signup deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /signup
+ ⚠ Entire page /dashboard/subscription deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /dashboard/subscription
+   Generating static pages (31/42) 
 
  ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
  ⚠ Entire page /dashboard/orders deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /dashboard/orders
@@ -37,16 +47,6 @@ Browserslist: caniuse-lite is outdated. Please run:
 
  ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
  ⚠ Entire page /dashboard deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /dashboard
-   Generating static pages (31/42) 
-
- ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
- ⚠ Entire page /dashboard/subscription deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /dashboard/subscription
-
- ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
- ⚠ Entire page /dashboard/customers deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /dashboard/customers
-
- ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
- ⚠ Entire page /onboarding deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /onboarding
  ✓ Generating static pages (42/42) 
    Finalizing page optimization ...
    Collecting build traces ...

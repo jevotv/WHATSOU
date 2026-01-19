@@ -806,7 +806,7 @@ export default function ProductFormModal({
                     </div>
                   )}
 
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 border-b text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <div className="hidden sm:flex items-center gap-3 p-3 bg-gray-50 border-b text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     <div className="flex-1">{t('products.variants_label')}</div>
                     <div className="w-16 text-center">{t('products.variant_image') || 'صورة'}</div>
                     <div className="w-24">{t('products.price_label')}</div>

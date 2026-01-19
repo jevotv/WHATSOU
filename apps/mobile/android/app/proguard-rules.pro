@@ -19,3 +19,13 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Capacitor Rules
+-keep public class com.getcapacitor.BridgeActivity { *; }
+-keep public class com.getcapacitor.plugin.** { *; }
+-keep public class com.getcapacitor.Bridge { *; }
+-keep public class com.getcapacitor.App { *; }
+
+# Prevent warning/error for missing classes in dependencies
+-dontwarn android.webkit.**
+-dontwarn com.getcapacitor.**
