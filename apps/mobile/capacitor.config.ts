@@ -13,7 +13,9 @@ const config: CapacitorConfig = {
             permissions: [
                 'camera',
                 'photos'
-            ]
+            ],
+            // Use Android Photo Picker instead of broad READ_MEDIA_IMAGES permission
+            androidPhotoPickerPreferred: true
         },
         Geolocation: {
             permissions: [

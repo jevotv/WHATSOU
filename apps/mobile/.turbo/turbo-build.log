@@ -6,6 +6,9 @@
 Browserslist: caniuse-lite is outdated. Please run:
   npx update-browserslist-db@latest
   Why you should do it regularly: https://github.com/browserslist/update-db#readme
+Browserslist: caniuse-lite is outdated. Please run:
+  npx browserslist@latest --update-db
+  Why you should do it regularly: https://github.com/browserslist/browserslist#browsers-data-updating
  ✓ Compiled successfully
    Skipping validation of types
    Skipping linting
@@ -19,15 +22,15 @@ Browserslist: caniuse-lite is outdated. Please run:
    Collecting build traces ...
 
 Route (app)                              Size     First Load JS
-┌ ○ /                                    2.04 kB          87 kB
-├ ○ /_not-found                          877 B            82 kB
-├ ○ /dashboard                           37.1 kB         232 kB
+┌ ○ /                                    2.02 kB        86.9 kB
+├ ○ /_not-found                          0 B                0 B
+├ ○ /dashboard                           37.2 kB         231 kB
 ├ ○ /dashboard/customers                 4.06 kB         113 kB
 ├ ○ /dashboard/orders                    12.9 kB         149 kB
-├ ○ /dashboard/settings                  16.5 kB         211 kB
+├ ○ /dashboard/settings                  16.7 kB         210 kB
 ├ ○ /dashboard/subscription              5.73 kB        96.1 kB
-├ ○ /login                               2.78 kB        94.7 kB
-├ ○ /onboarding                          8.88 kB         174 kB
+├ ○ /login                               2.75 kB        94.7 kB
+├ ○ /onboarding                          9.29 kB         174 kB
 ├ ○ /privacy                             141 B          81.3 kB
 └ ○ /signup                              4.41 kB         106 kB
 + First Load JS shared by all            81.1 kB
@@ -39,3 +42,8 @@ Route (app)                              Size     First Load JS
 
 ○  (Static)  automatically rendered as static HTML (uses no initial props)
 
+npm notice
+npm notice New major version of npm available! 10.9.3 -> 11.8.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.8.0
+npm notice To update run: npm install -g npm@11.8.0
+npm notice

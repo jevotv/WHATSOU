@@ -365,7 +365,7 @@ export default function ProductDetailClient({ store, product }: ProductDetailCli
                   >
                     <Image
                       src={src}
-                      alt={`Thumbnail ${idx + 1}`}
+                      alt={`${product.name} - Thumbnail ${idx + 1}`}
                       fill
                       className="object-cover"
                     />

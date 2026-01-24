@@ -1,12 +1,12 @@
 import { MetadataRoute } from 'next';
-import { createServerClient } from '@/lib/supabase/server';
+import { getSupabaseAdmin } from '@/lib/supabase/admin';
 
 export default async function sitemap({
     id,
 }: {
     id: string; // matches [slug]
 }): Promise<MetadataRoute.Sitemap> {
-    const supabase = await createServerClient();
+    const supabase = getSupabaseAdmin();
     const slug = id; // Ensure we get the correct param
 
     // 1. Fetch store

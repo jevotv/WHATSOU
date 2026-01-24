@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-// import { createServerClient } from '@/lib/supabase/server'; // REMOVED
+import { getSupabaseAdmin } from '@/lib/supabase/admin';
 import type { Metadata } from 'next';
 import { Product, ProductVariant } from '@/lib/types/database';
 import StorefrontClient from '@/components/storefront/StorefrontClient';
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: StorefrontPageProps): Promise
   const supabase = getSupabaseAdmin();
   const { data: store } = await supabase
     .from('stores')
-    .select('name, description, logo_url')
+    .select('name, description, logo_url, default_language')
     .eq('slug', params.slug)
     .maybeSingle();
 
@@ -31,27 +31,44 @@ export async function generateMetadata({ params }: StorefrontPageProps): Promise
   }
 
   const fullUrl = `https://whatsou.com/${params.slug}`;
+  const fallbackDescription = `Shop at ${store.name} on Whatsou. Order via WhatsApp.`;
+  const description = store.description || fallbackDescription;
+  const imageUrl = store.logo_url || 'https://whatsou.com/opengraph-image.png';
+  const locale = store.default_language === 'ar' ? 'ar_EG' : 'en_US';
 
   return {
     title: `${store.name} | Whatsou`,
-    description: store.description,
+    description: description,
     alternates: {
       canonical: fullUrl,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
     },
     icons: {
       icon: store.logo_url || '/favicon.ico',
       apple: store.logo_url || '/apple-icon.png',
     },
     openGraph: {
+      type: 'website',
+      siteName: 'Whatsou',
+      locale: locale,
+      url: fullUrl,
       title: store.name,
-      description: store.description || undefined,
-      images: store.logo_url ? [{ url: store.logo_url }] : [],
+      description: description,
+      images: [{ url: imageUrl, alt: `${store.name} Logo` }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: store.name,
+      description: description,
+      images: [imageUrl],
     },
   };
 }
-
-// Cached function to check subscription status (revalidates every 5 minutes)
-import { getSupabaseAdmin } from '@/lib/supabase/admin';
 
 // Cached function to check subscription status (revalidates every 5 minutes)
 const getCachedSubscriptionStatus = unstable_cache(
@@ -141,13 +158,17 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
     );
   }
 
-  const jsonLd = {
+  const fullUrl = `https://whatsou.com/${params.slug}`;
+
+  const storeJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Store',
     name: data.store.name,
     image: data.store.logo_url,
-    description: data.store.description,
-    url: `https://whatsou.com/${params.slug}`,
+    description: data.store.description || `Shop at ${data.store.name} on Whatsou`,
+    url: fullUrl,
+    telephone: data.store.whatsapp_number,
+    priceRange: 'EGP',
     sameAs: [
       data.store.facebook_url,
       data.store.instagram_url,
@@ -157,11 +178,34 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
     ].filter(Boolean)
   };
 
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Whatsou',
+        item: 'https://whatsou.com'
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: data.store.name,
+        item: fullUrl
+      }
+    ]
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(storeJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <StorefrontClient store={data.store} products={data.products} />
     </>

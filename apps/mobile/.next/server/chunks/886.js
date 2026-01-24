@@ -1,1 +1,0 @@
-"use strict";exports.id=886,exports.ids=[886],exports.modules={19886:(t,s,e)=>{function standardizePhoneNumber(t,s="20"){let e=t.replace(/[^\d+]/g,"");return e.startsWith("+")?e:e.startsWith(s)?`+${e}`:e.startsWith("0")?`+${s}${e.substring(1)}`:`+${s}${e}`}e.d(s,{yL:()=>standardizePhoneNumber})}};

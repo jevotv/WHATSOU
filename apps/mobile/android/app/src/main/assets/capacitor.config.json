@@ -2,7 +2,6 @@
 	"appId": "com.whatsou.app",
 	"appName": "WhatSou",
 	"webDir": "out",
-	"bundledWebRuntime": false,
 	"server": {
 		"androidScheme": "https"
 	},
@@ -11,7 +10,8 @@
 			"permissions": [
 				"camera",
 				"photos"
-			]
+			],
+			"androidPhotoPickerPreferred": true
 		},
 		"Geolocation": {
 			"permissions": [
@@ -24,6 +24,9 @@
 				"sound",
 				"alert"
 			]
+		},
+		"CapacitorHttp": {
+			"enabled": false
 		}
 	}
 }

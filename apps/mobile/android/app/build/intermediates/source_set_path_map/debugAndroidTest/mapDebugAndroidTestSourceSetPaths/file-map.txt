@@ -1,6 +1,0 @@
-com.whatsou.app.test.app-core-1.6.1-0 C:\Users\jevot\.gradle\caches\8.13\transforms\cb2cd13a51adc0268aafbfd5553b14b6\transformed\core-1.6.1\res
-com.whatsou.app.test.app-tracing-1.2.0-1 C:\Users\jevot\.gradle\caches\8.13\transforms\ecbc8e1a29b591e2e4228e1a18556d52\transformed\tracing-1.2.0\res
-com.whatsou.app.test.app-androidTest-2 D:\whatsou\apps\mobile\android\app\build\generated\res\resValues\androidTest\debug
-com.whatsou.app.test.app-mergeDebugAndroidTestResources-3 D:\whatsou\apps\mobile\android\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
-com.whatsou.app.test.app-mergeDebugAndroidTestResources-4 D:\whatsou\apps\mobile\android\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
-com.whatsou.app.test.app-debugAndroidTest-5 D:\whatsou\apps\mobile\android\app\build\intermediates\merged_res\debugAndroidTest\mergeDebugAndroidTestResources

@@ -1,1 +1,0 @@
-"use strict";exports.id=251,exports.ids=[251],exports.modules={20251:(e,r,n)=>{n.d(r,{verifyToken:()=>verifyToken});var t=n(25877);let o=new TextEncoder().encode(process.env.JWT_SECRET||"fallback-secret-change-in-production");async function verifyToken(e){try{let{payload:r}=await (0,t.jwtVerify)(e,o);return{userId:r.userId,phone:r.phone}}catch{return null}}}};

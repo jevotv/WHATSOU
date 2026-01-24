@@ -11,6 +11,7 @@ import { MetaPixelProvider } from '@/components/providers/MetaPixelProvider';
 // const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://whatsou.com'),
   title: 'WhatSou - WhatsApp Commerce Platform',
   description: 'Create your WhatsApp store in 60 seconds. Photo -> Price -> Sell',
   viewport: {
